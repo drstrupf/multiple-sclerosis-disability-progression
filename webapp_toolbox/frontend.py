@@ -122,9 +122,9 @@ def minimal_distance_requirement_dropdown(key):
         - key: the element's key
 
     Returns
-        - option_minimal_distance_type: the minimal distance type (none, previous, reference)
-        - option_minimal_distance_time: the minimal distance duration
-        - option_minimal_distance_backtrack_monotonic_decrease: for 'reference', adjust for monotonic decrease
+        - str: option_minimal_distance_type - the minimal distance type (none, previous, reference)
+        - int: option_minimal_distance_time - the minimal distance duration
+        - bool: option_minimal_distance_backtrack_monotonic_decrease - for 'reference', adjust for monotonic decrease
 
     """
     min_distance_input = st.selectbox(
@@ -169,7 +169,22 @@ def minimal_distance_requirement_dropdown(key):
 
 
 def confirmation_requirement_dropdown(key):
-    """Confirm or not..."""
+    """Display a collection of dropdown menues
+    for choosing the confirmation requirements.
+
+    Depending on the input, more or less fields are displayed
+    to prevent the user from selecting invalid option combos.
+
+    Args:
+        - key: the element's key
+
+    Returns
+        - bool: option_require_confirmation - whether confirmation is required
+        - int: option_confirmation_time - duration of confirmation interval
+        - str: option_confirmation_included_values - which values to consider
+        - str: option_confirmation_type - confirmation condition type
+
+    """
     option_require_confirmation = st.selectbox(
         label="Require confirmation?",
         options=[
@@ -242,7 +257,21 @@ def confirmation_requirement_dropdown(key):
 def dynamic_progression_option_input_element(element_base_key, default_baseline):
     """Creates a series of input widgets and returns the options as dict.
 
-    TBD...
+    This frontend element creates a set of dropdown options to select
+    baseline type, minimal increase, minimal distance, and confirmation
+    requirements, and returns a dict with the chosen options.
+
+    Dropdown elements are only displayed when relevant, as implemented in
+    the respective element's code, such that the user can not choose
+    invalid parameter combinations.
+
+    Args:
+        - element_base_key: the element's base key, a str
+        - default_baseline: the baseline type to be displayed at first load
+
+    Returns:
+        - dict: a dictionary with the options for annotating the baseline
+          and first progression events.
 
     """
     # Baseline type
@@ -301,7 +330,7 @@ def annotate_first_progression_to_follow_up_dynamic_element(
     progression event to a follow-up dataframe, returns annotated
     dataframe.
 
-    Options are displayed dymanically, depending on chosen values.
+    Options are displayed dynamically, depending on chosen values.
 
     Args:
         - follow_up_dataframe: a follow-up with at least a score and a
@@ -312,7 +341,6 @@ def annotate_first_progression_to_follow_up_dynamic_element(
           timestamp and flag for first progression.
 
     """
-
     # Get definition options input
     option_baseline_type = baseline_definition_dropdown(
         key=element_base_key + "_option_baseline_type",
