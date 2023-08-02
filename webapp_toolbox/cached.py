@@ -4,7 +4,7 @@ import streamlit as st
 
 
 from definitions import baselines, progression
-from evaluation import utils, survival, cohort
+from evaluation import survival, cohort
 
 
 def follow_ups_to_lifelines_input(

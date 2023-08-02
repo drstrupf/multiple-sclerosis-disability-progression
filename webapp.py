@@ -21,7 +21,7 @@ sns.set(color_codes=True)
 sns.set_style("whitegrid", {"grid.color": "gainsboro"})
 
 from definitions import baselines, progression
-from evaluation import utils, survival
+from evaluation import survival
 from webapp_toolbox import frontend, visualization, cached
 
 # Wide layout
