@@ -61,8 +61,17 @@ def cache_get_lifelines_input_for_cohort(
     id_column_name="follow_up_id",
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
+    additional_columns_to_drop=[],
+    progression_event_found_column_name="progression",
+    time_to_progression_column_name="time_to_first_progression",
+    reference_for_progression_column_name="reference_for_progression",
+    progression_score_column_name="progression_score",
+    length_of_follow_up_column_name="length_of_follow_up",
+    global_censoring=None,
+    duration_name="duration",
+    observed_name="observed",
 ):
-    return cached.get_lifelines_input_for_cohort(
+    return cached.follow_ups_to_lifelines_input(
         follow_up_dataframe=follow_up_dataframe,
         baseline_type=baseline_type,
         opt_increase_threshold=opt_increase_threshold,
@@ -77,6 +86,15 @@ def cache_get_lifelines_input_for_cohort(
         id_column_name=id_column_name,
         edss_score_column_name=edss_score_column_name,
         time_column_name=time_column_name,
+        additional_columns_to_drop=additional_columns_to_drop,
+        progression_event_found_column_name=progression_event_found_column_name,
+        time_to_progression_column_name=time_to_progression_column_name,
+        reference_for_progression_column_name=reference_for_progression_column_name,
+        progression_score_column_name=progression_score_column_name,
+        length_of_follow_up_column_name=length_of_follow_up_column_name,
+        global_censoring=global_censoring,
+        duration_name=duration_name,
+        observed_name=observed_name,
     )
 
 
