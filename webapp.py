@@ -1,3 +1,10 @@
+"""Streamlit webapp source file.
+
+This is the source code for the Steramlit webapp deployed on
+https://multiple-sclerosis-disability-progression.streamlit.app/
+
+"""
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -134,12 +141,7 @@ if __name__ == "__main__":
             24.7 (2017), pp. 963-973. doi: 10.1177/1352458517709619"""
         )
 
-    st.write(
-        # ":watch: Radio reloj: "
-        "Last cache refresh: "
-        + show_clock_last_cache_refresh()
-        # + " :zap: :skull_and_crossbones: :fire: :boom: :skull:"
-    )
+    st.write("Last cache refresh: " + show_clock_last_cache_refresh())
 
     st.write("## Explore definition options")
 
