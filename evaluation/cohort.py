@@ -11,7 +11,7 @@ all follow-ups when evaluating data from a cohort.
 import numpy as np
 import pandas as pd
 
-import survival
+from evaluation import survival
 from definitions import baselines, progression
 
 
@@ -148,6 +148,116 @@ def annotate_first_progression_cohort_level(
         follow_up_dataframe_with_progression_list
     )
     return follow_up_dataframe_with_progression
+
+
+def get_time_to_first_progression_cohort_level(
+    follow_up_dataframe,
+    id_column_name,
+    edss_score_column_name,
+    time_column_name,
+    reference_score_column_name="reference_edss_score",
+    first_progression_flag_column_name="is_first_progression",
+    additional_columns_to_drop=[],
+    progression_event_found_column_name="progression",
+    time_to_progression_column_name="time_to_first_progression",
+    reference_for_progression_column_name="reference_for_progression",
+    progression_score_column_name="progression_score",
+    length_of_follow_up_column_name="length_of_follow_up",
+):
+    """Get time to progression for multiple follow-ups with annotated
+    baseline and first progression.
+
+    Calls survival.get_time_to_first_progression.
+
+    Args:
+        - follow_up_dataframe: a pandas dataframe with one follow-up, reference, progression
+        - id_column_name: the name of the column where the follow-up ID is specified
+        - edss_score_column_name: column with EDSS score
+        - time_column_name: column with timestamps
+        - reference_score_column_name: column with the reference score
+        - first_progression_flag_column_name: column with the flag for first progression
+        - additional_columns_to_drop: a list of columns to drop in the result
+        - progression_event_found_column_name: name of the new colum to flag follow-ups with progression
+        - time_to_progression_column_name: name of the new column with time to progression
+        - reference_for_progression_column_name: name of the new column with the progression reference score
+        - progression_score_column_name: name of the new column with the progression score
+        - length_of_follow_up_column_name: name of the new column with the length of follow-up
+
+    Returns:
+        - df: a dataframe with 1 row and the following columns, in addition to any
+          constant columns (e.g. the follow-up ID):
+            - progression_event_found_column_name: bool, whether a progression event was found
+            - time_to_progression_column_name: time to first progression event
+            - reference_for_progression_column_name: progression was detected w.r.t. this reference
+            - progression_score_column_name: the score at the assessment that counts as progression
+            - length_of_follow_up_column_name: length of the follow-up period.
+
+    """
+    follow_up_dataframe_time_to_progression_list = [
+        survival.get_time_to_first_progression(
+            follow_up_dataframe=follow_up_dataframe[
+                follow_up_dataframe[id_column_name] == follow_up_id
+            ],
+            edss_score_column_name=edss_score_column_name,
+            time_column_name=time_column_name,
+            reference_score_column_name=reference_score_column_name,
+            first_progression_flag_column_name=first_progression_flag_column_name,
+            additional_columns_to_drop=additional_columns_to_drop,
+            progression_event_found_column_name=progression_event_found_column_name,
+            time_to_progression_column_name=time_to_progression_column_name,
+            reference_for_progression_column_name=reference_for_progression_column_name,
+            progression_score_column_name=progression_score_column_name,
+            length_of_follow_up_column_name=length_of_follow_up_column_name,
+        )
+        for follow_up_id in follow_up_dataframe[id_column_name].drop_duplicates()
+    ]
+    follow_up_dataframe_time_to_progression = pd.concat(
+        follow_up_dataframe_time_to_progression_list
+    )
+    return follow_up_dataframe_time_to_progression
+
+
+def get_lifelines_input_data_cohort_level(
+    times_to_first_progression_dataframe,
+    progression_event_found_column_name="progression",
+    time_to_progression_column_name="time_to_first_progression",
+    length_of_follow_up_column_name="length_of_follow_up",
+    global_censoring=None,
+    duration_name="duration",
+    observed_name="observed",
+):
+    """Add lifelines-compatible 'duration' and 'observed' columns.
+    
+    Adds two columns to a dataframe where progression yes/no, time
+    to progression, and length of follow-up are specified.
+
+    Args:
+        - times_to_first_progression_dataframe: a dataframe with times to progression
+        - progression_event_found_column_name: the name of the column with the flag 'progression found'
+        - time_to_progression_column_name: the column with time to progression
+        - length_of_follow_up_column_name: the column with the length of follow-up
+        - global_censoring: impose a global cutoff, default is None
+        - duration_name: name of the dict entry for duration
+        - observed_name: name of the dict entry for observed
+
+    Returns:
+        - dict: a dictionary with 'duration' and 'observed'
+
+    """
+    return_df = times_to_first_progression_dataframe.copy()
+    return_df[[duration_name, observed_name]] = return_df.apply(
+        lambda row: survival.get_lifelines_input_data(
+            first_progression_flag=row[progression_event_found_column_name],
+            time_to_first_progression=row[time_to_progression_column_name],
+            length_of_follow_up=row[length_of_follow_up_column_name],
+            global_censoring=global_censoring,
+            duration_name=duration_name,
+            observed_name=observed_name,
+        ),
+        axis=1,
+        result_type="expand",
+    )
+    return return_df
 
 
 if __name__ == "__main__":
