@@ -1,4 +1,5 @@
 __pycache__/
+.Python
 *.py[cod]
 .ipynb_checkpoints
 playground/
