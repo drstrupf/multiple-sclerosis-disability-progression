@@ -67,7 +67,7 @@ def annotate_baseline(
     """Add the relevant reference score and the reference
     timestamp to each row.
 
-    This function returns a copy of the inpt dataframe with
+    This function returns a copy of the input dataframe with
     two additional columns, one that specifies the reference
     EDSS score for each timestep, and one with the timestamp
     of the reference assessment. When using fixed baseline,
