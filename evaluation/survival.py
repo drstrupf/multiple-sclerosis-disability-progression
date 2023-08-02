@@ -31,15 +31,21 @@ def get_time_to_first_progression(
         - time_column_name: column with timestamps
         - reference_score_column_name: column with the reference score
         - first_progression_flag_column_name: column with the flag for first progression
+        - additional_columns_to_drop: a list of columns to drop in the result
+        - progression_event_found_column_name: name of the new colum to flag follow-ups with progression
+        - time_to_progression_column_name: name of the new column with time to progression
+        - reference_for_progression_column_name: name of the new column with the progression reference score
+        - progression_score_column_name: name of the new column with the progression score
+        - length_of_follow_up_column_name: name of the new column with the length of follow-up
 
     Returns:
         - df: a dataframe with 1 row and the following columns, in addition to any
           constant columns (e.g. the follow-up ID):
-            - progression: bool, whether a progression event was found
-            - time_to_first_progression: time to first progression event
-            - reference_for_progression: progression was detected w.r.t. this reference
-            - progression_score: the score at the assessment that counts as progression
-            - length_of_follow_up: length of the follow-up period.
+            - progression_event_found_column_name: bool, whether a progression event was found
+            - time_to_progression_column_name: time to first progression event
+            - reference_for_progression_column_name: progression was detected w.r.t. this reference
+            - progression_score_column_name: the score at the assessment that counts as progression
+            - length_of_follow_up_column_name: length of the follow-up period.
 
     """
     # Check data type of timestamp column
