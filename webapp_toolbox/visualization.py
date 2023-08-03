@@ -137,9 +137,7 @@ def plot_single_kaplan_meier(
     if median_time_to_event >= 100_000:
         median_time_to_event_str = r"$\infty$"
     else:
-        median_time_to_event_str = str(
-            int(np.ceil(median_time_to_event))
-        )
+        median_time_to_event_str = str(int(np.ceil(median_time_to_event)))
     if median_time_to_event_ci_lower >= 100_000:
         median_time_to_event_ci_lower_str = r"$\infty$"
     else:
@@ -232,7 +230,6 @@ def plot_kaplan_meier_comparison(
     n_events_observed_2 = sum(observed_2)
     event_rate_2 = n_events_observed_2 / n_observations_2
 
-
     # Get median survival times with 95% CI
     median_time_to_event_1 = kaplan_meier_fitter_1.median_survival_time_
     median_time_to_event_ci_1 = lifelines.utils.median_survival_times(
@@ -269,9 +266,7 @@ def plot_kaplan_meier_comparison(
     if median_time_to_event_1 >= 100_000:
         median_time_to_event_str_1 = r"$\infty$"
     else:
-        median_time_to_event_str_1 = str(
-            int(np.ceil(median_time_to_event_1))
-        )    
+        median_time_to_event_str_1 = str(int(np.ceil(median_time_to_event_1)))
     if median_time_to_event_ci_lower_1 >= 100_000:
         median_time_to_event_ci_lower_str_1 = r"$\infty$"
     else:
@@ -287,9 +282,7 @@ def plot_kaplan_meier_comparison(
     if median_time_to_event_2 >= 100_000:
         median_time_to_event_str_2 = r"$\infty$"
     else:
-        median_time_to_event_str_2 = str(
-            int(np.ceil(median_time_to_event_2))
-        )    
+        median_time_to_event_str_2 = str(int(np.ceil(median_time_to_event_2)))
     if median_time_to_event_ci_lower_2 >= 200_000:
         median_time_to_event_ci_lower_str_2 = r"$\infty$"
     else:
@@ -302,7 +295,6 @@ def plot_kaplan_meier_comparison(
         median_time_to_event_ci_upper_str_2 = str(
             int(np.ceil(median_time_to_event_ci_upper_2))
         )
-
 
     p_logrank = lifelines.statistics.logrank_test(
         durations_A=durations_1,
@@ -346,9 +338,10 @@ def plot_kaplan_meier_comparison(
     ax.set_title(
         "Event rate definition 1: "
         + str(np.round(event_rate_1 * 100, 2))
-        + "%" 
-        + "Event rate definition 2: " 
-        + str(np.round(event_rate_2 * 100, 2))  + "%"
+        + "%"
+        + "Event rate definition 2: "
+        + str(np.round(event_rate_2 * 100, 2))
+        + "%"
         + "\nMedian time to first progression (95%CI) definition 1: "
         + median_time_to_event_str_1
         + " days ("
@@ -363,7 +356,8 @@ def plot_kaplan_meier_comparison(
         + " - "
         + median_time_to_event_ci_upper_str_2
         + " days)"
-        + "\np log-rank: " + p_logrank_str
+        + "\np log-rank: "
+        + p_logrank_str
     )
 
     sns.despine(bottom=True, left=True, right=True, top=True)
