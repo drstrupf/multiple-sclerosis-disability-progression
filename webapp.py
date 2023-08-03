@@ -60,29 +60,11 @@ def cache_annotate_progression_for_cohort(
 @st.cache_data()
 def cache_get_lifelines_input_for_cohort(
     follow_up_dataframe,
-    baseline_type="fixed",
-    opt_increase_threshold=5.5,
-    opt_larger_minimal_increase_from_0=True,
-    opt_minimal_distance_time=0,
-    opt_minimal_distance_type="reference",
-    opt_minimal_distance_backtrack_monotonic_decrease=True,
-    opt_require_confirmation=False,
-    opt_confirmation_time=-1,
-    opt_confirmation_type="minimum",
-    opt_confirmation_included_values="all",
+    options_dictionary,
 ):
     return cached.follow_ups_to_lifelines_input(
         follow_up_dataframe=follow_up_dataframe,
-        baseline_type=baseline_type,
-        opt_increase_threshold=opt_increase_threshold,
-        opt_larger_minimal_increase_from_0=opt_larger_minimal_increase_from_0,
-        opt_minimal_distance_time=opt_minimal_distance_time,
-        opt_minimal_distance_type=opt_minimal_distance_type,
-        opt_minimal_distance_backtrack_monotonic_decrease=opt_minimal_distance_backtrack_monotonic_decrease,
-        opt_require_confirmation=opt_require_confirmation,
-        opt_confirmation_time=opt_confirmation_time,
-        opt_confirmation_type=opt_confirmation_type,
-        opt_confirmation_included_values=opt_confirmation_included_values,
+        options_dictionary=options_dictionary,
     )
 
 
@@ -231,26 +213,25 @@ if __name__ == "__main__":
                 element_base_key="example_cohort_options_form_contents_def_1",
                 default_baseline="fixed",
             )
-            sample_follow_ups_time_to_progression_1 = (
-                cache_get_lifelines_input_for_cohort(
-                    follow_up_dataframe=sample_follow_ups,
-                    baseline_type=options_1["baseline_type"],
-                    opt_increase_threshold=options_1["opt_increase_threshold"],
-                    opt_larger_minimal_increase_from_0=options_1[
-                        "opt_larger_minimal_increase_from_0"
-                    ],
-                    opt_minimal_distance_time=options_1["opt_minimal_distance_time"],
-                    opt_minimal_distance_type=options_1["opt_minimal_distance_type"],
-                    opt_minimal_distance_backtrack_monotonic_decrease=options_1[
-                        "opt_minimal_distance_backtrack_monotonic_decrease"
-                    ],
-                    opt_require_confirmation=options_1["opt_require_confirmation"],
-                    opt_confirmation_time=options_1["opt_confirmation_time"],
-                    opt_confirmation_type=options_1["opt_confirmation_type"],
-                    opt_confirmation_included_values=options_1[
-                        "opt_confirmation_included_values"
-                    ],
-                )
+            sample_follow_ups_time_to_progression_1 = cache_get_lifelines_input_for_cohort(
+                follow_up_dataframe=sample_follow_ups,
+                options_dictionary=options_1,
+                # baseline_type=options_1["baseline_type"],
+                # opt_increase_threshold=options_1["opt_increase_threshold"],
+                # opt_larger_minimal_increase_from_0=options_1[
+                #    "opt_larger_minimal_increase_from_0"
+                # ],
+                # opt_minimal_distance_time=options_1["opt_minimal_distance_time"],
+                # opt_minimal_distance_type=options_1["opt_minimal_distance_type"],
+                # opt_minimal_distance_backtrack_monotonic_decrease=options_1[
+                #    "opt_minimal_distance_backtrack_monotonic_decrease"
+                # ],
+                # opt_require_confirmation=options_1["opt_require_confirmation"],
+                # opt_confirmation_time=options_1["opt_confirmation_time"],
+                # opt_confirmation_type=options_1["opt_confirmation_type"],
+                # opt_confirmation_included_values=options_1[
+                #    "opt_confirmation_included_values"
+                # ],
             )
 
         with second_option_selection_column:
@@ -260,26 +241,25 @@ if __name__ == "__main__":
                 element_base_key="example_cohort_options_form_contents_def_2",
                 default_baseline="roving",
             )
-            sample_follow_ups_time_to_progression_2 = (
-                cache_get_lifelines_input_for_cohort(
-                    follow_up_dataframe=sample_follow_ups,
-                    baseline_type=options_2["baseline_type"],
-                    opt_increase_threshold=options_2["opt_increase_threshold"],
-                    opt_larger_minimal_increase_from_0=options_2[
-                        "opt_larger_minimal_increase_from_0"
-                    ],
-                    opt_minimal_distance_time=options_2["opt_minimal_distance_time"],
-                    opt_minimal_distance_type=options_2["opt_minimal_distance_type"],
-                    opt_minimal_distance_backtrack_monotonic_decrease=options_2[
-                        "opt_minimal_distance_backtrack_monotonic_decrease"
-                    ],
-                    opt_require_confirmation=options_2["opt_require_confirmation"],
-                    opt_confirmation_time=options_2["opt_confirmation_time"],
-                    opt_confirmation_type=options_2["opt_confirmation_type"],
-                    opt_confirmation_included_values=options_2[
-                        "opt_confirmation_included_values"
-                    ],
-                )
+            sample_follow_ups_time_to_progression_2 = cache_get_lifelines_input_for_cohort(
+                follow_up_dataframe=sample_follow_ups,
+                options_dictionary=options_2,
+                # baseline_type=options_2["baseline_type"],
+                # opt_increase_threshold=options_2["opt_increase_threshold"],
+                # opt_larger_minimal_increase_from_0=options_2[
+                #    "opt_larger_minimal_increase_from_0"
+                # ],
+                # opt_minimal_distance_time=options_2["opt_minimal_distance_time"],
+                # opt_minimal_distance_type=options_2["opt_minimal_distance_type"],
+                # opt_minimal_distance_backtrack_monotonic_decrease=options_2[
+                #    "opt_minimal_distance_backtrack_monotonic_decrease"
+                # ],
+                # opt_require_confirmation=options_2["opt_require_confirmation"],
+                # opt_confirmation_time=options_2["opt_confirmation_time"],
+                # opt_confirmation_type=options_2["opt_confirmation_type"],
+                # opt_confirmation_included_values=options_2[
+                #    "opt_confirmation_included_values"
+                # ],
             )
 
         with result_column:
