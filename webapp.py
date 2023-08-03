@@ -48,29 +48,11 @@ def load_cache_sampled_data():
 @st.cache_data()
 def cache_annotate_progression_for_cohort(
     follow_up_dataframe,
-    baseline_type="roving",
-    opt_increase_threshold=5.5,
-    opt_larger_minimal_increase_from_0=True,
-    opt_minimal_distance_time=0,
-    opt_minimal_distance_type="reference",
-    opt_minimal_distance_backtrack_monotonic_decrease=True,
-    opt_require_confirmation=False,
-    opt_confirmation_time=-1,
-    opt_confirmation_type="minimum",
-    opt_confirmation_included_values="all",
+    options_dictionary,
 ):
-    return cached.follow_ups_to_annoated_progression(
+    return cached.follow_ups_to_annotated_progression(
         follow_up_dataframe=follow_up_dataframe,
-        baseline_type=baseline_type,
-        opt_increase_threshold=opt_increase_threshold,
-        opt_larger_minimal_increase_from_0=opt_larger_minimal_increase_from_0,
-        opt_minimal_distance_time=opt_minimal_distance_time,
-        opt_minimal_distance_type=opt_minimal_distance_type,
-        opt_minimal_distance_backtrack_monotonic_decrease=opt_minimal_distance_backtrack_monotonic_decrease,
-        opt_require_confirmation=opt_require_confirmation,
-        opt_confirmation_time=opt_confirmation_time,
-        opt_confirmation_type=opt_confirmation_type,
-        opt_confirmation_included_values=opt_confirmation_included_values,
+        options_dictionary=options_dictionary,
     )
 
 
@@ -199,22 +181,7 @@ if __name__ == "__main__":
 
             annotated_example_follow_up_df = cache_annotate_progression_for_cohort(
                 follow_up_dataframe=edited_example_follow_up_df,
-                baseline_type=options["baseline_type"],
-                opt_increase_threshold=options["opt_increase_threshold"],
-                opt_larger_minimal_increase_from_0=options[
-                    "opt_larger_minimal_increase_from_0"
-                ],
-                opt_minimal_distance_time=options["opt_minimal_distance_time"],
-                opt_minimal_distance_type=options["opt_minimal_distance_type"],
-                opt_minimal_distance_backtrack_monotonic_decrease=options[
-                    "opt_minimal_distance_backtrack_monotonic_decrease"
-                ],
-                opt_require_confirmation=options["opt_require_confirmation"],
-                opt_confirmation_time=options["opt_confirmation_time"],
-                opt_confirmation_type=options["opt_confirmation_type"],
-                opt_confirmation_included_values=options[
-                    "opt_confirmation_included_values"
-                ],
+                options_dictionary=options,
             )
 
         with plot_column:

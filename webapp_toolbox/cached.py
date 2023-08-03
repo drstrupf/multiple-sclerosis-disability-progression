@@ -7,18 +7,9 @@ from definitions import baselines, progression
 from evaluation import survival, cohort
 
 
-def follow_ups_to_annoated_progression(
+def follow_ups_to_annotated_progression(
     follow_up_dataframe,
-    baseline_type,
-    opt_increase_threshold,
-    opt_larger_minimal_increase_from_0,
-    opt_minimal_distance_time,
-    opt_minimal_distance_type,
-    opt_minimal_distance_backtrack_monotonic_decrease,
-    opt_require_confirmation,
-    opt_confirmation_time,
-    opt_confirmation_type,
-    opt_confirmation_included_values,
+    options_dictionary,
     id_column_name="follow_up_id",
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
@@ -31,6 +22,24 @@ def follow_ups_to_annoated_progression(
     """
     # Some args are only internal, so set them here instead of passing them
     reference_score_column_name = "reference_edss_score"
+
+    # Options from frontend.dynamic_progression_option_input_element()
+    baseline_type=options_dictionary["baseline_type"]
+    opt_increase_threshold=options_dictionary["opt_increase_threshold"]
+    opt_larger_minimal_increase_from_0=options_dictionary[
+        "opt_larger_minimal_increase_from_0"
+    ]
+    opt_minimal_distance_time=options_dictionary["opt_minimal_distance_time"]
+    opt_minimal_distance_type=options_dictionary["opt_minimal_distance_type"]
+    opt_minimal_distance_backtrack_monotonic_decrease=options_dictionary[
+        "opt_minimal_distance_backtrack_monotonic_decrease"
+    ]
+    opt_require_confirmation=options_dictionary["opt_require_confirmation"]
+    opt_confirmation_time=options_dictionary["opt_confirmation_time"]
+    opt_confirmation_type=options_dictionary["opt_confirmation_type"]
+    opt_confirmation_included_values=options_dictionary[
+        "opt_confirmation_included_values"
+    ]
 
     # Annotate the baseline for each follow up
     follow_ups_with_baseline = cohort.annotate_baseline_cohort_level(
