@@ -58,13 +58,6 @@ def cache_get_lifelines_input_for_cohort(
     opt_confirmation_time=-1,
     opt_confirmation_type="minimum",
     opt_confirmation_included_values="all",
-    id_column_name="follow_up_id",
-    edss_score_column_name="edss_score",
-    time_column_name="days_after_baseline",
-    additional_columns_to_drop=[],
-    global_censoring=None,
-    duration_name="duration",
-    observed_name="observed",
 ):
     return cached.follow_ups_to_lifelines_input(
         follow_up_dataframe=follow_up_dataframe,
@@ -78,13 +71,6 @@ def cache_get_lifelines_input_for_cohort(
         opt_confirmation_time=opt_confirmation_time,
         opt_confirmation_type=opt_confirmation_type,
         opt_confirmation_included_values=opt_confirmation_included_values,
-        id_column_name=id_column_name,
-        edss_score_column_name=edss_score_column_name,
-        time_column_name=time_column_name,
-        additional_columns_to_drop=additional_columns_to_drop,
-        global_censoring=global_censoring,
-        duration_name=duration_name,
-        observed_name=observed_name,
     )
 
 
