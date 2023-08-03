@@ -14,7 +14,6 @@ def plot_single_annotated_followup(
     annotated_example_follow_up_df,
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
-    reference_score_column_name="reference_edss_score",
     first_progression_flag_column_name="is_first_progression",
     figsize=(12, 8),
 ):

@@ -147,10 +147,6 @@ if __name__ == "__main__":
             edited_example_follow_up_df = frontend.example_input_dataframe_editor(
                 follow_up_dataframe=example_follow_up_df,
                 element_base_key="example_follow_up_editor_key",
-                edss_score_column_name="edss_score",
-                time_column_name="days_after_baseline",
-                id_column_name="follow_up_id",
-                display_id_column=False,
             )
 
         with option_selection_column:
@@ -175,10 +171,6 @@ if __name__ == "__main__":
                 annotated_example_follow_up_df=annotated_example_follow_up_df[
                     annotated_example_follow_up_df["follow_up_id"] == 0
                 ],
-                edss_score_column_name="edss_score",
-                time_column_name="days_after_baseline",
-                reference_score_column_name="reference_edss_score",
-                first_progression_flag_column_name="is_first_progression",
                 figsize=(12, 8),
             )
 
@@ -213,25 +205,11 @@ if __name__ == "__main__":
                 element_base_key="example_cohort_options_form_contents_def_1",
                 default_baseline="fixed",
             )
-            sample_follow_ups_time_to_progression_1 = cache_get_lifelines_input_for_cohort(
-                follow_up_dataframe=sample_follow_ups,
-                options_dictionary=options_1,
-                # baseline_type=options_1["baseline_type"],
-                # opt_increase_threshold=options_1["opt_increase_threshold"],
-                # opt_larger_minimal_increase_from_0=options_1[
-                #    "opt_larger_minimal_increase_from_0"
-                # ],
-                # opt_minimal_distance_time=options_1["opt_minimal_distance_time"],
-                # opt_minimal_distance_type=options_1["opt_minimal_distance_type"],
-                # opt_minimal_distance_backtrack_monotonic_decrease=options_1[
-                #    "opt_minimal_distance_backtrack_monotonic_decrease"
-                # ],
-                # opt_require_confirmation=options_1["opt_require_confirmation"],
-                # opt_confirmation_time=options_1["opt_confirmation_time"],
-                # opt_confirmation_type=options_1["opt_confirmation_type"],
-                # opt_confirmation_included_values=options_1[
-                #    "opt_confirmation_included_values"
-                # ],
+            sample_follow_ups_time_to_progression_1 = (
+                cache_get_lifelines_input_for_cohort(
+                    follow_up_dataframe=sample_follow_ups,
+                    options_dictionary=options_1,
+                )
             )
 
         with second_option_selection_column:
@@ -241,25 +219,11 @@ if __name__ == "__main__":
                 element_base_key="example_cohort_options_form_contents_def_2",
                 default_baseline="roving",
             )
-            sample_follow_ups_time_to_progression_2 = cache_get_lifelines_input_for_cohort(
-                follow_up_dataframe=sample_follow_ups,
-                options_dictionary=options_2,
-                # baseline_type=options_2["baseline_type"],
-                # opt_increase_threshold=options_2["opt_increase_threshold"],
-                # opt_larger_minimal_increase_from_0=options_2[
-                #    "opt_larger_minimal_increase_from_0"
-                # ],
-                # opt_minimal_distance_time=options_2["opt_minimal_distance_time"],
-                # opt_minimal_distance_type=options_2["opt_minimal_distance_type"],
-                # opt_minimal_distance_backtrack_monotonic_decrease=options_2[
-                #    "opt_minimal_distance_backtrack_monotonic_decrease"
-                # ],
-                # opt_require_confirmation=options_2["opt_require_confirmation"],
-                # opt_confirmation_time=options_2["opt_confirmation_time"],
-                # opt_confirmation_type=options_2["opt_confirmation_type"],
-                # opt_confirmation_included_values=options_2[
-                #    "opt_confirmation_included_values"
-                # ],
+            sample_follow_ups_time_to_progression_2 = (
+                cache_get_lifelines_input_for_cohort(
+                    follow_up_dataframe=sample_follow_ups,
+                    options_dictionary=options_2,
+                )
             )
 
         with result_column:
