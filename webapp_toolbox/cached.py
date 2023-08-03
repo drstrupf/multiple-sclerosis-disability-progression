@@ -23,15 +23,26 @@ def follow_ups_to_lifelines_input(
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
     additional_columns_to_drop=[],
-    progression_event_found_column_name="progression",
-    time_to_progression_column_name="time_to_first_progression",
-    reference_for_progression_column_name="reference_for_progression",
-    progression_score_column_name="progression_score",
-    length_of_follow_up_column_name="length_of_follow_up",
     global_censoring=None,
     duration_name="duration",
     observed_name="observed",
 ):
+    """Get input for lifelines Kaplan-Meier fitter from a bunch of follow-ups.
+    
+    Eventually, lifelines only requires the 'duration' and 'observed' columns,
+    so the names of intermediate step columns don't matter and are thus not
+    passed as arguments.
+
+    See the docs of the functions called within for arg description.
+    
+    """
+    # Some args are only internal, so set them here instead of passing them
+    progression_event_found_column_name="progression"
+    time_to_progression_column_name="time_to_first_progression"
+    reference_for_progression_column_name="reference_for_progression"
+    progression_score_column_name="progression_score"
+    length_of_follow_up_column_name="length_of_follow_up"
+
     # Annotate the baseline for each follow up
     follow_ups_with_baseline = cohort.annotate_baseline_cohort_level(
         follow_up_dataframe=follow_up_dataframe,
