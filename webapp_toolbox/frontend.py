@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
-from definitions import baselines, progression
 
 
 def baseline_definition_dropdown(key, default_baseline="fixed"):
@@ -314,103 +313,6 @@ def dynamic_progression_option_input_element(element_base_key, default_baseline)
         "opt_confirmation_type": option_confirmation_type,
         "opt_confirmation_included_values": option_confirmation_included_values,
     }
-
-
-def annotate_first_progression_to_follow_up_dynamic_element(
-    follow_up_dataframe,
-    element_base_key,
-    default_baseline="fixed",
-    id_column_name="follow_up_id",
-    edss_score_column_name="edss_score",
-    time_column_name="days_after_baseline",
-    reference_score_column_name="reference_edss_score",
-    first_progression_flag_column_name="is_first_progression",
-):
-    """Creates a series of input widgets to annotate the first
-    progression event to a follow-up dataframe, returns annotated
-    dataframe.
-
-    Options are displayed dynamically, depending on chosen values.
-
-    Args:
-        - follow_up_dataframe: a follow-up with at least a score and a
-          timestamp column, strictly monotonically increasing in time.
-
-    Returns:
-        - df: a copy of the input dataframe with added reference, reference
-          timestamp and flag for first progression.
-
-    """
-    # Get definition options input
-    option_baseline_type = baseline_definition_dropdown(
-        key=element_base_key + "_option_baseline_type",
-        default_baseline=default_baseline,
-    )
-    option_minimal_increase_threshold = minimum_required_increase_threshold_dropdown(
-        key=element_base_key + "_option_minimal_increase_threshold"
-    )
-    option_larger_increase_from_0 = larger_increase_from_0_dropdown(
-        key=element_base_key + "_option_larger_increase_from_0"
-    )
-    # Annotate the baseline for each follow up
-    follow_up_dataframes_with_baseline_list = [
-        baselines.annotate_baseline(
-            follow_up_dataframe=follow_up_dataframe[
-                follow_up_dataframe[id_column_name] == follow_up_id
-            ],
-            baseline_type=option_baseline_type,
-            edss_score_column_name=edss_score_column_name,
-            time_column_name=time_column_name,
-            reference_score_column_name=reference_score_column_name,
-        )
-        for follow_up_id in follow_up_dataframe[id_column_name].drop_duplicates()
-    ]
-    follow_up_dataframes_with_baseline = pd.concat(
-        follow_up_dataframes_with_baseline_list
-    )
-
-    (
-        option_minimal_distance_type,
-        option_minimal_distance_time,
-        option_minimal_distance_backtrack_monotonic_decrease,
-    ) = minimal_distance_requirement_dropdown(
-        key=element_base_key + "_option_minimal_distance"
-    )
-
-    (
-        option_require_confirmation,
-        option_confirmation_time,
-        option_confirmation_included_values,
-        option_confirmation_type,
-    ) = confirmation_requirement_dropdown(key=element_base_key + "_option_confirmation")
-
-    # Annotate the first progression event for each follow up
-    follow_up_dataframes_with_baseline_and_progression_list = [
-        progression.annotate_first_progression(
-            follow_up_dataframe=follow_up_dataframes_with_baseline[
-                follow_up_dataframes_with_baseline[id_column_name] == follow_up_id
-            ],
-            edss_score_column_name=edss_score_column_name,
-            time_column_name=time_column_name,
-            opt_increase_threshold=option_minimal_increase_threshold,
-            opt_larger_minimal_increase_from_0=option_larger_increase_from_0,
-            opt_minimal_distance_time=option_minimal_distance_time,
-            opt_minimal_distance_type=option_minimal_distance_type,
-            opt_minimal_distance_backtrack_monotonic_decrease=option_minimal_distance_backtrack_monotonic_decrease,
-            opt_require_confirmation=option_require_confirmation,
-            opt_confirmation_time=option_confirmation_time,
-            opt_confirmation_type=option_confirmation_type,
-            opt_confirmation_included_values=option_confirmation_included_values,
-            reference_score_column_name=reference_score_column_name,
-            first_progression_flag_column_name=first_progression_flag_column_name,
-        )
-        for follow_up_id in follow_up_dataframe[id_column_name].drop_duplicates()
-    ]
-    follow_up_dataframes_with_baseline_and_progression = pd.concat(
-        follow_up_dataframes_with_baseline_and_progression_list
-    )
-
-    return follow_up_dataframes_with_baseline_and_progression
 
 
 def example_input_dataframe_editor(
