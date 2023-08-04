@@ -160,6 +160,7 @@ def get_time_to_first_progression_cohort_level(
     additional_columns_to_drop=[],
     progression_event_found_column_name="progression",
     time_to_progression_column_name="time_to_first_progression",
+    time_to_last_before_progression_column_name="time_to_last_before_progression",
     reference_for_progression_column_name="reference_for_progression",
     progression_score_column_name="progression_score",
     length_of_follow_up_column_name="length_of_follow_up",
@@ -179,6 +180,7 @@ def get_time_to_first_progression_cohort_level(
         - additional_columns_to_drop: a list of columns to drop in the result
         - progression_event_found_column_name: name of the new colum to flag follow-ups with progression
         - time_to_progression_column_name: name of the new column with time to progression
+        - time_to_last_before_progression_column_name: name of the new column with time to last assessment before progression
         - reference_for_progression_column_name: name of the new column with the progression reference score
         - progression_score_column_name: name of the new column with the progression score
         - length_of_follow_up_column_name: name of the new column with the length of follow-up
@@ -188,6 +190,7 @@ def get_time_to_first_progression_cohort_level(
           constant columns (e.g. the follow-up ID):
             - progression_event_found_column_name: bool, whether a progression event was found
             - time_to_progression_column_name: time to first progression event
+            - time_to_last_before_progression_column_name: time to last assessment before progression
             - reference_for_progression_column_name: progression was detected w.r.t. this reference
             - progression_score_column_name: the score at the assessment that counts as progression
             - length_of_follow_up_column_name: length of the follow-up period.
@@ -205,6 +208,7 @@ def get_time_to_first_progression_cohort_level(
             additional_columns_to_drop=additional_columns_to_drop,
             progression_event_found_column_name=progression_event_found_column_name,
             time_to_progression_column_name=time_to_progression_column_name,
+            time_to_last_before_progression_column_name=time_to_last_before_progression_column_name,
             reference_for_progression_column_name=reference_for_progression_column_name,
             progression_score_column_name=progression_score_column_name,
             length_of_follow_up_column_name=length_of_follow_up_column_name,
@@ -219,40 +223,82 @@ def get_time_to_first_progression_cohort_level(
 
 def get_lifelines_input_data_cohort_level(
     times_to_first_progression_dataframe,
-    progression_event_found_column_name="progression",
     time_to_progression_column_name="time_to_first_progression",
     length_of_follow_up_column_name="length_of_follow_up",
-    global_censoring=None,
+    global_censoring=np.inf,
     duration_name="duration",
     observed_name="observed",
 ):
     """Add lifelines-compatible 'duration' and 'observed' columns.
-    
+
     Adds two columns to a dataframe where progression yes/no, time
     to progression, and length of follow-up are specified.
 
     Args:
         - times_to_first_progression_dataframe: a dataframe with times to progression
-        - progression_event_found_column_name: the name of the column with the flag 'progression found'
         - time_to_progression_column_name: the column with time to progression
         - length_of_follow_up_column_name: the column with the length of follow-up
-        - global_censoring: impose a global cutoff, default is None
+        - global_censoring: impose a global cutoff, default is np.inf
         - duration_name: name of the dict entry for duration
         - observed_name: name of the dict entry for observed
 
     Returns:
-        - dict: a dictionary with 'duration' and 'observed'
+        - df: the input dataframe with additional columns for 'duration' and 'observed'
 
     """
     return_df = times_to_first_progression_dataframe.copy()
     return_df[[duration_name, observed_name]] = return_df.apply(
         lambda row: survival.get_lifelines_input_data(
-            first_progression_flag=row[progression_event_found_column_name],
             time_to_first_progression=row[time_to_progression_column_name],
             length_of_follow_up=row[length_of_follow_up_column_name],
             global_censoring=global_censoring,
             duration_name=duration_name,
             observed_name=observed_name,
+        ),
+        axis=1,
+        result_type="expand",
+    )
+    return return_df
+
+
+def get_lifelines_input_data_interval_censored_cohort_level(
+    times_to_first_progression_dataframe,
+    time_to_progression_column_name="time_to_first_progression",
+    time_to_last_before_progression_column_name="time_to_last_before_progression",
+    length_of_follow_up_column_name="length_of_follow_up",
+    global_censoring=np.inf,
+    lower_bound_name="lower_bound",
+    upper_bound_name="upper_bound",
+):
+    """Add lifelines-compatible 'lower bound' and 'upper bound' columns.
+
+    Adds two columns to a dataframe with lower and upper bound for time
+    to progression event.
+
+    Args:
+        - times_to_first_progression_dataframe: a dataframe with times to progression
+        - time_to_progression_column_name: the column with time to progression
+        - time_to_last_before_progression_column_name: name of the new column with time to last assessment before progression
+        - length_of_follow_up_column_name: the column with the length of follow-up
+        - global_censoring: impose a global cutoff, default is np.inf
+        - lower_bound_name: name of the dict entry for duration
+        - upper_bound_name: name of the dict entry for observed
+
+    Returns:
+        - df: the input dataframe with additional columns for lower and upper bound
+
+    """
+    return_df = times_to_first_progression_dataframe.copy()
+    return_df[[lower_bound_name, upper_bound_name]] = return_df.apply(
+        lambda row: survival.get_lifelines_input_data_interval_censored(
+            time_to_first_progression=row[time_to_progression_column_name],
+            time_to_last_before_progression=row[
+                time_to_last_before_progression_column_name
+            ],
+            length_of_follow_up=row[length_of_follow_up_column_name],
+            global_censoring=global_censoring,
+            lower_bound_name=lower_bound_name,
+            upper_bound_name=upper_bound_name,
         ),
         axis=1,
         result_type="expand",
