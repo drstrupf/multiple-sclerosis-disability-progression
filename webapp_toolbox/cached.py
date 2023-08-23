@@ -78,7 +78,7 @@ def follow_ups_to_lifelines_input(
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
     additional_columns_to_drop=[],
-    global_censoring=None,
+    global_censoring=np.inf,
     duration_name="duration",
     observed_name="observed",
 ):
@@ -96,6 +96,7 @@ def follow_ups_to_lifelines_input(
     first_progression_flag_column_name = "is_first_progression"
     progression_event_found_column_name = "progression"
     time_to_progression_column_name = "time_to_first_progression"
+    time_to_last_before_progression_column_name = "time_to_last_before_progression"
     reference_for_progression_column_name = "reference_for_progression"
     progression_score_column_name = "progression_score"
     length_of_follow_up_column_name = "length_of_follow_up"
@@ -156,6 +157,7 @@ def follow_ups_to_lifelines_input(
         additional_columns_to_drop=additional_columns_to_drop,
         progression_event_found_column_name=progression_event_found_column_name,
         time_to_progression_column_name=time_to_progression_column_name,
+        time_to_last_before_progression_column_name=time_to_last_before_progression_column_name,
         reference_for_progression_column_name=reference_for_progression_column_name,
         progression_score_column_name=progression_score_column_name,
         length_of_follow_up_column_name=length_of_follow_up_column_name,
@@ -164,7 +166,6 @@ def follow_ups_to_lifelines_input(
     follow_ups_time_to_progression_for_lifelines = (
         cohort.get_lifelines_input_data_cohort_level(
             times_to_first_progression_dataframe=follow_ups_time_to_progression,
-            progression_event_found_column_name=progression_event_found_column_name,
             time_to_progression_column_name=time_to_progression_column_name,
             length_of_follow_up_column_name=length_of_follow_up_column_name,
             global_censoring=global_censoring,
