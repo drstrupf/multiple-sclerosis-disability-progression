@@ -122,7 +122,7 @@ def annotate_first_progression(
 ):
     """Flag assessments that qualify as first progression.
 
-    This function returns a copy of the inpt dataframe with
+    This function returns a copy of the input dataframe with
     one additional column that flags the first progression
     event (bool, i.e. 'True' if progression, else 'False').
 
@@ -225,10 +225,10 @@ def annotate_first_progression(
         # Keep track of time for minimal distance condition.
         # NOTE: We need a helper function if we want to adjust
         # for monotonic decrease when using a roving reference.
-        # This is a tricky one, we have to go backwards until
-        # we bump into a score in reference to which the current
-        # score wouldn't be a progress anymore. Until then, we
-        # adjust the timestamp of the rebaseline backwards...
+        # This is a tricky one, we have to go backwards from the
+        # reference until we find a score in reference to which
+        # the current score wouldn't be a progress anymore. Until
+        # then, we adjust the timestamp of the rebaseline backwards...
         # Idea: we go back step by step and check if we are still low
         # enough for the current EDSS to be a progression and stop as
         # soon this condition is not fulfilled anymore.
@@ -238,10 +238,23 @@ def annotate_first_progression(
                 .sort_values(time_column_name, ascending=False)
                 .copy()
             )
+            # We need the timestamp of the current reference
+            reference_time = row[reference_score_column_name + "_" + time_column_name]
+
+            # We don't care about what happens between reference and progression,
+            # we just need to know whether the reference was preceded by a monotonic
+            # decrease that might be relevant for the minimum distance.
+            previous_scores_reverse_before_reference = previous_scores_reverse[
+                previous_scores_reverse[time_column_name] < reference_time
+            ].copy()
+
+            # Our current reference time stamp is that of the actual reference.
             timestamp_monotonic_rebase = row[
                 reference_score_column_name + "_" + time_column_name
             ]
-            for _, subrow in previous_scores_reverse.iterrows():
+
+            #  Now we loop backwards over the scores before the reference.
+            for _, subrow in previous_scores_reverse_before_reference.iterrows():
                 if is_above_progress_threshold(
                     current_edss=current_edss,
                     reference_edss=subrow[edss_score_column_name],
@@ -251,15 +264,8 @@ def annotate_first_progression(
                     timestamp_monotonic_rebase = subrow[time_column_name]
                 else:
                     break
-            # Caution: The monotonic rebase can screw up things when applied
-            # to fixed baseline; make sure to take the minimum... Example: a
-            # fixed baseline of 6.0, then 6.5, then 6.0, 6.0, 6.5 again: if
-            # the two 6.0 before the last 6.5 are too close, the min dist
-            # condition would not be fulfilled!
-            return min(
-                timestamp_monotonic_rebase,
-                row[reference_score_column_name + "_" + time_column_name],
-            )
+
+            return timestamp_monotonic_rebase
 
         current_timestamp = row[time_column_name]
         previous_timestamp = follow_up_dataframe.loc[i - 1][time_column_name]
