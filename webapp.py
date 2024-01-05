@@ -111,18 +111,6 @@ if __name__ == "__main__":
         )
         st.markdown(r"TBD: corresponding authors, citation, license...")
 
-    # Add some hints/FAQ
-    with st.expander("References", expanded=False):
-        st.markdown(
-            r"""[1] Kappos L, Butzkueven H, Wiendl H, Spelman T, Pellegrini F,
-            Chen Y, Dong Q, Koendgen H, Belachew S, Trojano M; Tysabri® 
-            Observational Program (TOP) Investigators. **Greater sensitivity 
-            to multiple sclerosis disability worsening and progression 
-            events using a roving versus a fixed reference value in a 
-            prospective cohort study**. Multiple Sclerosis Journal
-            24.7 (2017), pp. 963-973. doi: 10.1177/1352458517709619"""
-        )
-
     st.write("Last cache refresh: " + show_clock_last_cache_refresh())
 
     st.write("## Explore definition options")
