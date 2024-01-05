@@ -88,7 +88,7 @@ if __name__ == "__main__":
     # Setup general app layout
     st.title("Disability Progression in Multiple Sclerosis from EDSS Scores")
     st.markdown(
-        "A little playground to explore the myriads of possible definitions of *first disability progression*."
+        "A little playground to explore the myriads of possible definitions of *first disability progression* as implemented in [multiple-sclerosis-disability-progression](https://github.com/drstrupf/multiple-sclerosis-disability-progression)."
     )
 
     # More detailed author information
@@ -114,13 +114,7 @@ if __name__ == "__main__":
     # Add some hints/FAQ
     with st.expander("References", expanded=False):
         st.markdown(
-            r"""[1] Bsteh G, Marti S, Hegen H, Krajnc N, Traxler G, Hammer H,
-            Leutmezer F, Rommer P, Di Pauli F, Chan A, Berger T, Hoepner R.
-            **Disability progression is a question of definition - a methodological
-            reappraisal by example of primary progressive multiple sclerosis**. TBD."""
-        )
-        st.markdown(
-            r"""[2] Kappos L, Butzkueven H, Wiendl H, Spelman T, Pellegrini F,
+            r"""[1] Kappos L, Butzkueven H, Wiendl H, Spelman T, Pellegrini F,
             Chen Y, Dong Q, Koendgen H, Belachew S, Trojano M; Tysabri® 
             Observational Program (TOP) Investigators. **Greater sensitivity 
             to multiple sclerosis disability worsening and progression 
