@@ -22,6 +22,10 @@ Gabriel Bsteh<sup>1, 2</sup>, Stefanie Marti<sup>3</sup>, Robert Hoepner<sup>3</
 <sup>2</sup>Comprehensive Center for Clinical Neurosciences and Mental Health, Medical University of Vienna, Vienna, Austria\
 <sup>3</sup>Department of Neurology, Inselspital, Bern University Hospital and University of Bern, Switzerland
 
+**Interested in using our code?** Please contact the authors. 
+* [Gabriel Bsteh](https://www.meduniwien.ac.at/web/forschung/researcher-profiles/researcher-profiles/detail/?res=gabriel_bsteh&cHash=0896fd3f091c51c7c5c37b55b83d8def)
+* [Robert Hoepner](http://www.neurologie.insel.ch/de/ueber-uns/teams/details/person/detail/robert-hoepner)
+
 ## References
 
 [1] Kappos L, Butzkueven H, Wiendl H, et al. **Greater sensitivity to multiple sclerosis disability 
