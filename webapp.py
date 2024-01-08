@@ -109,7 +109,45 @@ if __name__ == "__main__":
             r"""Found a **bug**? Do you have a **feature request**? We would appreciate your feedback!
             Please open an issue on our [GitHub project page](https://github.com/drstrupf/multiple-sclerosis-disability-progression)."""
         )
-        st.markdown(r"TBD: corresponding authors, citation, license...")
+
+    # Describe options (briefly)
+    with st.expander("Short description of options", expanded=False):
+        st.markdown("#### Baselines")
+        st.markdown(
+            "* When assessing disability progression with respect to a **fixed baseline**, the reference EDSS "
+            + "score is the score measured at the first assessment."
+            + "\n* When assessing disability progression with respect to a **roving baseline**, the reference EDSS "
+            + "score is the lowest previously measured score."
+        )
+        st.markdown("#### Progression")
+        st.markdown(
+            "##### Minimal increase\n "
+            + "The minimal increase can be constant, or depending on the reference. A special case is requiring "
+            + "a minimal increase of 1.5 if the reference EDSS is 0."
+        )
+        st.markdown(
+            "##### Minimal distance requirement\n "
+            + "This is an optional requirement for a minimal distance between the progression and a) the previous assessment or "
+            + "b) the reference assessment.\n "
+            + "\nFor *minimal distance to reference*: optionally, adjust for a monotonic decrease in EDSS before the reference "
+            + "such that the minimal distance refers to the first EDSS in a monotonic decrease that is low enough for being a "
+            + "progression reference. "
+            + "*Example*: consider a series of scores [5.0, 4.5, 4.0, 3.5, 5.5], and a minimal increase of + 1.0. "
+            + "In this case, the roving reference for the last score 5.5 would be 3.5, but the relevant timestamp for "
+            + "the minimal distance condition would be that of the second assessment, since 5.5 is a progression with "
+            + "respect to 4.5."
+        )
+        decrease_correction_caption = "Correction for monotonic decrease."
+        st.image("images/example_rollback.png", caption=decrease_correction_caption)
+        st.markdown(
+            "##### Confirmation requirement\n "
+            + "\nFor a progression to be *confirmed* at a certain number of weeks, either a) all values within "
+            + "this timespan plus the first one after or b) only the first value after have to fulfill the "
+            + "confirmation condition. A third option is requiring *sustained* progression, i.e. requiring that "
+            + "all subsequent scores have to fulfill the confirmation condition.\n"
+            + "\n*Confirmation condition*: Values have to be a) equal or larger than the progression EDSS, or "
+            + "b) equal or larger than the reference plus the minimum required increase.\n"
+        )
 
     st.write("Last cache refresh: " + show_clock_last_cache_refresh())
 
