@@ -107,7 +107,9 @@ if __name__ == "__main__":
         st.markdown("### Contact information")
         st.markdown(
             r"""Found a **bug**? Do you have a **feature request**? We would appreciate your feedback!
-            Please open an issue on our [GitHub project page](https://github.com/drstrupf/multiple-sclerosis-disability-progression)."""
+            Please **open an issue** on our [GitHub project page](https://github.com/drstrupf/multiple-sclerosis-disability-progression) or
+            **contact the authors** ([Gabriel Bsteh](https://www.meduniwien.ac.at/web/forschung/researcher-profiles/researcher-profiles/detail/?res=gabriel_bsteh&cHash=0896fd3f091c51c7c5c37b55b83d8def),
+            [Robert Hoepner](http://www.neurologie.insel.ch/de/ueber-uns/teams/details/person/detail/robert-hoepner))."""
         )
 
     # Describe options (briefly)
