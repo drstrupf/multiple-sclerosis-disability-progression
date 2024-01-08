@@ -116,7 +116,7 @@ if __name__ == "__main__":
         st.markdown(
             "* When assessing disability progression with respect to a **fixed baseline**, the reference EDSS "
             + "score is the score measured at the first assessment."
-            + "\n* When assessing disability progression with respect to a **roving baseline**, the reference EDSS "
+            + "\n* When assessing disability progression with respect to a **roving reference**, the reference EDSS "
             + "score is the lowest previously measured score."
         )
         st.markdown("#### Progression")
