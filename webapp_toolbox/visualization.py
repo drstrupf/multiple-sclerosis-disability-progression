@@ -134,17 +134,17 @@ def plot_single_kaplan_meier(
     )
 
     if median_time_to_event >= 100_000:
-        median_time_to_event_str = r"$\infty$"
+        median_time_to_event_str = r"n/a"
     else:
         median_time_to_event_str = str(int(np.ceil(median_time_to_event)))
     if median_time_to_event_ci_lower >= 100_000:
-        median_time_to_event_ci_lower_str = r"$\infty$"
+        median_time_to_event_ci_lower_str = r"n/a"
     else:
         median_time_to_event_ci_lower_str = str(
             int(np.ceil(median_time_to_event_ci_lower))
         )
     if median_time_to_event_ci_upper >= 100_000:
-        median_time_to_event_ci_upper_str = r"$\infty$"
+        median_time_to_event_ci_upper_str = r"n/a"
     else:
         median_time_to_event_ci_upper_str = str(
             int(np.ceil(median_time_to_event_ci_upper))
@@ -263,33 +263,33 @@ def plot_kaplan_meier_comparison(
     )
 
     if median_time_to_event_1 >= 100_000:
-        median_time_to_event_str_1 = r"$\infty$"
+        median_time_to_event_str_1 = r"n/a"
     else:
         median_time_to_event_str_1 = str(int(np.ceil(median_time_to_event_1)))
     if median_time_to_event_ci_lower_1 >= 100_000:
-        median_time_to_event_ci_lower_str_1 = r"$\infty$"
+        median_time_to_event_ci_lower_str_1 = r"n/a"
     else:
         median_time_to_event_ci_lower_str_1 = str(
             int(np.ceil(median_time_to_event_ci_lower_1))
         )
     if median_time_to_event_ci_upper_1 >= 100_000:
-        median_time_to_event_ci_upper_str_1 = r"$\infty$"
+        median_time_to_event_ci_upper_str_1 = r"n/a"
     else:
         median_time_to_event_ci_upper_str_1 = str(
             int(np.ceil(median_time_to_event_ci_upper_1))
         )
     if median_time_to_event_2 >= 100_000:
-        median_time_to_event_str_2 = r"$\infty$"
+        median_time_to_event_str_2 = r"n/a"
     else:
         median_time_to_event_str_2 = str(int(np.ceil(median_time_to_event_2)))
     if median_time_to_event_ci_lower_2 >= 200_000:
-        median_time_to_event_ci_lower_str_2 = r"$\infty$"
+        median_time_to_event_ci_lower_str_2 = r"n/a"
     else:
         median_time_to_event_ci_lower_str_2 = str(
             int(np.ceil(median_time_to_event_ci_lower_2))
         )
     if median_time_to_event_ci_upper_2 >= 100_000:
-        median_time_to_event_ci_upper_str_2 = r"$\infty$"
+        median_time_to_event_ci_upper_str_2 = r"n/a"
     else:
         median_time_to_event_ci_upper_str_2 = str(
             int(np.ceil(median_time_to_event_ci_upper_2))
