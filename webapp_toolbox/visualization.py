@@ -338,7 +338,7 @@ def plot_kaplan_meier_comparison(
         "Event rate definition 1: "
         + str(np.round(event_rate_1 * 100, 2))
         + "%"
-        + "Event rate definition 2: "
+        + ", event rate definition 2: "
         + str(np.round(event_rate_2 * 100, 2))
         + "%"
         + "\nMedian time to first progression (95%CI) definition 1: "
