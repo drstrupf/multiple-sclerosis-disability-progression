@@ -22,8 +22,8 @@ sns.set_style("whitegrid", {"grid.color": "gainsboro"})
 
 from definitions import baselines, progression
 from evaluation import survival
-from webapp_toolbox import frontend, cached #visualization,
-from tools import visualization 
+from webapp_toolbox import frontend, cached  # visualization,
+from tools import visualization
 
 # Wide layout
 st.set_page_config(layout="wide")
@@ -38,18 +38,19 @@ def show_clock_last_cache_refresh():
         + str(datetime.now(timezone.utc).astimezone().tzinfo)
     )
 
+
 ## Load and cache sampled cohort data
-#@st.cache_data()
-#def load_cache_sampled_data():
+# @st.cache_data()
+# def load_cache_sampled_data():
 #    return pd.read_excel("data/examples/sampled_follow_ups.xlsx")
 #
 #
 ## Function to annotate progression and cache the result
-#@st.cache_data()
-#def cache_annotate_progression_for_cohort(
+# @st.cache_data()
+# def cache_annotate_progression_for_cohort(
 #    follow_up_dataframe,
 #    options_dictionary,
-#):
+# ):
 #    return cached.follow_ups_to_annotated_progression(
 #        follow_up_dataframe=follow_up_dataframe,
 #        options_dictionary=options_dictionary,
@@ -57,11 +58,11 @@ def show_clock_last_cache_refresh():
 #
 #
 ## Function to compute time to progression and cache the result
-#@st.cache_data()
-#def cache_get_lifelines_input_for_cohort(
+# @st.cache_data()
+# def cache_get_lifelines_input_for_cohort(
 #    follow_up_dataframe,
 #    options_dictionary,
-#):
+# ):
 #    return cached.follow_ups_to_lifelines_input(
 #        follow_up_dataframe=follow_up_dataframe,
 #        options_dictionary=options_dictionary,
@@ -132,7 +133,7 @@ if __name__ == "__main__":
             **contact the authors** ([Gabriel Bsteh](https://www.meduniwien.ac.at/web/forschung/researcher-profiles/researcher-profiles/detail/?res=gabriel_bsteh&cHash=0896fd3f091c51c7c5c37b55b83d8def),
             [Robert Hoepner](http://www.neurologie.insel.ch/de/ueber-uns/teams/details/person/detail/robert-hoepner))."""
         )
-    
+
     # Cite the PPMS paper
     with st.expander("Published works based on our code", expanded=False):
         st.markdown("#### Analysis of a multicentric PPMS cohort")
@@ -196,16 +197,15 @@ if __name__ == "__main__":
         )
         decrease_correction_caption = "Correction for monotonic decrease."
         st.image("images/example_rollback.png", caption=decrease_correction_caption)
-        
 
     st.write("Last cache refresh: " + show_clock_last_cache_refresh())
 
     st.write("## Explore general EDSS progression definition options")
     st.markdown(
-            "This section illustrates how **general progression options** affect the number of "
-            + " events and the times to event. For relapse-related options and their effect on "
-            + " PIRA and RAW rates, go to the next section."
-        )
+        "This section illustrates how **general progression options** affect the number of "
+        + " events and the times to event. For relapse-related options and their effect on "
+        + " PIRA and RAW rates, go to the next section."
+    )
 
     with st.expander(
         "Plot follow-up and annotate progression events for example data",
@@ -241,30 +241,41 @@ if __name__ == "__main__":
                 relapse_timestamps=[],
                 # Options
                 opt_baseline_type=options["opt_baseline_type"],
-                opt_roving_reference_require_confirmation=options["opt_roving_reference_require_confirmation"],
-                opt_roving_reference_confirmation_time=options["opt_roving_reference_confirmation_time"],
+                opt_roving_reference_require_confirmation=options[
+                    "opt_roving_reference_require_confirmation"
+                ],
+                opt_roving_reference_confirmation_time=options[
+                    "opt_roving_reference_confirmation_time"
+                ],
                 opt_max_score_that_requires_plus_1=options["opt_increase_threshold"],
-                opt_larger_increment_from_0=options["opt_larger_minimal_increase_from_0"],
+                opt_larger_increment_from_0=options[
+                    "opt_larger_minimal_increase_from_0"
+                ],
                 opt_minimal_distance_time=options["opt_minimal_distance_time"],
                 opt_minimal_distance_type=options["opt_minimal_distance_type"],
-                opt_minimal_distance_backtrack_decrease=options["opt_minimal_distance_backtrack_decrease"],
+                opt_minimal_distance_backtrack_decrease=options[
+                    "opt_minimal_distance_backtrack_decrease"
+                ],
                 opt_require_confirmation=options["opt_require_confirmation"],
                 opt_confirmation_time=options["opt_confirmation_time"],
                 opt_confirmation_type=options["opt_confirmation_type"],
-                opt_confirmation_included_values=options["opt_confirmation_included_values"],
-                opt_confirmation_sustained_minimal_distance=options["opt_confirmation_sustained_minimal_distance"],
+                opt_confirmation_included_values=options[
+                    "opt_confirmation_included_values"
+                ],
+                opt_confirmation_sustained_minimal_distance=options[
+                    "opt_confirmation_sustained_minimal_distance"
+                ],
                 ax=ax,
-                )
+            )
             fig.tight_layout()
             sns.despine(bottom=True, left=True, right=True, top=True)
             st.pyplot(fig, clear_figure=True)
 
-    
     st.write("## Explore PIRA and RAW definition options")
     st.markdown(
-            "This section illustrates how **relapse-related options** affect the number of "
-            + " events, the times to event, and the event types."
-        )
+        "This section illustrates how **relapse-related options** affect the number of "
+        + " events, the times to event, and the event types."
+    )
 
     with st.expander(
         "Plot follow-up and annotate progression events for example data",
@@ -290,32 +301,51 @@ if __name__ == "__main__":
                 display_rms_options=True,
             )
 
-        
         with plot_column:
-            st.write(
-                "Change definition options to see their influence"
-            )
+            st.write("Change definition options to see their influence")
             fig, ax = plt.subplots(1, 1, figsize=(12, 4))
             visualization.annotate_plot_follow_up(
                 follow_up_dataframe=edited_example_follow_up_df_2,
-                relapse_timestamps=[40, 200, 530,],
+                relapse_timestamps=[
+                    40,
+                    200,
+                    530,
+                ],
                 # Options
                 undefined_progression=options_example_2["undefined_progression"],
                 opt_raw_before_relapse_max_days=30,
                 opt_raw_after_relapse_max_days=30,
                 opt_baseline_type=options_example_2["opt_baseline_type"],
-                opt_roving_reference_require_confirmation=options_example_2["opt_roving_reference_require_confirmation"],
-                opt_roving_reference_confirmation_time=options_example_2["opt_roving_reference_confirmation_time"],
-                opt_max_score_that_requires_plus_1=options_example_2["opt_increase_threshold"],
-                opt_larger_increment_from_0=options_example_2["opt_larger_minimal_increase_from_0"],
-                opt_minimal_distance_time=options_example_2["opt_minimal_distance_time"],
-                opt_minimal_distance_type=options_example_2["opt_minimal_distance_type"],
-                opt_minimal_distance_backtrack_decrease=options_example_2["opt_minimal_distance_backtrack_decrease"],
+                opt_roving_reference_require_confirmation=options_example_2[
+                    "opt_roving_reference_require_confirmation"
+                ],
+                opt_roving_reference_confirmation_time=options_example_2[
+                    "opt_roving_reference_confirmation_time"
+                ],
+                opt_max_score_that_requires_plus_1=options_example_2[
+                    "opt_increase_threshold"
+                ],
+                opt_larger_increment_from_0=options_example_2[
+                    "opt_larger_minimal_increase_from_0"
+                ],
+                opt_minimal_distance_time=options_example_2[
+                    "opt_minimal_distance_time"
+                ],
+                opt_minimal_distance_type=options_example_2[
+                    "opt_minimal_distance_type"
+                ],
+                opt_minimal_distance_backtrack_decrease=options_example_2[
+                    "opt_minimal_distance_backtrack_decrease"
+                ],
                 opt_require_confirmation=options_example_2["opt_require_confirmation"],
                 opt_confirmation_time=options_example_2["opt_confirmation_time"],
                 opt_confirmation_type=options_example_2["opt_confirmation_type"],
-                opt_confirmation_included_values=options_example_2["opt_confirmation_included_values"],
-                opt_confirmation_sustained_minimal_distance=options_example_2["opt_confirmation_sustained_minimal_distance"],
+                opt_confirmation_included_values=options_example_2[
+                    "opt_confirmation_included_values"
+                ],
+                opt_confirmation_sustained_minimal_distance=options_example_2[
+                    "opt_confirmation_sustained_minimal_distance"
+                ],
                 ax=ax,
             )
             fig.tight_layout()
@@ -324,9 +354,9 @@ if __name__ == "__main__":
 
     st.write("## Explore event merging options")
     st.markdown(
-            "This section illustrates how **event merging** affects the number of "
-            + " events, the times to event, and the event types."
-        )
+        "This section illustrates how **event merging** affects the number of "
+        + " events, the times to event, and the event types."
+    )
 
     with st.expander(
         "Plot follow-up and annotate progression events for example data",
@@ -334,12 +364,12 @@ if __name__ == "__main__":
     ):
         st.write("Coming soon...")
 
-    #st.write("## Compare definitions for an example cohort")
+    # st.write("## Compare definitions for an example cohort")
 
-    #with st.expander(
+    # with st.expander(
     #    "Display a Kaplan-Meier graph for two progression definitions for a set of 200 randomly generated follow-ups.",
     #    expanded=True,
-    #):
+    # ):
     #    sample_follow_ups = load_cache_sampled_data()
     #
     #    (

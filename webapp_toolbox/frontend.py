@@ -55,7 +55,11 @@ def baseline_definition_dropdown(key, default_baseline="fixed"):
             )
         else:
             opt_roving_reference_confirmation_time = 0
-        return "roving", option_roving_require_confirmation, opt_roving_reference_confirmation_time
+        return (
+            "roving",
+            option_roving_require_confirmation,
+            opt_roving_reference_confirmation_time,
+        )
 
 
 def minimum_required_increase_threshold_dropdown(key):
@@ -284,6 +288,7 @@ def confirmation_requirement_dropdown(key):
         option_confirmation_sustained_minimal_distance,
     )
 
+
 def undefined_progression_dropdown(key, default="re-baselining only"):
     option_undefined_progression = st.selectbox(
         label="Undefined progression option",
@@ -299,7 +304,9 @@ def undefined_progression_dropdown(key, default="re-baselining only"):
     return option_undefined_progression
 
 
-def dynamic_progression_option_input_element(element_base_key, default_baseline, display_rms_options=False):
+def dynamic_progression_option_input_element(
+    element_base_key, default_baseline, display_rms_options=False
+):
     """Creates a series of input widgets and returns the options as dict.
 
     This frontend element creates a set of dropdown options to select
@@ -322,12 +329,19 @@ def dynamic_progression_option_input_element(element_base_key, default_baseline,
     rms_options = {}
     if display_rms_options:
         # Undefined progression
-        undefined_progression = undefined_progression_dropdown(key=element_base_key + "_undefined_progression", default="re-baselining only")
-        rms_options = {"undefined_progression": undefined_progression,}
+        undefined_progression = undefined_progression_dropdown(
+            key=element_base_key + "_undefined_progression",
+            default="re-baselining only",
+        )
+        rms_options = {
+            "undefined_progression": undefined_progression,
+        }
     # Baseline type
-    option_baseline_type, baseline_confirmation, baseline_confirmation_distance = baseline_definition_dropdown(
-        key=element_base_key + "_option_baseline_type",
-        default_baseline=default_baseline,
+    option_baseline_type, baseline_confirmation, baseline_confirmation_distance = (
+        baseline_definition_dropdown(
+            key=element_base_key + "_option_baseline_type",
+            default_baseline=default_baseline,
+        )
     )
     # Increase threshold
     option_minimal_increase_threshold = minimum_required_increase_threshold_dropdown(
@@ -353,21 +367,24 @@ def dynamic_progression_option_input_element(element_base_key, default_baseline,
     ) = minimal_distance_requirement_dropdown(
         key=element_base_key + "_option_minimal_distance"
     )
-    return {**{
-        "opt_baseline_type": option_baseline_type,
-        "opt_roving_reference_require_confirmation": baseline_confirmation,
-        "opt_roving_reference_confirmation_time": baseline_confirmation_distance,
-        "opt_increase_threshold": option_minimal_increase_threshold,
-        "opt_larger_minimal_increase_from_0": option_larger_increase_from_0,
-        "opt_minimal_distance_time": option_minimal_distance_time,
-        "opt_minimal_distance_type": option_minimal_distance_type,
-        "opt_minimal_distance_backtrack_decrease": option_minimal_distance_backtrack_monotonic_decrease,
-        "opt_require_confirmation": option_require_confirmation,
-        "opt_confirmation_time": option_confirmation_time,
-        "opt_confirmation_type": option_confirmation_type,
-        "opt_confirmation_included_values": option_confirmation_included_values,
-        "opt_confirmation_sustained_minimal_distance": option_confirmation_sustained_minimal_distance,
-    }, **rms_options}
+    return {
+        **{
+            "opt_baseline_type": option_baseline_type,
+            "opt_roving_reference_require_confirmation": baseline_confirmation,
+            "opt_roving_reference_confirmation_time": baseline_confirmation_distance,
+            "opt_increase_threshold": option_minimal_increase_threshold,
+            "opt_larger_minimal_increase_from_0": option_larger_increase_from_0,
+            "opt_minimal_distance_time": option_minimal_distance_time,
+            "opt_minimal_distance_type": option_minimal_distance_type,
+            "opt_minimal_distance_backtrack_decrease": option_minimal_distance_backtrack_monotonic_decrease,
+            "opt_require_confirmation": option_require_confirmation,
+            "opt_confirmation_time": option_confirmation_time,
+            "opt_confirmation_type": option_confirmation_type,
+            "opt_confirmation_included_values": option_confirmation_included_values,
+            "opt_confirmation_sustained_minimal_distance": option_confirmation_sustained_minimal_distance,
+        },
+        **rms_options,
+    }
 
 
 def example_input_dataframe_editor(
@@ -415,7 +432,11 @@ def example_input_dataframe_editor(
         key=element_base_key + f"editor_{st.session_state[element_base_key]}",
     )
 
-    st.button("Reset example data", on_click=_reset_example_follow_up_editor, key=element_base_key + "_reset_button")
+    st.button(
+        "Reset example data",
+        on_click=_reset_example_follow_up_editor,
+        key=element_base_key + "_reset_button",
+    )
 
     return edited_follow_up_dataframe
 
