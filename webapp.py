@@ -135,8 +135,7 @@ if __name__ == "__main__":
         )
 
     # Cite the PPMS paper
-    with st.expander("Published works based on our code", expanded=False):
-        st.markdown("#### Analysis of a multicentric PPMS cohort")
+    with st.expander("Related publication - **Disability progression is a question of definition - A methodological reappraisal by example of primary progressive multiple sclerosis**", expanded=False):
         st.markdown("##### Abstract")
         st.markdown(
             "**Background**: Different definitions of disability progression by Expanded Disability Status Scale (EDSS) may influence frequency and/or time to event.  "
