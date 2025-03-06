@@ -378,7 +378,7 @@ class EDSSProgression:
 
         """
         confirmed_flag = False
-        confirmed_edss = np.NaN
+        confirmed_edss = np.nan
         # Make this function safe for empty confirmation dataframes.
         # We will check this before calling this function, but just in case...
         if len(confirmation_scores_dataframe) > 0:
@@ -453,7 +453,7 @@ class EDSSProgression:
         # If none of the previous references is low enough, we're
         # done...
         if len(previous_rebaselines) == 0:
-            return np.NaN, np.NaN
+            return np.nan, np.nan
         # ... else we have to get those that also fulfill the
         # minimal distance requirement.
         else:
@@ -470,7 +470,7 @@ class EDSSProgression:
                     ],
                 )
             else:
-                return np.NaN, np.NaN
+                return np.nan, np.nan
 
     def add_relapses_to_follow_up(
         self,
@@ -489,9 +489,9 @@ class EDSSProgression:
         # If no relapses are provided, we're done.
         if relapse_timestamps == []:
             follow_up_df_with_relapses[self.time_since_last_relapse_column_name] = (
-                np.NaN
+                np.nan
             )
-            follow_up_df_with_relapses[self.time_to_next_relapse_column_name] = np.NaN
+            follow_up_df_with_relapses[self.time_to_next_relapse_column_name] = np.nan
         else:
             # Make sure the relapse timestamps are well ordered.
             relapse_timestamps = sorted(relapse_timestamps)
@@ -641,7 +641,7 @@ class EDSSProgression:
 
         is_progression = False
         progression_type = None
-        confirmed_event_score = np.NaN
+        confirmed_event_score = np.nan
 
         # If the score is below our additional lower threshold, it is not a
         # progression candidate anyways.
@@ -1005,16 +1005,16 @@ class EDSSProgression:
         # carried forward after a re-baselining (in case of event
         # or baseline confirmation constraints, the new baseline is
         # not equivalent to the EDSS score determined at the assessment...)
-        annotated_df[self.used_as_general_reference_score_flag_column_name] = np.NaN
-        annotated_df[self.used_as_raw_pira_reference_score_flag_column_name] = np.NaN
+        annotated_df[self.used_as_general_reference_score_flag_column_name] = np.nan
+        annotated_df[self.used_as_raw_pira_reference_score_flag_column_name] = np.nan
         # Also initialize columns for progression annotation. We keep
         # track of the event, event type, event score, event reference
         # score, and event ID.
         annotated_df[self.is_progression_flag_column_name] = False
         annotated_df[self.progression_type_column_name] = None
-        annotated_df[self.progression_score_column_name] = np.NaN
-        annotated_df[self.progression_reference_score_column_name] = np.NaN
-        annotated_df[self.progression_event_id_column_name] = np.NaN
+        annotated_df[self.progression_score_column_name] = np.nan
+        annotated_df[self.progression_reference_score_column_name] = np.nan
+        annotated_df[self.progression_event_id_column_name] = np.nan
         # Initialize the confirmed event ID. Don't add this to the annotated
         # dataframe, we don't want to give any ID to non-events. The ID is
         # set to 0 here and then incremented by + 1 at each event, such that
@@ -1078,7 +1078,7 @@ class EDSSProgression:
 
                 is_progression = False
                 progression_type = None
-                confirmed_event_score = np.NaN
+                confirmed_event_score = np.nan
 
                 # Before we start, reset the additional_lower_threshold argument
                 # which is used for certain options for undefined progression.
