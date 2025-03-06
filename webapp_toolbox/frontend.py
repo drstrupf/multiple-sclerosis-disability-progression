@@ -14,6 +14,8 @@ def baseline_definition_dropdown(key, default_baseline="fixed"):
 
     Returns:
         - str: the baseline option
+        - bool: confirmation yes/no
+        - float: confirmation time for roving reference
 
     """
     if default_baseline not in ["fixed", "roving"]:
@@ -30,9 +32,30 @@ def baseline_definition_dropdown(key, default_baseline="fixed"):
         key=key,
     )
     if option_baseline_type == "Fixed baseline":
-        return "fixed"
+        return "fixed", False, 0
     elif option_baseline_type == "Roving reference":
-        return "roving"
+        option_roving_require_confirmation = st.selectbox(
+            label="Require confirmation of roving reference?",
+            options=[
+                "No confirmation required",
+                "Yes, for a specific confirmation time",
+            ],
+            key=key + "_roving_require_confirmation",
+        )
+        if option_roving_require_confirmation == "No confirmation required":
+            option_roving_require_confirmation = False
+        else:
+            option_roving_require_confirmation = True
+        if option_roving_require_confirmation:
+            opt_roving_reference_confirmation_time = st.number_input(
+                label="Confirmation time for roving reference",
+                min_value=1,
+                value=1,
+                key=key + "_roving_confirmation_time",
+            )
+        else:
+            opt_roving_reference_confirmation_time = 0
+        return "roving", option_roving_require_confirmation, opt_roving_reference_confirmation_time
 
 
 def minimum_required_increase_threshold_dropdown(key):
@@ -50,7 +73,7 @@ def minimum_required_increase_threshold_dropdown(key):
     option_minimal_increase_threshold = st.selectbox(
         label="Minimal EDSS score increase for progression",
         options=[
-            "+ 1.0 for reference ≤ 5.5, + 0.5 else",
+            "+ 1.0 for reference ≤ 5.0, + 0.5 else",
             "+ 0.5",
             "+ 1.0",
             "+ 1.0 for reference ≤ 1.0, + 0.5 else",
@@ -195,6 +218,7 @@ def confirmation_requirement_dropdown(key):
     )
     if option_require_confirmation == "Yes, for a specific confirmation time":
         option_require_confirmation = True
+        option_confirmation_sustained_minimal_distance = 0
         option_confirmation_time = st.number_input(
             label="Confirmation time",
             min_value=1,
@@ -224,12 +248,19 @@ def confirmation_requirement_dropdown(key):
         option_require_confirmation = True
         option_confirmation_time = -1
         option_confirmation_included_values = "all"
+        option_confirmation_sustained_minimal_distance = st.number_input(
+            label="Minimal duration for sustained",
+            min_value=0,
+            value=0,
+            key=key + "_sustained_minimal_distance",
+        )
 
     elif option_require_confirmation == "No confirmation required":
         option_require_confirmation = False
         option_confirmation_time = -1
         option_confirmation_included_values = "all"
         option_confirmation_type = "minimum"
+        option_confirmation_sustained_minimal_distance = 0
 
     if option_require_confirmation:
         option_confirmation_type = st.selectbox(
@@ -250,10 +281,25 @@ def confirmation_requirement_dropdown(key):
         option_confirmation_time,
         option_confirmation_included_values,
         option_confirmation_type,
+        option_confirmation_sustained_minimal_distance,
     )
 
+def undefined_progression_dropdown(key, default="re-baselining only"):
+    option_undefined_progression = st.selectbox(
+        label="Undefined progression option",
+        options=[
+            "Re-baselining only",
+            "Never",
+            "All",
+            "End",
+        ],
+        key=key + "_require_confirmation",
+    )
+    option_undefined_progression = option_undefined_progression.lower()
+    return option_undefined_progression
 
-def dynamic_progression_option_input_element(element_base_key, default_baseline):
+
+def dynamic_progression_option_input_element(element_base_key, default_baseline, display_rms_options=False):
     """Creates a series of input widgets and returns the options as dict.
 
     This frontend element creates a set of dropdown options to select
@@ -273,8 +319,13 @@ def dynamic_progression_option_input_element(element_base_key, default_baseline)
           and first progression events.
 
     """
+    rms_options = {}
+    if display_rms_options:
+        # Undefined progression
+        undefined_progression = undefined_progression_dropdown(key=element_base_key + "_undefined_progression", default="re-baselining only")
+        rms_options = {"undefined_progression": undefined_progression,}
     # Baseline type
-    option_baseline_type = baseline_definition_dropdown(
+    option_baseline_type, baseline_confirmation, baseline_confirmation_distance = baseline_definition_dropdown(
         key=element_base_key + "_option_baseline_type",
         default_baseline=default_baseline,
     )
@@ -286,6 +337,14 @@ def dynamic_progression_option_input_element(element_base_key, default_baseline)
     option_larger_increase_from_0 = larger_increase_from_0_dropdown(
         key=element_base_key + "_option_larger_increase_from_0"
     )
+    # Confirmation requirements
+    (
+        option_require_confirmation,
+        option_confirmation_time,
+        option_confirmation_included_values,
+        option_confirmation_type,
+        option_confirmation_sustained_minimal_distance,
+    ) = confirmation_requirement_dropdown(key=element_base_key + "_option_confirmation")
     # Minimal distance requirements
     (
         option_minimal_distance_type,
@@ -294,25 +353,21 @@ def dynamic_progression_option_input_element(element_base_key, default_baseline)
     ) = minimal_distance_requirement_dropdown(
         key=element_base_key + "_option_minimal_distance"
     )
-    # Confirmation requirements
-    (
-        option_require_confirmation,
-        option_confirmation_time,
-        option_confirmation_included_values,
-        option_confirmation_type,
-    ) = confirmation_requirement_dropdown(key=element_base_key + "_option_confirmation")
-    return {
-        "baseline_type": option_baseline_type,
+    return {**{
+        "opt_baseline_type": option_baseline_type,
+        "opt_roving_reference_require_confirmation": baseline_confirmation,
+        "opt_roving_reference_confirmation_time": baseline_confirmation_distance,
         "opt_increase_threshold": option_minimal_increase_threshold,
         "opt_larger_minimal_increase_from_0": option_larger_increase_from_0,
         "opt_minimal_distance_time": option_minimal_distance_time,
         "opt_minimal_distance_type": option_minimal_distance_type,
-        "opt_minimal_distance_backtrack_monotonic_decrease": option_minimal_distance_backtrack_monotonic_decrease,
+        "opt_minimal_distance_backtrack_decrease": option_minimal_distance_backtrack_monotonic_decrease,
         "opt_require_confirmation": option_require_confirmation,
         "opt_confirmation_time": option_confirmation_time,
         "opt_confirmation_type": option_confirmation_type,
         "opt_confirmation_included_values": option_confirmation_included_values,
-    }
+        "opt_confirmation_sustained_minimal_distance": option_confirmation_sustained_minimal_distance,
+    }, **rms_options}
 
 
 def example_input_dataframe_editor(
@@ -357,10 +412,10 @@ def example_input_dataframe_editor(
         hide_index=True,
         disabled=[id_column_name, time_column_name],
         column_order=columns_to_display,
-        key=f"editor_{st.session_state[element_base_key]}",
+        key=element_base_key + f"editor_{st.session_state[element_base_key]}",
     )
 
-    st.button("Reset example data", on_click=_reset_example_follow_up_editor)
+    st.button("Reset example data", on_click=_reset_example_follow_up_editor, key=element_base_key + "_reset_button")
 
     return edited_follow_up_dataframe
 
