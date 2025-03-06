@@ -1,15 +1,18 @@
 # Disability Progression in Multiple Sclerosis
 This repository is a collection of tools for assessing disability progression in Multiple Sclerosis based on changes in Expanded Disability Status Scale (EDSS) scores over time.
 
+Version [1.1.0](https://github.com/drstrupf/multiple-sclerosis-disability-progression/releases/tag/v1.1.0) is the code we used for the publication [Disability progression is a question of definition-A methodological reappraisal by example of primary progressive multiple sclerosis](https://pubmed.ncbi.nlm.nih.gov/39662164/) [1].
+
 Explore the definitions here: https://multiple-sclerosis-disability-progression.streamlit.app/
 
 See ``tutorial.ipynb`` for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
 
+
 ## Contents
 ### Definitions
-Definitions of fixed baseline, roving reference [1], and EDSS progression. The module ``baselines.py`` contains a function to annotate a fixed or roving reference to a follow-up. The module ``progression.py`` contains a function to annotate the first progression event in a follow-up.
+Definitions of fixed baseline, roving reference [2], and EDSS progression. The module ``baselines.py`` contains a function to annotate a fixed or roving reference to a follow-up. The module ``progression.py`` contains a function to annotate the first progression event in a follow-up.
 ### Evaluation
-This directory contains helper functions for cohort-level evaluations and survival analysis with the lifelines [2] package.
+This directory contains helper functions for cohort-level evaluations and survival analysis with the lifelines [3] package.
 ### Data
 This directory contains an example dataset of 200 follow-ups. Use this dataset as a formatting reference and for testing.
 ### Webapp toolbox
@@ -28,8 +31,13 @@ Gabriel Bsteh<sup>1, 2</sup>, Stefanie Marti<sup>3</sup>, Robert Hoepner<sup>3</
 
 ## References
 
-[1] Kappos L, Butzkueven H, Wiendl H, et al. **Greater sensitivity to multiple sclerosis disability 
-worsening and progression events using a roving versus a fixed reference value in a prospective cohort 
-study**. Mult Scler. 2018;24(7):963-973. doi:10.1177/1352458517709619
+[1] Bsteh G, Marti S, Krajnc N, Traxler G, Salmen A, Hammer H, Leutmezer F, Rommer P, Di Pauli F, Chan A, 
+Berger T, Hegen H, Hoepner R. **Disability progression is a question of definition-A methodological reappraisal 
+by example of primary progressive multiple sclerosis**. *Mult Scler Relat Disord*. 2025 Jan;93:106215. 
+doi: 10.1016/j.msard.2024.106215. Epub 2024 Dec 6. PMID: 39662164.
 
-[2] https://lifelines.readthedocs.io/en/latest/index.html
+[2] Kappos L, Butzkueven H, Wiendl H, et al. **Greater sensitivity to multiple sclerosis disability 
+worsening and progression events using a roving versus a fixed reference value in a prospective cohort 
+study**. *Mult Scler*. 2018;24(7):963-973. doi:10.1177/1352458517709619
+
+[3] https://lifelines.readthedocs.io/en/latest/index.html
