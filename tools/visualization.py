@@ -201,7 +201,7 @@ def annotate_plot_follow_up(
                         linewidth=0,
                         alpha=0.25,
                         color=relapse_color,
-                        zorder=-1,
+                        zorder=2,
                     )
 
     # EDSS
