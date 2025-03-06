@@ -129,8 +129,12 @@ class EDSSProgression:
             raise ValueError(
                 "Invalid baseline option! Available options: 'fixed', 'roving'."
             )
-        if self.opt_roving_reference_confirmation_time < 0:
-            raise ValueError("Roving reference confirmation time must be >= 0.")
+        if (self.opt_roving_reference_require_confirmation) and (
+            self.opt_roving_reference_confirmation_time <= 0
+        ):
+            raise ValueError(
+                "Invalid input for confirmation interval. If confirmation of roving reference required, choose a duration > 0."
+            )
         if self.opt_roving_reference_confirmation_included_values not in [
             "last",
             "all",
