@@ -208,7 +208,7 @@ class EDSSProgression:
         else:
             self.undefined_progression_to_pass_on = self.undefined_progression
 
-    def is_above_progress_threshold(
+    def _is_above_progress_threshold(
         self,
         current_edss,
         reference_edss,
@@ -245,7 +245,7 @@ class EDSSProgression:
         else:
             return False
 
-    def get_confirmation_scores_dataframe(
+    def _get_confirmation_scores_dataframe(
         self,
         current_timestamp,
         follow_up_dataframe,
@@ -353,7 +353,7 @@ class EDSSProgression:
 
         return confirmation_scores_dataframe
 
-    def check_confirmation_scores_and_get_confirmed_score(
+    def _check_confirmation_scores_and_get_confirmed_score(
         self,
         current_edss,
         current_reference,
@@ -386,7 +386,7 @@ class EDSSProgression:
                 confirmation_scores_dataframe[self.edss_score_column_name]
             )
             if self.opt_confirmation_type == "minimum":
-                if self.is_above_progress_threshold(
+                if self._is_above_progress_threshold(
                     current_edss=min(confirmation_scores),
                     reference_edss=current_reference,
                 ) and (min(confirmation_scores) >= additional_lower_threshold):
@@ -401,7 +401,7 @@ class EDSSProgression:
 
         return confirmed_flag, confirmed_edss
 
-    def backtrack_minimal_distance_compatible_reference(
+    def _backtrack_minimal_distance_compatible_reference(
         self,
         current_edss,
         current_timestamp,
@@ -439,7 +439,7 @@ class EDSSProgression:
         # with respect to them.
         previous_rebaselines = baselines_df.copy()
         previous_rebaselines["low_enough_for_progression"] = previous_rebaselines.apply(
-            lambda row: self.is_above_progress_threshold(
+            lambda row: self._is_above_progress_threshold(
                 current_edss=current_edss,
                 reference_edss=row[self.baseline_score_column_name],
             ),
@@ -472,7 +472,7 @@ class EDSSProgression:
             else:
                 return np.nan, np.nan
 
-    def add_relapses_to_follow_up(
+    def _add_relapses_to_follow_up(
         self,
         follow_up_df,
         relapse_timestamps,
@@ -561,7 +561,7 @@ class EDSSProgression:
 
         return follow_up_df_with_relapses
 
-    def get_post_relapse_rebaseline_timestamps(
+    def _get_post_relapse_rebaseline_timestamps(
         self,
         follow_up_df,
         relapse_timestamps,
@@ -614,7 +614,7 @@ class EDSSProgression:
         # This list is empty if no relapses are present.
         return rebaselines
 
-    def check_assessment_for_progression(
+    def _check_assessment_for_progression(
         self,
         check_raw_pira,
         annotated_df,
@@ -664,7 +664,7 @@ class EDSSProgression:
                         (
                             backtracked_reference,
                             backtracked_timestamp,
-                        ) = self.backtrack_minimal_distance_compatible_reference(
+                        ) = self._backtrack_minimal_distance_compatible_reference(
                             current_edss=current_edss,
                             current_timestamp=current_timestamp,
                             baselines_df=baselines_df,
@@ -679,7 +679,7 @@ class EDSSProgression:
             # Now that the distance is checked, check if the increase is large enough.
             if minimal_distance_condition_satisfied:
                 # Does it qualify as progression?
-                is_progression_candidate = self.is_above_progress_threshold(
+                is_progression_candidate = self._is_above_progress_threshold(
                     current_edss=current_edss,
                     reference_edss=current_baseline_score,
                 )
@@ -723,7 +723,7 @@ class EDSSProgression:
                         confirmed_event_score = current_edss
                     else:
                         # First, get the confirmation score dataframe.
-                        confirmation_scores_dataframe = self.get_confirmation_scores_dataframe(
+                        confirmation_scores_dataframe = self._get_confirmation_scores_dataframe(
                             current_timestamp=current_timestamp,
                             follow_up_dataframe=annotated_df,
                             opt_confirmation_time=self.opt_confirmation_time,
@@ -740,7 +740,7 @@ class EDSSProgression:
                             (
                                 is_progression,
                                 confirmed_event_score,
-                            ) = self.check_confirmation_scores_and_get_confirmed_score(
+                            ) = self._check_confirmation_scores_and_get_confirmed_score(
                                 current_edss=current_edss,
                                 current_reference=current_baseline_score,  # The UP vs. RAW/PIRA version choice happens at the start.
                                 confirmation_scores_dataframe=confirmation_scores_dataframe,
@@ -825,7 +825,7 @@ class EDSSProgression:
             current_baseline_score,
         )
 
-    def combine_events_forward_lookup(
+    def _combine_events_forward_lookup(
         self,
         annotated_df,
         baselines_df,
@@ -893,7 +893,7 @@ class EDSSProgression:
                     new_progression_type,
                     new_confirmed_event_score,
                     _,
-                ) = self.check_assessment_for_progression(
+                ) = self._check_assessment_for_progression(
                     check_raw_pira=True,
                     annotated_df=annotated_df,
                     relapse_timestamps=relapse_timestamps,
@@ -973,7 +973,7 @@ class EDSSProgression:
             last_confirmed_progression_timestamp,
         )
 
-    def annotate_progression_events(
+    def _annotate_progression_events(
         self,
         follow_up_dataframe,
         relapse_timestamps,
@@ -985,7 +985,7 @@ class EDSSProgression:
         annotated_df = follow_up_dataframe.copy()
         # Add relapse timedeltas; if no relapses are provided,
         # it will just generate NaNs.
-        annotated_df = self.add_relapses_to_follow_up(
+        annotated_df = self._add_relapses_to_follow_up(
             follow_up_df=annotated_df,
             relapse_timestamps=relapse_timestamps,
         )
@@ -1051,7 +1051,7 @@ class EDSSProgression:
         # Initialize the column and just set relapse assessments to True
         # via a list of relapse timestamps.
         annotated_df[self.is_post_relapse_rebaseline_flag_column_name] = False
-        rebaselines_list = self.get_post_relapse_rebaseline_timestamps(
+        rebaselines_list = self._get_post_relapse_rebaseline_timestamps(
             follow_up_df=annotated_df,
             relapse_timestamps=relapse_timestamps,
         )
@@ -1151,7 +1151,7 @@ class EDSSProgression:
                 # progression, and don't check for RAW/PIRA. This option is not
                 # allowed as argument in 'add_progression_events_to_follow_up'
                 # since it is only used as a helper for the 'end' option (which
-                # requires a re-run of 'annotate_progression_events' and is thus
+                # requires a re-run of '_annotate_progression_events' and is thus
                 # not implemented here at this level).
                 if undefined_progression == "re-baselining only":
                     if is_rebaseline_assessment:
@@ -1236,7 +1236,7 @@ class EDSSProgression:
                         progression_type,
                         confirmed_event_score,
                         current_baseline_score,
-                    ) = self.check_assessment_for_progression(
+                    ) = self._check_assessment_for_progression(
                         check_raw_pira=baseline_option["check_raw_pira"],
                         annotated_df=annotated_df,
                         relapse_timestamps=relapse_timestamps,
@@ -1262,7 +1262,7 @@ class EDSSProgression:
                             indices_of_merged_event,
                             confirmed_event_score,
                             last_confirmed_timestamp,
-                        ) = self.combine_events_forward_lookup(
+                        ) = self._combine_events_forward_lookup(
                             annotated_df=annotated_df,
                             relapse_timestamps=relapse_timestamps,
                             baselines_df=raw_pira_baselines,
@@ -1440,7 +1440,7 @@ class EDSSProgression:
                                 < general_baselines.iloc[-1]["baseline_score"]
                             )
                         ):
-                            roving_rebaseline_confirmation_scores_df = self.get_confirmation_scores_dataframe(
+                            roving_rebaseline_confirmation_scores_df = self._get_confirmation_scores_dataframe(
                                 current_timestamp=current_timestamp,
                                 follow_up_dataframe=annotated_df,
                                 opt_confirmation_time=self.opt_roving_reference_confirmation_time,
@@ -1585,7 +1585,7 @@ class EDSSProgression:
         # ANNOTATE PROGRESSION EVENTS TO DATAFRAME
         # --------------------------------------------------------------------------------
         # If we chose 're-baselining only', 'all', or 'never', one call to
-        # 'annotate_progression_events' is sufficient. For the 'end' version,
+        # '_annotate_progression_events' is sufficient. For the 'end' version,
         # we have to check each follow-up twice, first with the default 're-
         # baselining only' option, then we have to check the remainder (after
         # the last event) for undefined progression.
@@ -1595,7 +1595,7 @@ class EDSSProgression:
             undefined_progression_to_pass_on = self.undefined_progression
 
         # First round
-        annotated_df = self.annotate_progression_events(
+        annotated_df = self._annotate_progression_events(
             follow_up_dataframe=follow_up_dataframe,
             relapse_timestamps=relapse_timestamps,
             undefined_progression=undefined_progression_to_pass_on,
@@ -1693,7 +1693,7 @@ class EDSSProgression:
             # "all general only", which skips looking for RAW or PIRA. All
             # other args remain the same.
             if len(remainder_follow_up) > 1:
-                annotated_df_second_run = self.annotate_progression_events(
+                annotated_df_second_run = self._annotate_progression_events(
                     follow_up_dataframe=remainder_follow_up,
                     relapse_timestamps=relapse_timestamps,
                     undefined_progression="all general only",
