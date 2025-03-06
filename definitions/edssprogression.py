@@ -34,7 +34,7 @@ class EDSSProgression:
     opt_raw_after_relapse_max_days: int = 90
     opt_pira_allow_relapses_between_event_and_confirmation: bool = False
     # Minimum increase options
-    opt_max_score_that_requires_plus_1: float = 5.5
+    opt_max_score_that_requires_plus_1: float = 5.0
     opt_larger_increment_from_0: bool = True
     # Confirmation options
     opt_require_confirmation: bool = False
