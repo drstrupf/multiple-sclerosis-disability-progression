@@ -2,7 +2,7 @@
 This repository is a collection of tools for assessing disability progression in Multiple Sclerosis based on changes in Expanded Disability Status Scale (EDSS) scores over time.
 
 ![Annotated follow-up with PIRA, RAW, and undefined worsening](images/example_with_all_types.png?raw=true "Annotated follow-up with PIRA, RAW, and undefined worsening")
-<sup>**Figure 1** Example of a follow-up annotated with our code. Minimal required EDSS increase + 1, ....</sup>
+<sup>**Figure 1** Example of a follow-up annotated with our code. Minimal required EDSS increase + 1, next-confirmed roving reference, events confirmed at the next assessment, RAW window 30 days pre-/post-relapse, default option for undefined worsening (re-baselining only), no minimal distance requirement, no event merging.</sup>
 
 Version [1.1.0](https://github.com/drstrupf/multiple-sclerosis-disability-progression/releases/tag/v1.1.0) is the code we used for the publication [Disability progression is a question of definition-A methodological reappraisal by example of primary progressive multiple sclerosis](https://pubmed.ncbi.nlm.nih.gov/39662164/) [1].
 
