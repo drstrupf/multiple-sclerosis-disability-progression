@@ -1,22 +1,14 @@
 # Disability Progression in Multiple Sclerosis
-This repository is a collection of tools for assessing disability progression in Multiple Sclerosis based on changes in Expanded Disability Status Scale (EDSS) scores over time.
+This repository is a collection of tools for assessing disability progression in Multiple Sclerosis based on changes in Expanded Disability Status Scale (EDSS) scores over time. The event annotation algorithm differentiates between **Progression Independent of Relapse Activity (PIRA)** and **Relapse Associated Worsening (RAW)**, and the additional worsening types **PIRA confirmed in RAW window** and **Undefined Worsening** that are required for supporting non-standardized real-world data from observational cohorts.
 
-Version [1.1.0](https://github.com/drstrupf/multiple-sclerosis-disability-progression/releases/tag/v1.1.0) is the code we used for the publication [Disability progression is a question of definition-A methodological reappraisal by example of primary progressive multiple sclerosis](https://pubmed.ncbi.nlm.nih.gov/39662164/) [1].
+![Annotated follow-up with PIRA, RAW, and undefined worsening](images/example_with_all_types.png?raw=true "Annotated follow-up with PIRA, RAW, and undefined worsening")
+<sup>**Figure 1** Example of a follow-up annotated with our code. Minimal required EDSS increase + 1, next-confirmed roving reference, events confirmed at the next assessment, RAW window 30 days pre-/post-relapse, default option for undefined worsening (re-baselining only), no minimal distance requirement, no event merging.</sup>
+
+Version [1.1.0](https://github.com/drstrupf/multiple-sclerosis-disability-progression/releases/tag/v1.1.0) is the code we used for the publication [Disability progression is a question of definition-A methodological reappraisal by example of primary progressive multiple sclerosis](https://pubmed.ncbi.nlm.nih.gov/39662164/) [1]. This version does not yet support relapses or annotating multiple events. Versions 2.0.0 and later fully cover the annotation functionality of version 1.1.0 and thus reproduce the results generated with this version. The implementation was completely refactored, and the release with relapse support should be used for any further analyses.
 
 Explore the definitions here: https://multiple-sclerosis-disability-progression.streamlit.app/
 
 See ``tutorial.ipynb`` for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
-
-
-## Contents
-### Definitions
-Definitions of fixed baseline, roving reference [2], and EDSS progression. The module ``baselines.py`` contains a function to annotate a fixed or roving reference to a follow-up. The module ``progression.py`` contains a function to annotate the first progression event in a follow-up.
-### Evaluation
-This directory contains helper functions for cohort-level evaluations and survival analysis with the lifelines [3] package.
-### Data
-This directory contains an example dataset of 200 follow-ups. Use this dataset as a formatting reference and for testing.
-### Webapp toolbox
-Frontend elements and visualization helpers for the streamlit app.
 
 ## Authors
 Gabriel Bsteh<sup>1, 2</sup>, Stefanie Marti<sup>3</sup>, Robert Hoepner<sup>3</sup>
