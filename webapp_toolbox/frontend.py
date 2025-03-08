@@ -460,7 +460,6 @@ def example_input_dataframe_editor(
     element_base_key,
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
-    id_column_name="follow_up_id",
     display_id_column=False,
 ):
     """TBD; source for session state hack:
@@ -471,7 +470,6 @@ def example_input_dataframe_editor(
 
     edited_follow_up_dataframe = pd.DataFrame(
         {
-            id_column_name: list(follow_up_dataframe[id_column_name]),
             time_column_name: list(follow_up_dataframe[time_column_name]),
             edss_score_column_name: list(follow_up_dataframe[edss_score_column_name]),
         }
@@ -481,21 +479,20 @@ def example_input_dataframe_editor(
         st.session_state[element_base_key] += 1
 
     if display_id_column:
-        columns_to_display = [id_column_name, time_column_name, edss_score_column_name]
+        columns_to_display = [time_column_name, edss_score_column_name]
     else:
         columns_to_display = [time_column_name, edss_score_column_name]
 
     edited_follow_up_dataframe = st.data_editor(
         edited_follow_up_dataframe,
         column_config={
-            id_column_name: "ID",
             time_column_name: "Time",
             edss_score_column_name: st.column_config.SelectboxColumn(
                 "EDSS", help="EDSS score", options=[i * 0.5 for i in range(21)]
             ),
         },
         hide_index=True,
-        disabled=[id_column_name, time_column_name],
+        disabled=[time_column_name],
         column_order=columns_to_display,
         key=element_base_key + f"editor_{st.session_state[element_base_key]}",
     )
