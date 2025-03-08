@@ -194,7 +194,9 @@ def minimal_distance_requirement_dropdown(key):
     )
 
 
-def confirmation_requirement_dropdown(key, default_confirmation_requirement=False, default_confirmation_duration=24*7):
+def confirmation_requirement_dropdown(
+    key, default_confirmation_requirement=False, default_confirmation_duration=24 * 7
+):
     """Display a collection of dropdown menues
     for choosing the confirmation requirements.
 
@@ -223,7 +225,7 @@ def confirmation_requirement_dropdown(key, default_confirmation_requirement=Fals
             "Yes, for a specific confirmation time",
             "Yes, sustained over the entire follow-up",
         ]
-        
+
     option_require_confirmation = st.selectbox(
         label="Require confirmation?",
         options=confirmation_options,
@@ -313,8 +315,31 @@ def undefined_progression_dropdown(key, default="re-baselining only"):
     return option_undefined_progression
 
 
+# opt_raw_before_relapse_max_days: int = 30
+# opt_raw_after_relapse_max_days: int = 90
+# opt_pira_allow_relapses_between_event_and_confirmation: bool = False
+def raw_window_dropdown(key):
+    opt_raw_before_relapse_max_days = st.number_input(
+        label="RAW window start (days pre-relapse)",
+        min_value=0,
+        value=30,
+        key=key + "_raw_pre_relapse",
+    )
+    opt_raw_after_relapse_max_days = st.number_input(
+        label="RAW window end (days post-relapse)",
+        min_value=0,
+        value=30,
+        key=key + "_raw_post_relapse",
+    )
+    return opt_raw_before_relapse_max_days, opt_raw_after_relapse_max_days
+
+
 def dynamic_progression_option_input_element(
-    element_base_key, default_baseline, default_confirmation_requirement=False, default_confirmation_duration=24*7, display_rms_options=False
+    element_base_key,
+    default_baseline,
+    default_confirmation_requirement=False,
+    default_confirmation_duration=24 * 7,
+    display_rms_options=False,
 ):
     """Creates a series of input widgets and returns the options as dict.
 
@@ -342,8 +367,13 @@ def dynamic_progression_option_input_element(
             key=element_base_key + "_undefined_progression",
             default="re-baselining only",
         )
+        opt_raw_before_relapse_max_days, opt_raw_after_relapse_max_days = (
+            raw_window_dropdown(key=element_base_key + "_raw_window")
+        )
         rms_options = {
             "undefined_progression": undefined_progression,
+            "opt_raw_before_relapse_max_days": opt_raw_before_relapse_max_days,
+            "opt_raw_after_relapse_max_days": opt_raw_after_relapse_max_days,
         }
     # Baseline type
     option_baseline_type, baseline_confirmation, baseline_confirmation_distance = (
@@ -367,7 +397,11 @@ def dynamic_progression_option_input_element(
         option_confirmation_included_values,
         option_confirmation_type,
         option_confirmation_sustained_minimal_distance,
-    ) = confirmation_requirement_dropdown(default_confirmation_requirement=default_confirmation_requirement, default_confirmation_duration=default_confirmation_duration, key=element_base_key + "_option_confirmation")
+    ) = confirmation_requirement_dropdown(
+        default_confirmation_requirement=default_confirmation_requirement,
+        default_confirmation_duration=default_confirmation_duration,
+        key=element_base_key + "_option_confirmation",
+    )
     # Minimal distance requirements
     (
         option_minimal_distance_type,

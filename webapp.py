@@ -135,7 +135,10 @@ if __name__ == "__main__":
         )
 
     # Cite the PPMS paper
-    with st.expander("Related publication - **Disability progression is a question of definition - A methodological reappraisal by example of primary progressive multiple sclerosis**", expanded=False):
+    with st.expander(
+        "Related publication - **Disability progression is a question of definition - A methodological reappraisal by example of primary progressive multiple sclerosis**",
+        expanded=False,
+    ):
         st.markdown("##### Abstract")
         st.markdown(
             "**Background**: Different definitions of disability progression by Expanded Disability Status Scale (EDSS) may influence frequency and/or time to event.  "
@@ -316,8 +319,12 @@ if __name__ == "__main__":
                 ],
                 # Options
                 undefined_progression=options_example_2["undefined_progression"],
-                opt_raw_before_relapse_max_days=30,
-                opt_raw_after_relapse_max_days=30,
+                opt_raw_before_relapse_max_days=options_example_2[
+                    "opt_raw_before_relapse_max_days"
+                ],
+                opt_raw_after_relapse_max_days=options_example_2[
+                    "opt_raw_after_relapse_max_days"
+                ],
                 opt_baseline_type=options_example_2["opt_baseline_type"],
                 opt_roving_reference_require_confirmation=options_example_2[
                     "opt_roving_reference_require_confirmation"
