@@ -10,17 +10,6 @@ Explore the definitions here: https://multiple-sclerosis-disability-progression.
 
 See ``tutorial.ipynb`` for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
 
-
-## Contents
-### Definitions
-Definitions of fixed baseline, roving reference [2], and EDSS progression. The module ``baselines.py`` contains a function to annotate a fixed or roving reference to a follow-up. The module ``progression.py`` contains a function to annotate the first progression event in a follow-up.
-### Evaluation
-This directory contains helper functions for cohort-level evaluations and survival analysis with the lifelines [3] package.
-### Data
-This directory contains an example dataset of 200 follow-ups. Use this dataset as a formatting reference and for testing.
-### Webapp toolbox
-Frontend elements and visualization helpers for the streamlit app.
-
 ## Authors
 Gabriel Bsteh<sup>1, 2</sup>, Stefanie Marti<sup>3</sup>, Robert Hoepner<sup>3</sup>
 
