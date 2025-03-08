@@ -228,6 +228,8 @@ if __name__ == "__main__":
             options = frontend.dynamic_progression_option_input_element(
                 element_base_key="plot_playground_options",
                 default_baseline="roving",
+                default_confirmation_requirement=False,
+                default_confirmation_duration=12,
             )
 
         with plot_column:
@@ -297,6 +299,8 @@ if __name__ == "__main__":
             options_example_2 = frontend.dynamic_progression_option_input_element(
                 element_base_key="plot_playground_options_example_2",
                 default_baseline="roving",
+                default_confirmation_requirement=True,
+                default_confirmation_duration=30,
                 display_rms_options=True,
             )
 
@@ -345,6 +349,7 @@ if __name__ == "__main__":
                 opt_confirmation_sustained_minimal_distance=options_example_2[
                     "opt_confirmation_sustained_minimal_distance"
                 ],
+                xlabel="Days after baseline",
                 ax=ax,
             )
             fig.tight_layout()

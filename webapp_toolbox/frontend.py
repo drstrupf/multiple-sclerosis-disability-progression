@@ -194,7 +194,7 @@ def minimal_distance_requirement_dropdown(key):
     )
 
 
-def confirmation_requirement_dropdown(key):
+def confirmation_requirement_dropdown(key, default_confirmation_requirement=False, default_confirmation_duration=24*7):
     """Display a collection of dropdown menues
     for choosing the confirmation requirements.
 
@@ -211,13 +211,22 @@ def confirmation_requirement_dropdown(key):
         - str: option_confirmation_type - confirmation condition type
 
     """
-    option_require_confirmation = st.selectbox(
-        label="Require confirmation?",
-        options=[
+    if default_confirmation_requirement:
+        confirmation_options = [
+            "Yes, for a specific confirmation time",
+            "No confirmation required",
+            "Yes, sustained over the entire follow-up",
+        ]
+    else:
+        confirmation_options = [
             "No confirmation required",
             "Yes, for a specific confirmation time",
             "Yes, sustained over the entire follow-up",
-        ],
+        ]
+        
+    option_require_confirmation = st.selectbox(
+        label="Require confirmation?",
+        options=confirmation_options,
         key=key + "_require_confirmation",
     )
     if option_require_confirmation == "Yes, for a specific confirmation time":
@@ -226,7 +235,7 @@ def confirmation_requirement_dropdown(key):
         option_confirmation_time = st.number_input(
             label="Confirmation time",
             min_value=1,
-            value=12,
+            value=default_confirmation_duration,
             key=key + "_confirmation_time",
         )
         option_confirmation_included_values = st.selectbox(
@@ -305,7 +314,7 @@ def undefined_progression_dropdown(key, default="re-baselining only"):
 
 
 def dynamic_progression_option_input_element(
-    element_base_key, default_baseline, display_rms_options=False
+    element_base_key, default_baseline, default_confirmation_requirement=False, default_confirmation_duration=24*7, display_rms_options=False
 ):
     """Creates a series of input widgets and returns the options as dict.
 
@@ -358,7 +367,7 @@ def dynamic_progression_option_input_element(
         option_confirmation_included_values,
         option_confirmation_type,
         option_confirmation_sustained_minimal_distance,
-    ) = confirmation_requirement_dropdown(key=element_base_key + "_option_confirmation")
+    ) = confirmation_requirement_dropdown(default_confirmation_requirement=default_confirmation_requirement, default_confirmation_duration=default_confirmation_duration, key=element_base_key + "_option_confirmation")
     # Minimal distance requirements
     (
         option_minimal_distance_type,
