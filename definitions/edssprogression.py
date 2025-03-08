@@ -426,13 +426,13 @@ class EDSSProgression:
 
         References before previous events are NOT allowed if we reset
         the baseline after an event. The same  holds for post-relapse
-        re-baselining assessments. However, this  can be ensured by
+        re-baselining assessments. However, this can be ensured by
         selecting the 'baselines_df' input appropriately, thus we don't
         have to implement it here.
 
         The reference only ever decreases (overall in relapse-free,
         or per post-relapse or post-event period), so it makes sense
-        to take the  closest reference to the candidate, because the
+        to take the closest reference to the candidate, because the
         reference is the lowest possible this way. This is important
         for the confirmation step, where scores need to be larger
         than the reference and some increment...
