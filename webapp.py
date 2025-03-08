@@ -305,6 +305,7 @@ if __name__ == "__main__":
                 default_confirmation_requirement=True,
                 default_confirmation_duration=30,
                 display_rms_options=True,
+                display_allow_relapses_in_pira_conf=False,
             )
 
         with plot_column:
@@ -325,6 +326,9 @@ if __name__ == "__main__":
                 opt_raw_after_relapse_max_days=options_example_2[
                     "opt_raw_after_relapse_max_days"
                 ],
+                opt_pira_allow_relapses_between_event_and_confirmation=options_example_2.get(
+                    "opt_pira_allow_relapses_between_event_and_confirmation", False
+                ),
                 opt_baseline_type=options_example_2["opt_baseline_type"],
                 opt_roving_reference_require_confirmation=options_example_2[
                     "opt_roving_reference_require_confirmation"

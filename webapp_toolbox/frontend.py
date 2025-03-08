@@ -309,15 +309,12 @@ def undefined_progression_dropdown(key, default="re-baselining only"):
             "All",
             "End",
         ],
-        key=key + "_require_confirmation",
+        key=key,
     )
     option_undefined_progression = option_undefined_progression.lower()
     return option_undefined_progression
 
 
-# opt_raw_before_relapse_max_days: int = 30
-# opt_raw_after_relapse_max_days: int = 90
-# opt_pira_allow_relapses_between_event_and_confirmation: bool = False
 def raw_window_dropdown(key):
     opt_raw_before_relapse_max_days = st.number_input(
         label="RAW window start (days pre-relapse)",
@@ -334,12 +331,25 @@ def raw_window_dropdown(key):
     return opt_raw_before_relapse_max_days, opt_raw_after_relapse_max_days
 
 
+def relapses_in_confirmation_dropdown(key):
+    opt_pira_allow_relapses_between_event_and_confirmation = st.toggle(
+        label="Allow relapses within PIRA confirmation interval?",
+        value=False,
+        key=key,
+        help=None,
+        on_change=None,
+        disabled=False,
+        label_visibility="visible",
+    )
+
+
 def dynamic_progression_option_input_element(
     element_base_key,
     default_baseline,
     default_confirmation_requirement=False,
     default_confirmation_duration=24 * 7,
     display_rms_options=False,
+    display_allow_relapses_in_pira_conf=False,
 ):
     """Creates a series of input widgets and returns the options as dict.
 
@@ -402,6 +412,21 @@ def dynamic_progression_option_input_element(
         default_confirmation_duration=default_confirmation_duration,
         key=element_base_key + "_option_confirmation",
     )
+    if (
+        rms_options
+        and display_allow_relapses_in_pira_conf
+        and option_require_confirmation
+        and (option_confirmation_included_values == "last")
+    ):
+        opt_pira_allow_relapses_between_event_and_confirmation = (
+            relapses_in_confirmation_dropdown(
+                key=element_base_key + "_allow_relapse_in_conf"
+            )
+        )
+        rms_options["opt_pira_allow_relapses_between_event_and_confirmation"] = (
+            opt_pira_allow_relapses_between_event_and_confirmation
+        )
+
     # Minimal distance requirements
     (
         option_minimal_distance_type,
