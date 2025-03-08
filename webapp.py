@@ -210,82 +210,11 @@ if __name__ == "__main__":
             decrease_correction_caption = "Correction for monotonic decrease."
             st.image("images/example_rollback.png", caption=decrease_correction_caption)
 
-    st.write("## Explore general EDSS progression definition options")
-    st.markdown(
-        "This section illustrates how **general progression options** affect the number of "
-        + " events and the times to event. For relapse-related options and their effect on "
-        + " PIRA and RAW rates, go to the next section."
-    )
-
-    with st.expander(
-        "Plot follow-up and annotate progression events for example data",
-        expanded=True,
-    ):
-        data_edit_column, option_selection_column, plot_column = st.columns(
-            [15, 30, 55]
-        )
-
-        with data_edit_column:
-            st.write("Edit example dataframe")
-
-            edited_example_follow_up_df = frontend.example_input_dataframe_editor(
-                follow_up_dataframe=example_follow_up_df,
-                element_base_key="example_follow_up_editor_key",
-            )
-
-        with option_selection_column:
-            st.write("Select definition options")
-
-            options = frontend.dynamic_progression_option_input_element(
-                element_base_key="plot_playground_options",
-                default_baseline="roving",
-                default_confirmation_requirement=False,
-                default_confirmation_duration=12,
-            )
-
-        with plot_column:
-            st.write(
-                "Change definition options to see their influence on the number and time of events"
-            )
-            fig, ax = plt.subplots(1, 1, figsize=(12, 4))
-            visualization.annotate_plot_follow_up(
-                follow_up_dataframe=edited_example_follow_up_df,
-                relapse_timestamps=[],
-                # Options
-                opt_baseline_type=options["opt_baseline_type"],
-                opt_roving_reference_require_confirmation=options[
-                    "opt_roving_reference_require_confirmation"
-                ],
-                opt_roving_reference_confirmation_time=options[
-                    "opt_roving_reference_confirmation_time"
-                ],
-                opt_max_score_that_requires_plus_1=options["opt_increase_threshold"],
-                opt_larger_increment_from_0=options[
-                    "opt_larger_minimal_increase_from_0"
-                ],
-                opt_minimal_distance_time=options["opt_minimal_distance_time"],
-                opt_minimal_distance_type=options["opt_minimal_distance_type"],
-                opt_minimal_distance_backtrack_decrease=options[
-                    "opt_minimal_distance_backtrack_decrease"
-                ],
-                opt_require_confirmation=options["opt_require_confirmation"],
-                opt_confirmation_time=options["opt_confirmation_time"],
-                opt_confirmation_type=options["opt_confirmation_type"],
-                opt_confirmation_included_values=options[
-                    "opt_confirmation_included_values"
-                ],
-                opt_confirmation_sustained_minimal_distance=options[
-                    "opt_confirmation_sustained_minimal_distance"
-                ],
-                ax=ax,
-            )
-            fig.tight_layout()
-            sns.despine(bottom=True, left=True, right=True, top=True)
-            st.pyplot(fig, clear_figure=True)
+        st.markdown("More explanations coming soon...")
 
     st.write("## Explore PIRA and RAW definition options")
     st.markdown(
-        "This section illustrates how **relapse-related options** affect the number of "
+        "This section illustrates how **relapse-related options** as well as **general progression options** affect the number of "
         + " events, the times to event, and the event types."
     )
 
@@ -317,15 +246,25 @@ if __name__ == "__main__":
             )
 
         with plot_column:
-            st.write("Change definition options to see their influence")
+            st.write(
+                "Add, remove, or change relapses and display the annotated follow-up"
+            )
+            relapse_timestamps = st.multiselect(
+                label="Relapses (days after baseline)",
+                options=[i for i in range(1000)],
+                default=[40, 200, 500],
+                key="add_relapses_widget",
+                help=None,
+                on_change=None,
+                max_selections=None,
+                placeholder="Add relapses!",
+                disabled=False,
+                label_visibility="visible",
+            )
             fig, ax = plt.subplots(1, 1, figsize=(12, 4))
             visualization.annotate_plot_follow_up(
                 follow_up_dataframe=edited_example_follow_up_df_2,
-                relapse_timestamps=[
-                    40,
-                    200,
-                    530,
-                ],
+                relapse_timestamps=relapse_timestamps,
                 # Options
                 undefined_progression=options_example_2["undefined_progression"],
                 opt_raw_before_relapse_max_days=options_example_2[
