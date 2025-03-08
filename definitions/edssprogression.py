@@ -1625,8 +1625,9 @@ class EDSSProgression:
             ]
             # If there are no events, we look at the entire follow-up again, but
             # this time only for general progression at assessments that are not
-            # at post-relapse re-baselining assessments.
-            # TODO: change this into a drop of all other columns!
+            # at post-relapse re-baselining assessments. We only need the timestamp
+            # and the score columns, the rest is preserved in the annotated df after
+            # the first round.
             if len(progression_events_df) == 0:
                 remainder_follow_up = annotated_df[
                     [self.time_column_name, self.edss_score_column_name]
@@ -1639,12 +1640,13 @@ class EDSSProgression:
             # event score. Undefined events where the confirmed score is lower than
             # the post-relapse PIRA/RAW baseline are thus not a problem here.
             else:
-                # TODO: WITH MERGE OPTION, GET TIMESTAMP OF LAST MERGED!!!
-                # IDEA: Use the largest progression event ID instead of the
-                # largest timestamp, then get the max timestamp within this
-                # progression ID. If we are not using the merge events option,
-                # there is only one row with this ID and nothing changes.
                 # Get the timestamp of the last progression event
+                # NOTE: If events are merged, only the first event has the
+                # is progression flag set to True. Therefore, we have to use
+                # the largest progression event ID instead of the largest
+                # timestamp, then get the max timestamp within this progression
+                # ID. If we are not using the merge events option, there is only
+                # one row with this ID and nothing changes.
                 last_progression_event_id = progression_events_df[
                     self.progression_event_id_column_name
                 ].max()
@@ -1687,7 +1689,8 @@ class EDSSProgression:
                 remainder_follow_up.at[
                     remainder_follow_up.index[0], self.edss_score_column_name
                 ] = remainder_general_baseline
-                # TODO: change this into a drop of all other columns!
+                # We only need the timestamp and the score columns, the rest is
+                # preserved in the annotated df after the first round.
                 remainder_follow_up = remainder_follow_up[
                     [self.time_column_name, self.edss_score_column_name]
                 ]
