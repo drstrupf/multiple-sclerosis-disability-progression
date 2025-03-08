@@ -206,7 +206,7 @@ if __name__ == "__main__":
             relapse_timestamps = st.multiselect(
                 label="Relapses (days after baseline)",
                 options=[i for i in range(1000)],
-                default=[40, 200, 500],
+                default=[40, 200, 530],
                 key="add_relapses_widget",
                 help=None,
                 on_change=None,
