@@ -341,6 +341,7 @@ def relapses_in_confirmation_dropdown(key):
         disabled=False,
         label_visibility="visible",
     )
+    return opt_pira_allow_relapses_between_event_and_confirmation
 
 
 def dynamic_progression_option_input_element(
