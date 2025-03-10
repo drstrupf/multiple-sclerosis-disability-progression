@@ -215,7 +215,7 @@ if __name__ == "__main__":
                 disabled=False,
                 label_visibility="visible",
             )
-            fig, ax = plt.subplots(1, 1, figsize=(12, 4))
+            fig, ax = plt.subplots(1, 1, figsize=(16, 6))
             visualization.annotate_plot_follow_up(
                 follow_up_dataframe=edited_example_follow_up_df,
                 relapse_timestamps=relapse_timestamps,
