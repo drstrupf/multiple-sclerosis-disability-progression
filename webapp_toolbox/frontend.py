@@ -487,7 +487,7 @@ def example_input_dataframe_editor(
     edited_follow_up_dataframe = st.data_editor(
         edited_follow_up_dataframe,
         column_config={
-            time_column_name: "Time",
+            time_column_name: "Days after baseline",
             edss_score_column_name: st.column_config.SelectboxColumn(
                 "EDSS", help="EDSS score", options=[i * 0.5 for i in range(21)]
             ),
