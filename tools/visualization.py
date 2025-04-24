@@ -30,6 +30,7 @@ def annotate_plot_follow_up(
     opt_roving_reference_confirmation_included_values="all",  # "last" or "all"
     opt_roving_reference_confirmation_time_right_side_max_tolerance=np.inf,
     opt_roving_reference_confirmation_time_left_side_max_tolerance=0,
+    opt_roving_reference_use_lowest_confirmation_score=False,
     # PIRA/RAW options
     opt_raw_before_relapse_max_days=30,
     opt_raw_after_relapse_max_days=90,
@@ -109,6 +110,7 @@ def annotate_plot_follow_up(
         opt_roving_reference_confirmation_included_values=opt_roving_reference_confirmation_included_values,
         opt_roving_reference_confirmation_time_right_side_max_tolerance=opt_roving_reference_confirmation_time_right_side_max_tolerance,
         opt_roving_reference_confirmation_time_left_side_max_tolerance=opt_roving_reference_confirmation_time_left_side_max_tolerance,
+        opt_roving_reference_use_lowest_confirmation_score=opt_roving_reference_use_lowest_confirmation_score,
         # PIRA/RAW options
         opt_raw_before_relapse_max_days=opt_raw_before_relapse_max_days,
         opt_raw_after_relapse_max_days=opt_raw_after_relapse_max_days,

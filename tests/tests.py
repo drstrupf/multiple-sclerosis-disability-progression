@@ -1110,6 +1110,158 @@ def test_relapse_independent_baselines():
     ), "Test 10 'Roving reference, 5 units confirmed, 4 units right hand side constraint' failed!"
 
 
+def test_roving_baseline_with_minimal_score():
+    # Fixed vs. roving without/with confirmation
+    test_dataframe_roving_lowest_1 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [5.0, 4.0, 3.5, 4.0, 4.0],
+        }
+    )
+    # All confirmed with subsequent drop and increase
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=test_dataframe_roving_lowest_1,
+        targets_dict={
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 3.5)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 20,
+            "opt_roving_reference_confirmation_included_values": "all",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 1 for roving with minimal score failed!"
+    # Last confirmed with subsequent drop and increase
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=test_dataframe_roving_lowest_1,
+        targets_dict={
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 4.0)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 20,
+            "opt_roving_reference_confirmation_included_values": "last",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 2 for roving with minimal score failed!"
+    test_dataframe_roving_lowest_2 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [5.0, 4.0, 4.0, 3.5, 4.0],
+        }
+    )
+    # All confirmed with repetition and drop
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=test_dataframe_roving_lowest_2,
+        targets_dict={
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 3.5)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 20,
+            "opt_roving_reference_confirmation_included_values": "all",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 3 for roving with minimal score failed!"
+    # Last confirmed with repetition and drop
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=test_dataframe_roving_lowest_2,
+        targets_dict={
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 3.5)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 20,
+            "opt_roving_reference_confirmation_included_values": "last",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 4 for roving with minimal score failed!"
+    # Inconsistency part 1
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40],
+                "edss_score": [5.0, 4.0, 3.5, 4.5, 5.0],
+            }
+        ),
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(10, True), (30, True)],
+            "edss_score_used_as_new_general_reference": [(10, 3.5), (30, 4.5)],
+            "is_progression": [(30, True)],
+            "progression_type": [(30, LABEL_PIRA)],
+            "progression_score": [(30, 4.5)],
+            "progression_reference_score": [(30, 3.5)],
+            "progression_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 10,
+            "opt_roving_reference_confirmation_included_values": "all",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 5 for roving with minimal score failed!"
+    # Inconsistency part 2
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40],
+                "edss_score": [5.0, 3.5, 4.0, 4.5, 5.0],
+            }
+        ),
+        targets_dict={},
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 10,
+            "opt_roving_reference_confirmation_included_values": "all",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 6 for roving with minimal score failed!"
+    # Inconsistency part 3
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=True,
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40],
+                "edss_score": [5.0, 4.0, 4.0, 4.5, 5.0],
+            }
+        ),
+        targets_dict={
+            "is_post_event_rebaseline": [(40, True)],
+            "is_general_rebaseline": [(10, True), (40, True)],
+            "edss_score_used_as_new_general_reference": [(10, 4.0), (40, 5.0)],
+            "is_progression": [(40, True)],
+            "progression_type": [(40, LABEL_PIRA)],
+            "progression_score": [(40, 5.0)],
+            "progression_reference_score": [(40, 4.0)],
+            "progression_event_id": [(40, 1)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 10,
+            "opt_roving_reference_confirmation_included_values": "all",
+            "opt_roving_reference_use_lowest_confirmation_score": True,
+        },
+    ), "Test 5 for roving with minimal score failed!"
+
+
 def test_relapse_independent_minimal_distance():
     # Minimal distance to reference, various distances
     test_dataframe_distances_to_reference = pd.DataFrame(
@@ -5249,6 +5401,7 @@ if __name__ == "__main__":
 
     print("Testing baselines...")
     test_relapse_independent_baselines()
+    test_roving_baseline_with_minimal_score()
 
     print("Testing minimal distance...")
     test_relapse_independent_minimal_distance()

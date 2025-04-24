@@ -21,13 +21,16 @@ class EDSSProgression:
     )  # be more conservative for sparse follow-ups!
     opt_baseline_type: str = "roving"
     opt_roving_reference_require_confirmation: bool = True
-    opt_roving_reference_confirmation_time: float = 0.5  # amounts to next confirmed
+    opt_roving_reference_confirmation_time: float = 0.5  # 0.5 amounts to next confirmed
     opt_roving_reference_confirmation_included_values: str = "all"  # "last" or "all"
     opt_roving_reference_confirmation_time_right_side_max_tolerance: int = (
         np.inf
-    )  # no constraint
+    )  # no constraint if set to np.inf
     opt_roving_reference_confirmation_time_left_side_max_tolerance: int = (
-        0  # no tolerance
+        0  # no tolerance if set to 0
+    )
+    opt_roving_reference_use_lowest_confirmation_score: bool = (
+        False  # 'True' for reproducing Mueller et al., 2025; not recommended since it leads to inconsistent confirmation requirements
     )
     # PIRA/RAW options - ignored if no relapses specified
     opt_raw_before_relapse_max_days: int = 30
@@ -1479,10 +1482,33 @@ class EDSSProgression:
                                         max(roving_rebaseline_confirmation_scores)
                                         < general_baselines.iloc[-1]["baseline_score"]
                                     ):
-                                        confirmed_new_roving = max(
-                                            max(roving_rebaseline_confirmation_scores),
-                                            current_edss,
-                                        )
+                                        # Use the maximum of the confirmation scores as new roving
+                                        # reference for consistency. This ensures that no reference
+                                        # is chosen that is not confirmed over the required period.
+                                        # The argument opt_roving_reference_use_lowest_confirmation_score
+                                        # is set to 'False' by default.
+                                        if not self.opt_roving_reference_use_lowest_confirmation_score:
+                                            confirmed_new_roving = max(
+                                                max(roving_rebaseline_confirmation_scores),
+                                                current_edss,
+                                            )
+                                        # If the minimum option is chosen, following "any decrease of
+                                        # EDSS score that was confirmed with the same or a lower EDSS
+                                        # score over x months or longer" (Mueller et al., 2025) we first
+                                        # have to check whether the confirmation scores are equal or lower
+                                        # than the new reference candidate.
+                                        else:
+                                            if (
+                                                max(roving_rebaseline_confirmation_scores)
+                                                <= current_edss
+                                            ):
+                                                # Confirmation scores are equal or lower than current, so we can
+                                                # just take the minimum.
+                                                confirmed_new_roving = min(roving_rebaseline_confirmation_scores)
+                                            else:
+                                                # If any confirmation score is greater than the reference candidate,
+                                                # the new reference is not confirmed.
+                                                general_roving_confirmed = False
                                     else:
                                         general_roving_confirmed = False
 
@@ -1526,10 +1552,33 @@ class EDSSProgression:
                                         max(roving_rebaseline_confirmation_scores)
                                         < raw_pira_baselines.iloc[-1]["baseline_score"]
                                     ):
-                                        confirmed_new_roving = max(
-                                            max(roving_rebaseline_confirmation_scores),
-                                            current_edss,
-                                        )
+                                        # Use the maximum of the confirmation scores as new roving
+                                        # reference for consistency. This ensures that no reference
+                                        # is chosen that is not confirmed over the required period.
+                                        # The argument opt_roving_reference_use_lowest_confirmation_score
+                                        # is set to 'False' by default.
+                                        if not self.opt_roving_reference_use_lowest_confirmation_score:
+                                            confirmed_new_roving = max(
+                                                max(roving_rebaseline_confirmation_scores),
+                                                current_edss,
+                                            )
+                                        # If the minimum option is chosen, following "any decrease of
+                                        # EDSS score that was confirmed with the same or a lower EDSS
+                                        # score over x months or longer" (Mueller et al., 2025) we first
+                                        # have to check whether the confirmation scores are equal or lower
+                                        # than the new reference candidate.
+                                        else:
+                                            if (
+                                                max(roving_rebaseline_confirmation_scores)
+                                                <= current_edss
+                                            ):
+                                                # Confirmation scores are equal or lower than current, so we can
+                                                # just take the minimum.
+                                                confirmed_new_roving = min(roving_rebaseline_confirmation_scores)
+                                            else:
+                                                # If any confirmation score is greater than the reference candidate,
+                                                # the new reference is not confirmed.
+                                                raw_pira_roving_confirmed = False
                                     else:
                                         raw_pira_roving_confirmed = False
 
