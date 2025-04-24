@@ -50,6 +50,15 @@ class EDSSProgression:
     opt_confirmation_require_confirmation_for_last_visit: bool = (
         True  # If False, the last assessment doesn't need confirmation
     )
+    opt_confirmation_pira_ignore_scores_in_proximity_to_relapse: bool = (
+        False  # 'True' for reproducing Mueller et al., 2025; not recommended!
+    )
+    opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days: (
+        int
+    ) = 30
+    opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days: (
+        int
+    ) = 90
     # Minimal distance options
     opt_minimal_distance_time: int = 0
     opt_minimal_distance_type: str = "reference"  # "reference" or "previous"
@@ -190,6 +199,27 @@ class EDSSProgression:
             raise ValueError("Confirmation right hand side tolerance must be >= 0.")
         if self.opt_confirmation_time_left_side_max_tolerance < 0:
             raise ValueError("Confirmation left hand side tolerance must be >= 0.")
+        if (
+            self.opt_confirmation_pira_ignore_scores_in_proximity_to_relapse
+            and self.opt_confirmation_included_values == "last"
+        ):
+            raise ValueError(
+                "Invalid confirmation requirements. If ignoring confirmation assessments close to relapses for PIRA, only the option 'all' is valid for included values."
+            )
+        if (
+            self.opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days
+            < 0
+        ):
+            raise ValueError(
+                "Max. RAW time before relapse for confirmation must be >= 0."
+            )
+        if (
+            self.opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days
+            < 0
+        ):
+            raise ValueError(
+                "Max. RAW time after relapse for confirmation must be >= 0."
+            )
         # Minimal distance arguments
         if self.opt_minimal_distance_type not in [
             "reference",
@@ -742,88 +772,154 @@ class EDSSProgression:
                         # If we don't have any confirmation scores, we're done.
                         # Otherwise we now have to check the conditions.
                         if len(confirmation_scores_dataframe) > 0:
-                            # Check if confirmed; if not, we don't even have to
-                            # bother with the relapses...
-                            (
-                                is_progression,
-                                confirmed_event_score,
-                            ) = self._check_confirmation_scores_and_get_confirmed_score(
-                                current_edss=current_edss,
-                                current_reference=current_baseline_score,  # The UP vs. RAW/PIRA version choice happens at the start.
-                                confirmation_scores_dataframe=confirmation_scores_dataframe,
-                                additional_lower_threshold=additional_lower_threshold,
-                            )
-                            # If unconfirmed, nope, otherwise continue.
-                            if is_progression:
-                                # If we already know that it's RAW or UP, we're done.
-                                # Otherwise we have to check for relapses during confirmation,
-                                # unless there are no relapses, of course...
-                                # We also introduce a new type 'PIRA confirmed during relapse'
-                                # to mark events that are outside the RAW window, but confirmed
-                                # by assessments during relapses. Treated like PIRA and RAW for
-                                # baselines etc.
-                                if (progression_type == self.label_pira) and (
-                                    len(relapse_timestamps) > 0
-                                ):
-                                    # If we don't allow relapses between the event and the
-                                    # end of the confirmation interval, or if we consider all
-                                    # scores for confirmation, then any event with relapses
-                                    # in this time interval is 'PIRA confirmed within RAW window'.
-                                    # We check the relapse timestamp list for whether there are
-                                    # any in between the assessments. We can use >= and <= since
-                                    # if the assessment were at the same time as a relapse, it
-                                    # would be RAW anyways...
-                                    if (
-                                        not self.opt_pira_allow_relapses_between_event_and_confirmation
-                                    ) or (
-                                        self.opt_confirmation_included_values == "all"
-                                    ):
-                                        last_confirmation_score_timestamp = (
-                                            confirmation_scores_dataframe[
-                                                self.time_column_name
-                                            ].max()
-                                        )
-                                        # If any relapse timestamp >= current and <= last conf + buffer,
-                                        # the event is 'PIRA confirmed within RAW window'.
-                                        if max(
+                            # ------ START MUELLER 2025 IMPLEMENTATION FOR PIRA CONFIRMATION ------ #
+                            # If we use the Mueller 2025 implementation of ignoring confirmation
+                            # scores in proximity of a relapse, we have to first get the scores
+                            # that satisfy this requirement...
+                            # NOTE: this implementation does NOT return events of the type 'PIRA
+                            # confirmed in RAW window'.
+                            # NOTE: this only applies to PIRA, thus we only have to do this if
+                            # the candidate is PIRA.
+                            if (
+                                self.opt_confirmation_pira_ignore_scores_in_proximity_to_relapse
+                                and (progression_type == self.label_pira)
+                            ):
+                                # Get confirmation scores from all scores that are not in proximity
+                                # of a relapse, using the confirmation specific RAW window sizes.
+                                pira_confirmation_scores = self._get_confirmation_scores_dataframe(
+                                    current_timestamp=current_timestamp,
+                                    follow_up_dataframe=annotated_df[
+                                        (
                                             (
-                                                np.array(relapse_timestamps)
-                                                >= current_timestamp
+                                                annotated_df[
+                                                    self.time_to_next_relapse_column_name
+                                                ]
+                                                > self.opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days
                                             )
-                                            & (
-                                                np.array(relapse_timestamps)
-                                                <= last_confirmation_score_timestamp
-                                                + self.opt_raw_before_relapse_max_days
+                                            | (
+                                                annotated_df[
+                                                    self.time_to_next_relapse_column_name
+                                                ].isna()
                                             )
+                                        )
+                                        & (
+                                            (
+                                                annotated_df[
+                                                    self.time_since_last_relapse_column_name
+                                                ]
+                                                > self.opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days
+                                            )
+                                            | (
+                                                annotated_df[
+                                                    self.time_since_last_relapse_column_name
+                                                ].isna()
+                                            )
+                                        )
+                                    ],
+                                    opt_confirmation_time=self.opt_confirmation_time,
+                                    opt_confirmation_included_values=self.opt_confirmation_included_values,
+                                    opt_confirmation_sustained_minimal_distance=self.opt_confirmation_sustained_minimal_distance,
+                                    opt_confirmation_time_right_side_max_tolerance=self.opt_confirmation_time_right_side_max_tolerance,
+                                    opt_confirmation_time_left_side_max_tolerance=self.opt_confirmation_time_left_side_max_tolerance,
+                                )
+                                # Check confirmation only if confirmation scores remain
+                                if len(pira_confirmation_scores) > 0:
+                                    (
+                                        is_progression,
+                                        confirmed_event_score,
+                                    ) = self._check_confirmation_scores_and_get_confirmed_score(
+                                        current_edss=current_edss,
+                                        current_reference=current_baseline_score,
+                                        confirmation_scores_dataframe=pira_confirmation_scores,
+                                        additional_lower_threshold=additional_lower_threshold,
+                                    )
+                            # ------ END MUELLER 2025 IMPLEMENTATION FOR PIRA CONFIRMATION ------ #
+
+                            # Otherwise we can move on to our default implementation.
+                            else:
+                                # Check if confirmed; if not, we don't even have to
+                                # bother with the relapses...
+                                (
+                                    is_progression,
+                                    confirmed_event_score,
+                                ) = self._check_confirmation_scores_and_get_confirmed_score(
+                                    current_edss=current_edss,
+                                    current_reference=current_baseline_score,  # The UP vs. RAW/PIRA version choice happens at the start.
+                                    confirmation_scores_dataframe=confirmation_scores_dataframe,
+                                    additional_lower_threshold=additional_lower_threshold,
+                                )
+                                # If unconfirmed, nope, otherwise continue.
+                                if is_progression:
+                                    # If we already know that it's RAW or UP, we're done.
+                                    # Otherwise we have to check for relapses during confirmation,
+                                    # unless there are no relapses, of course...
+                                    # We also introduce a new type 'PIRA confirmed during relapse'
+                                    # to mark events that are outside the RAW window, but confirmed
+                                    # by assessments during relapses. Treated like PIRA and RAW for
+                                    # baselines etc.
+                                    if (progression_type == self.label_pira) and (
+                                        len(relapse_timestamps) > 0
+                                    ):
+                                        # If we don't allow relapses between the event and the
+                                        # end of the confirmation interval, or if we consider all
+                                        # scores for confirmation, then any event with relapses
+                                        # in this time interval is 'PIRA confirmed within RAW window'.
+                                        # We check the relapse timestamp list for whether there are
+                                        # any in between the assessments. We can use >= and <= since
+                                        # if the assessment were at the same time as a relapse, it
+                                        # would be RAW anyways...
+                                        if (
+                                            not self.opt_pira_allow_relapses_between_event_and_confirmation
+                                        ) or (
+                                            self.opt_confirmation_included_values
+                                            == "all"
+                                        ):
+                                            last_confirmation_score_timestamp = (
+                                                confirmation_scores_dataframe[
+                                                    self.time_column_name
+                                                ].max()
+                                            )
+                                            # If any relapse timestamp >= current and <= last conf + buffer,
+                                            # the event is 'PIRA confirmed within RAW window'.
+                                            if max(
+                                                (
+                                                    np.array(relapse_timestamps)
+                                                    >= current_timestamp
+                                                )
+                                                & (
+                                                    np.array(relapse_timestamps)
+                                                    <= last_confirmation_score_timestamp
+                                                    + self.opt_raw_before_relapse_max_days
+                                                )
+                                            ):
+                                                progression_type = (
+                                                    self.label_pira_confirmed_in_raw_window
+                                                )
+
+                                        # We also have to make sure that there is no relapse
+                                        # too close before or after the confirmation interval!
+                                        # NOTE: This is covered by the part above if relapses
+                                        # within confirmation interval are not allowed or all
+                                        # values are relevant for confirmation. TODO: remove
+                                        # this redundancy.
+                                        if (
+                                            confirmation_scores_dataframe.iloc[-1][
+                                                self.time_to_next_relapse_column_name
+                                            ]
+                                            <= self.opt_raw_before_relapse_max_days
                                         ):
                                             progression_type = (
                                                 self.label_pira_confirmed_in_raw_window
                                             )
-
-                                    # We also have to make sure that there is no relapse
-                                    # too close before or after the confirmation interval!
-                                    # NOTE: This is covered by the part above if relapses
-                                    # within confirmation interval are not allowed or all
-                                    # values are relevant for confirmation. TODO: remove
-                                    # this redundancy.
-                                    if (
-                                        confirmation_scores_dataframe.iloc[-1][
-                                            self.time_to_next_relapse_column_name
-                                        ]
-                                        <= self.opt_raw_before_relapse_max_days
-                                    ):
-                                        progression_type = (
-                                            self.label_pira_confirmed_in_raw_window
-                                        )
-                                    if (
-                                        confirmation_scores_dataframe.iloc[0][
-                                            self.time_since_last_relapse_column_name
-                                        ]
-                                        <= self.opt_raw_after_relapse_max_days
-                                    ):
-                                        progression_type = (
-                                            self.label_pira_confirmed_in_raw_window
-                                        )
+                                        if (
+                                            confirmation_scores_dataframe.iloc[0][
+                                                self.time_since_last_relapse_column_name
+                                            ]
+                                            <= self.opt_raw_after_relapse_max_days
+                                        ):
+                                            progression_type = (
+                                                self.label_pira_confirmed_in_raw_window
+                                            )
 
         return (
             is_progression,
@@ -1487,9 +1583,13 @@ class EDSSProgression:
                                         # is chosen that is not confirmed over the required period.
                                         # The argument opt_roving_reference_use_lowest_confirmation_score
                                         # is set to 'False' by default.
-                                        if not self.opt_roving_reference_use_lowest_confirmation_score:
+                                        if (
+                                            not self.opt_roving_reference_use_lowest_confirmation_score
+                                        ):
                                             confirmed_new_roving = max(
-                                                max(roving_rebaseline_confirmation_scores),
+                                                max(
+                                                    roving_rebaseline_confirmation_scores
+                                                ),
                                                 current_edss,
                                             )
                                         # If the minimum option is chosen, following "any decrease of
@@ -1499,12 +1599,16 @@ class EDSSProgression:
                                         # than the new reference candidate.
                                         else:
                                             if (
-                                                max(roving_rebaseline_confirmation_scores)
+                                                max(
+                                                    roving_rebaseline_confirmation_scores
+                                                )
                                                 <= current_edss
                                             ):
                                                 # Confirmation scores are equal or lower than current, so we can
                                                 # just take the minimum.
-                                                confirmed_new_roving = min(roving_rebaseline_confirmation_scores)
+                                                confirmed_new_roving = min(
+                                                    roving_rebaseline_confirmation_scores
+                                                )
                                             else:
                                                 # If any confirmation score is greater than the reference candidate,
                                                 # the new reference is not confirmed.
@@ -1557,9 +1661,13 @@ class EDSSProgression:
                                         # is chosen that is not confirmed over the required period.
                                         # The argument opt_roving_reference_use_lowest_confirmation_score
                                         # is set to 'False' by default.
-                                        if not self.opt_roving_reference_use_lowest_confirmation_score:
+                                        if (
+                                            not self.opt_roving_reference_use_lowest_confirmation_score
+                                        ):
                                             confirmed_new_roving = max(
-                                                max(roving_rebaseline_confirmation_scores),
+                                                max(
+                                                    roving_rebaseline_confirmation_scores
+                                                ),
                                                 current_edss,
                                             )
                                         # If the minimum option is chosen, following "any decrease of
@@ -1569,12 +1677,16 @@ class EDSSProgression:
                                         # than the new reference candidate.
                                         else:
                                             if (
-                                                max(roving_rebaseline_confirmation_scores)
+                                                max(
+                                                    roving_rebaseline_confirmation_scores
+                                                )
                                                 <= current_edss
                                             ):
                                                 # Confirmation scores are equal or lower than current, so we can
                                                 # just take the minimum.
-                                                confirmed_new_roving = min(roving_rebaseline_confirmation_scores)
+                                                confirmed_new_roving = min(
+                                                    roving_rebaseline_confirmation_scores
+                                                )
                                             else:
                                                 # If any confirmation score is greater than the reference candidate,
                                                 # the new reference is not confirmed.

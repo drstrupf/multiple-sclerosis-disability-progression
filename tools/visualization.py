@@ -47,6 +47,9 @@ def annotate_plot_follow_up(
     opt_confirmation_time_right_side_max_tolerance=np.inf,  # not for "sustained"
     opt_confirmation_time_left_side_max_tolerance=0,  # not for "sustained"
     opt_confirmation_require_confirmation_for_last_visit=True,
+    opt_confirmation_pira_ignore_scores_in_proximity_to_relapse=False,
+    opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days=30,
+    opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days=90,
     # Minimal distance options
     opt_minimal_distance_time=0,
     opt_minimal_distance_type="reference",  # "reference" or "previous"
@@ -127,6 +130,9 @@ def annotate_plot_follow_up(
         opt_confirmation_time_right_side_max_tolerance=opt_confirmation_time_right_side_max_tolerance,
         opt_confirmation_time_left_side_max_tolerance=opt_confirmation_time_left_side_max_tolerance,
         opt_confirmation_require_confirmation_for_last_visit=opt_confirmation_require_confirmation_for_last_visit,
+        opt_confirmation_pira_ignore_scores_in_proximity_to_relapse=opt_confirmation_pira_ignore_scores_in_proximity_to_relapse,
+        opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days=opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days,
+        opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days=opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days,
         # Minimal distance options
         opt_minimal_distance_time=opt_minimal_distance_time,
         opt_minimal_distance_type=opt_minimal_distance_type,
