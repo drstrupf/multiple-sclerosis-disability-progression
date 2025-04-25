@@ -2397,7 +2397,8 @@ def test_raw_pira_confirmed():
         },
     ), "Test 6 failed!"
     # Test case 7 - undefined candidate lower than RAW/PIRA must not be event
-    raw_pira_progression_result_is_equal_to_target(
+    """
+    assert raw_pira_progression_result_is_equal_to_target(
         ignore_relapses=False,
         relapse_timestamps=[25, 39],
         follow_up_dataframe=pd.DataFrame(
@@ -2436,7 +2437,195 @@ def test_raw_pira_confirmed():
             "opt_raw_after_relapse_max_days": 3,
             "opt_raw_before_relapse_max_days": 3,
         },
-    )
+    ), "Test 7 failed"
+    """
+
+
+def test_raw_pira_confirmed_mueller_2025():
+    # Test 1 - confirm as PIRA despite relapse if later scores are present
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=False,
+        relapse_timestamps=[45],
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70, 80],
+                "edss_score": [1, 1, 1.5, 2.0, 2.0, 3.0, 2.5, 2.5, 3.0],
+            }
+        ),
+        targets_dict={
+            "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
+            "days_since_previous_relapse": [
+                (50, 5),
+                (60, 15),
+                (70, 25),
+                (80, 35)
+            ],
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2)],
+            "is_raw_pira_rebaseline": [(30, True), (70, True)],
+            "edss_score_used_as_new_raw_pira_reference": [(30, 2), (70, 2.5)],
+            "is_post_relapse_rebaseline": [(70, True)],
+            "is_progression": [(30, True)],
+            "progression_type": [(30, LABEL_PIRA)],
+            "progression_score": [(30, 2)],
+            "progression_reference_score": [(30, 1)],
+            "progression_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "opt_raw_before_relapse_max_days": 2,
+            "opt_raw_after_relapse_max_days": 20,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse": True,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days": 2,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days": 20,
+        },
+    ), "Test 1 failed"
+    # Test 2 - ignore post-relapse recovery
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=False,
+        relapse_timestamps=[45],
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70, 80],
+                "edss_score": [1, 1, 1.5, 2.0, 2.0, 3.0, 1.5, 2.5, 3.0],
+            }
+        ),
+        targets_dict={
+            "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
+            "days_since_previous_relapse": [
+                (50, 5),
+                (60, 15),
+                (70, 25),
+                (80, 35)
+            ],
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2)],
+            "is_raw_pira_rebaseline": [(30, True), (70, True)],
+            "edss_score_used_as_new_raw_pira_reference": [(30, 2), (70, 2.5)],
+            "is_post_relapse_rebaseline": [(70, True)],
+            "is_progression": [(30, True)],
+            "progression_type": [(30, LABEL_PIRA)],
+            "progression_score": [(30, 2)],
+            "progression_reference_score": [(30, 1)],
+            "progression_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "opt_raw_before_relapse_max_days": 2,
+            "opt_raw_after_relapse_max_days": 20,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse": True,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days": 2,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days": 20,
+        },
+    ), "Test 2 failed"
+    # Test 3 - don't confirm because of later post-relapse recovery
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=False,
+        relapse_timestamps=[45],
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90],
+                "edss_score": [1, 1, 1.5, 2.0, 2.0, 3.0, 2.0, 1.5, 2.5, 3.0],
+            }
+        ),
+        targets_dict={
+            "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
+            "days_since_previous_relapse": [
+                (50, 5),
+                (60, 15),
+                (70, 25),
+                (80, 35),
+                (90, 45),
+            ],
+            "is_raw_pira_rebaseline": [(70, True)],
+            "edss_score_used_as_new_raw_pira_reference": [(70, 1.5)],
+            "is_post_relapse_rebaseline": [(70, True)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "opt_raw_before_relapse_max_days": 2,
+            "opt_raw_after_relapse_max_days": 20,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse": True,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days": 2,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days": 20,
+        },
+    ), "Test 3 failed"
+    # Test 4 - leave events unconfirmed if no confirmation scores outside relapse window are present
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=False,
+        relapse_timestamps=[45],
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60,],
+                "edss_score": [1, 1, 1.5, 2.0, 2.0, 3.0, 2.5],
+            }
+        ),
+        targets_dict={
+            "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
+            "days_since_previous_relapse": [
+                (50, 5),
+                (60, 15),
+            ],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "opt_raw_before_relapse_max_days": 2,
+            "opt_raw_after_relapse_max_days": 20,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse": True,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days": 2,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days": 20,
+        },
+    ), "Test 4 failed"
+    # Test 5 - different window sizes
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=False,
+        relapse_timestamps=[45],
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60],
+                "edss_score": [1, 1, 1.5, 2.0, 2.0, 3.0, 2.5],
+            }
+        ),
+        targets_dict={
+            "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
+            "days_since_previous_relapse": [
+                (50, 5),
+                (60, 15),
+            ],
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2)],
+            "is_raw_pira_rebaseline": [(30, True)],
+            "edss_score_used_as_new_raw_pira_reference": [(30, 2)],
+            "is_progression": [(30, True)],
+            "progression_type": [(30, LABEL_PIRA)],
+            "progression_score": [(30, 2)],
+            "progression_reference_score": [(30, 1)],
+            "progression_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "opt_raw_before_relapse_max_days": 2,
+            "opt_raw_after_relapse_max_days": 20,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse": True,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_before_relapse_max_days": 2,
+            "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days": 10,
+        },
+    ), "Test 5 failed"
+
+
 
 
 def test_post_relapse_rebaselining_higher_equal_lower():
@@ -5427,6 +5616,7 @@ if __name__ == "__main__":
 
     print("Testing RAW/PIRA label assignment for confirmed progression...")
     test_raw_pira_confirmed()
+    test_raw_pira_confirmed_mueller_2025()
 
     print("Testing post-relapse re-baselining depending on post-relapse score...")
     test_post_relapse_rebaselining_higher_equal_lower()
