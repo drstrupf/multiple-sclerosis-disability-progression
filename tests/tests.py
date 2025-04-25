@@ -2454,12 +2454,7 @@ def test_raw_pira_confirmed_mueller_2025():
         ),
         targets_dict={
             "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
-            "days_since_previous_relapse": [
-                (50, 5),
-                (60, 15),
-                (70, 25),
-                (80, 35)
-            ],
+            "days_since_previous_relapse": [(50, 5), (60, 15), (70, 25), (80, 35)],
             "is_post_event_rebaseline": [(30, True)],
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2)],
@@ -2495,12 +2490,7 @@ def test_raw_pira_confirmed_mueller_2025():
         ),
         targets_dict={
             "days_to_next_relapse": [(0, 45), (10, 35), (20, 25), (30, 15), (40, 5)],
-            "days_since_previous_relapse": [
-                (50, 5),
-                (60, 15),
-                (70, 25),
-                (80, 35)
-            ],
+            "days_since_previous_relapse": [(50, 5), (60, 15), (70, 25), (80, 35)],
             "is_post_event_rebaseline": [(30, True)],
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2)],
@@ -2564,7 +2554,15 @@ def test_raw_pira_confirmed_mueller_2025():
         relapse_timestamps=[45],
         follow_up_dataframe=pd.DataFrame(
             {
-                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60,],
+                "days_after_baseline": [
+                    0,
+                    10,
+                    20,
+                    30,
+                    40,
+                    50,
+                    60,
+                ],
                 "edss_score": [1, 1, 1.5, 2.0, 2.0, 3.0, 2.5],
             }
         ),
@@ -2624,8 +2622,6 @@ def test_raw_pira_confirmed_mueller_2025():
             "opt_confirmation_pira_ignore_scores_in_proximity_to_relapse_after_relapse_max_days": 10,
         },
     ), "Test 5 failed"
-
-
 
 
 def test_post_relapse_rebaselining_higher_equal_lower():
