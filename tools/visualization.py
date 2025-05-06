@@ -584,8 +584,8 @@ def annotate_plot_follow_up(
                     ),
                 ]
                 legend_labels = legend_labels + [
-                    "PIRA confirmed around relapse event assessment",
-                    "PIRA confirmed around relapse event score",
+                    "PIRA with relapse during confirmation event assessment",
+                    "PIRA with relapse during confirmation event score",
                     "RAW event assessment",
                     "RAW event score",
                     "Undefined worsening event assessment",
