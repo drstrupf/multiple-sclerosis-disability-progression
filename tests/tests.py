@@ -1132,6 +1132,7 @@ def test_relapse_independent_minimal_distance():
             "progression_event_id": [(10, 1)],
         },
         args_dict={
+            "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 10,
             "opt_minimal_distance_type": "reference",
@@ -1152,6 +1153,7 @@ def test_relapse_independent_minimal_distance():
             "progression_event_id": [(20, 1)],
         },
         args_dict={
+            "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
             "opt_minimal_distance_type": "reference",
@@ -1256,6 +1258,7 @@ def test_relapse_independent_minimal_distance():
             "progression_event_id": [(10, 1)],
         },
         args_dict={
+            "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 10,
             "opt_minimal_distance_type": "previous",
@@ -1312,6 +1315,7 @@ def test_relapse_independent_minimal_distance():
             "progression_event_id": [(30, 1)],
         },
         args_dict={
+            "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 15,
@@ -1482,6 +1486,7 @@ def test_relapse_independent_first_vs_all_events():
         },
         args_dict={
             "return_first_event_only": False,
+            "opt_require_confirmation": False,
         },
     ), "Test 1 'Return all events' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1496,6 +1501,7 @@ def test_relapse_independent_first_vs_all_events():
         },
         args_dict={
             "return_first_event_only": True,
+            "opt_require_confirmation": False,
         },
     ), "Test 2 'Return first event only' failed!"
 
@@ -1522,6 +1528,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "progression_event_id": [(30, 1)],
         },
         args_dict={
+            "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_roving_reference_require_confirmation": False,
         },
@@ -1544,6 +1551,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "progression_event_id": [(30, 1), (70, 2)],
         },
         args_dict={
+            "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
         },
@@ -1953,7 +1961,9 @@ def test_raw_pira_unconfirmed():
         follow_up_dataframe=test_dataframe,
         relapse_timestamps=[],
         targets_dict=test_case_1_targets,
-        args_dict={},
+        args_dict={
+            "opt_require_confirmation": False,
+        },
     ), "Test 1 failed!"
 
     # Test cases 2 and 3 - relapse shortly before progression
@@ -1978,6 +1988,7 @@ def test_raw_pira_unconfirmed():
         relapse_timestamps=[15],
         targets_dict=test_case_2_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 4,
         },
@@ -2002,6 +2013,7 @@ def test_raw_pira_unconfirmed():
         relapse_timestamps=[15],
         targets_dict=test_case_3_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 5,
         },
@@ -2029,6 +2041,7 @@ def test_raw_pira_unconfirmed():
         relapse_timestamps=[25],
         targets_dict=test_case_4_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 4,
             "opt_raw_after_relapse_max_days": 5,
         },
@@ -2053,6 +2066,7 @@ def test_raw_pira_unconfirmed():
         relapse_timestamps=[25],
         targets_dict=test_case_5_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 5,
         },
@@ -2095,6 +2109,8 @@ def test_raw_pira_confirmed():
             "opt_confirmation_time": 0,
             "opt_confirmation_included_values": "all",
             "opt_pira_allow_relapses_between_event_and_confirmation": False,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 1 failed!"
 
@@ -2213,6 +2229,8 @@ def test_raw_pira_confirmed():
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
             "opt_pira_allow_relapses_between_event_and_confirmation": True,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 5 failed!"
     # Test case 6 - (2, 10, True, 30, "last", False, "Last only, relapses in confirmation interval not allowed")
@@ -2242,6 +2260,8 @@ def test_raw_pira_confirmed():
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
             "opt_pira_allow_relapses_between_event_and_confirmation": False,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 6 failed!"
     # Test case 7 - undefined candidate lower than RAW/PIRA is event with default no threshold
@@ -2569,6 +2589,7 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         relapse_timestamps=test_relapses_cases_1_2_3_4,
         targets_dict={**test_case_1_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 2,
             "opt_raw_after_relapse_max_days": 1,
         },
@@ -2594,6 +2615,7 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         relapse_timestamps=test_relapses_cases_1_2_3_4,
         targets_dict={**test_case_2_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 4,
             "opt_raw_after_relapse_max_days": 12,
         },
@@ -2619,6 +2641,7 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         relapse_timestamps=test_relapses_cases_1_2_3_4,
         targets_dict={**test_case_3_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 4,
             "opt_raw_after_relapse_max_days": 4,
         },
@@ -2643,6 +2666,7 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         relapse_timestamps=test_relapses_cases_1_2_3_4,
         targets_dict={**test_case_4_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 4,
             "opt_raw_after_relapse_max_days": 20,
         },
@@ -2673,6 +2697,7 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         relapse_timestamps=test_relapses_cases_5,
         targets_dict=test_case_5_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 4,
             "opt_raw_after_relapse_max_days": 4,
         },
@@ -2703,6 +2728,7 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         relapse_timestamps=test_relapses_cases_6,
         targets_dict=test_case_6_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "opt_raw_before_relapse_max_days": 2,
             "opt_raw_after_relapse_max_days": 7,
         },
@@ -2801,6 +2827,7 @@ def test_undefined_progression_never_option():
         relapse_timestamps=[15],
         targets_dict={**test_common_targets, **test_case_1_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "re-baselining only",
             "return_first_event_only": False,
             "opt_raw_before_relapse_max_days": 5,
@@ -2822,6 +2849,7 @@ def test_undefined_progression_never_option():
         relapse_timestamps=[15],
         targets_dict={**test_common_targets, **test_case_2_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "re-baselining only",
             "return_first_event_only": True,
             "opt_raw_before_relapse_max_days": 5,
@@ -2848,6 +2876,7 @@ def test_undefined_progression_never_option():
         relapse_timestamps=[15],
         targets_dict={**test_common_targets, **test_case_3_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "never",
             "return_first_event_only": False,
             "opt_raw_before_relapse_max_days": 5,
@@ -2871,6 +2900,7 @@ def test_undefined_progression_never_option():
         relapse_timestamps=[15],
         targets_dict={**test_common_targets, **test_case_4_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "never",
             "return_first_event_only": True,
             "opt_raw_before_relapse_max_days": 5,
@@ -2949,6 +2979,7 @@ def test_undefined_progression_never_option():
         relapse_timestamps=[],
         targets_dict=test_case_7_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "never",
             "return_first_event_only": False,
             "opt_raw_before_relapse_max_days": 5,
@@ -3074,9 +3105,12 @@ def test_undefined_progression_all_option():
         relapse_timestamps=test_relapse_timestamps_series_1,
         targets_dict={**test_common_targets_series_1, **test_case_1_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "re-baselining only",
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 10,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 1 failed!"
     # Test case 2 - never allow undefined, all events
@@ -3137,9 +3171,12 @@ def test_undefined_progression_all_option():
         relapse_timestamps=test_relapse_timestamps_series_1,
         targets_dict={**test_common_targets_series_1, **test_case_2_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "never",
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 10,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 2 failed!"
     # Test case 3 - allow undefined at all assessments
@@ -3223,9 +3260,12 @@ def test_undefined_progression_all_option():
         relapse_timestamps=test_relapse_timestamps_series_1,
         targets_dict={**test_common_targets_series_1, **test_case_3_targets},
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "all",
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 10,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 3 failed!"
 
@@ -3668,6 +3708,8 @@ def test_undefined_progression_end_option():
             "opt_confirmation_time": 0.5,
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 10,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 1 failed!"
     # Test case 2 - without RAW at the beginning
@@ -3733,6 +3775,8 @@ def test_undefined_progression_end_option():
             "opt_confirmation_time": 0.5,
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 10,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 2 failed!"
     # Test case 3 - masking of PIRA
@@ -3859,9 +3903,12 @@ def test_undefined_progression_end_option():
         relapse_timestamps=[5, 35],
         targets_dict=test_case_5_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "undefined_progression": "end",
             "opt_raw_before_relapse_max_days": 5,
             "opt_raw_after_relapse_max_days": 10,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 5 failed!"
     # Test case 6 - followed by PIRA
@@ -4061,6 +4108,8 @@ def test_undefined_events_thresholds():
             "opt_raw_after_relapse_max_days": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 1D failed!"
 
@@ -4115,6 +4164,8 @@ def test_undefined_events_thresholds():
             "opt_raw_after_relapse_max_days": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 1E failed!"
 
@@ -4169,6 +4220,8 @@ def test_undefined_events_thresholds():
             "opt_raw_after_relapse_max_days": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 1F failed!"
 
@@ -4740,6 +4793,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_1_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
         },
@@ -4774,6 +4828,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_1b_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "return_first_event_only": True,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
@@ -4856,6 +4911,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_3_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
         },
@@ -4891,6 +4947,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_4_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
         },
@@ -4928,6 +4985,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_5_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
         },
@@ -4974,6 +5032,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_6_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
         },
@@ -5000,6 +5059,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_7_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
         },
@@ -5035,6 +5095,7 @@ def test_multi_event_option():
         relapse_timestamps=[],
         targets_dict=test_case_8_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
         },
@@ -5428,6 +5489,8 @@ def test_multi_event_option():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 18 failed!"
 
@@ -5457,6 +5520,8 @@ def test_multi_event_option():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 19 failed!"
 
@@ -5486,6 +5551,8 @@ def test_multi_event_option():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
         },
     ), "Test 20 failed!"
 
@@ -5514,6 +5581,7 @@ def test_multi_event_option():
         relapse_timestamps=[6, 30],
         targets_dict=test_case_21_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "opt_baseline_type": "fixed",
@@ -5591,6 +5659,7 @@ def test_multi_event_option():
         relapse_timestamps=[55],
         targets_dict=test_case_22_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_raw_before_relapse_max_days": 5,
@@ -5724,6 +5793,7 @@ def test_multi_event_option():
         relapse_timestamps=[65],
         targets_dict=test_case_24_targets,
         args_dict={
+            "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_raw_before_relapse_max_days": 5,

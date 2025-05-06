@@ -7,21 +7,55 @@ from dataclasses import dataclass
 
 @dataclass
 class EDSSProgression:
-    """TBD"""
+    """EDSS progression event detection and classification.
 
+    This class provides the functionality to annotate EDSS
+    disability accrual in a follow-up containing EDSS scores
+    and a timestamp for each score.
+
+    Definition options are specified when instantiating the
+    class, with our recommendations as default options.
+
+    Default options: 6 months (180 days) all-confirmed (minimum) 
+    with respect to a 30-days all-confirmed roving reference, no
+    minimal distance requirement, no event merging, no left-hand
+    tolerance or right-hand constraints on confirmation time for
+    reference or event confirmation, minimum increase + 1.5 for
+    score = 0, + 1.0 for scores < 5.5, and + 1 for scores >= 5.5,
+    RAW window 30 days pre- and 90 days post-relapse.
+
+    The effects of individual parameter choices and parameter
+    combinations are showcased in the methods.ipynb notebook
+    in the repo's main folder.
+
+    To annotate disability accrual events in a follow-up,
+    create an instance of EDSSProgression, then use the
+    add_progression_events_to_follow_up method that takes a
+    pandas dataframe with a follow-up (at least two columns,
+    one for the timestamps and one for the EDSS scores) and
+    a list of relapse timestamps to get the annotated dataframe.
+
+    See the tutorial.ipynb notebook in the repo's main folder
+    for some input data format and usage examples.
+
+    """
+
+    # Options for undefined worsening events
     undefined_progression: str = "re-baselining only"  # or "never", "all", "end"
     undefined_progression_wrt_raw_pira_baseline: str = (
         "any"  # or "equal or greater", "greater only"
     )
+    # Search mode options
     return_first_event_only: bool = False
     merge_continuous_events: bool = False
-    continuous_events_max_repetition_time: int = 90
+    continuous_events_max_repetition_time: int = 30
     continuous_events_max_merge_distance: int = (
         np.inf
     )  # be more conservative for sparse follow-ups!
+    # Baseline options
     opt_baseline_type: str = "roving"
     opt_roving_reference_require_confirmation: bool = True
-    opt_roving_reference_confirmation_time: float = 0.5  # amounts to next confirmed
+    opt_roving_reference_confirmation_time: float = 30 # 0.5 would amount to next confirmed
     opt_roving_reference_confirmation_included_values: str = "all"  # "last" or "all"
     opt_roving_reference_confirmation_time_right_side_max_tolerance: int = (
         np.inf
@@ -37,8 +71,8 @@ class EDSSProgression:
     opt_max_score_that_requires_plus_1: float = 5.0
     opt_larger_increment_from_0: bool = True
     # Confirmation options
-    opt_require_confirmation: bool = False
-    opt_confirmation_time: float = -1  # -1 for sustained over follow-up
+    opt_require_confirmation: bool = True
+    opt_confirmation_time: float = 6 * 30  # > 0, or -1 for sustained over follow-up
     opt_confirmation_type: str = "minimum"  # "minimum" or "monotonic"
     opt_confirmation_included_values: str = "all"  # "last" or "all"
     opt_confirmation_sustained_minimal_distance: int = 0  # only if "sustained"
