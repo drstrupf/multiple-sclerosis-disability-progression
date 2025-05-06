@@ -2244,8 +2244,50 @@ def test_raw_pira_confirmed():
             "opt_pira_allow_relapses_between_event_and_confirmation": False,
         },
     ), "Test 6 failed!"
-    # Test case 7 - undefined candidate lower than RAW/PIRA must not be event
-    raw_pira_progression_result_is_equal_to_target(
+    # Test case 7 - undefined candidate lower than RAW/PIRA is event with default no threshold
+    assert raw_pira_progression_result_is_equal_to_target(
+        ignore_relapses=False,
+        relapse_timestamps=[25, 39],
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70],
+                "edss_score": [6.0, 6.5, 7.0, 7.0, 6.0, 6.5, 7.0, 7.0],
+            }
+        ),
+        targets_dict={
+            "days_to_next_relapse": [(0, 25), (10, 15), (20, 5), (30, 9)],
+            "days_since_previous_relapse": [
+                (30, 5),
+                (40, 1),
+                (50, 11),
+                (60, 21),
+                (70, 31),
+            ],
+            "is_post_event_rebaseline": [(50, True), (60, True)],
+            "is_general_rebaseline": [(50, True), (60, True)],
+            "edss_score_used_as_new_general_reference": [(50, 6.5), (60, 7)],
+            "is_raw_pira_rebaseline": [(30, True), (40, True), (60, True)],
+            "edss_score_used_as_new_raw_pira_reference": [(30, 7), (40, 6.5), (60, 7)],
+            "is_post_relapse_rebaseline": [(30, True)],
+            "is_progression": [(50, True), (60, True)],
+            "progression_type": [(50, LABEL_UNDEFINED_PROGRESSION), (60, LABEL_PIRA)],
+            "progression_score": [(50, 6.5), (60, 7)],
+            "progression_reference_score": [(50, 6), (60, 6.5)],
+            "progression_event_id": [(50, 1), (60, 2)],
+        },
+        args_dict={
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_days": 3,
+            "undefined_progression_wrt_raw_pira_baseline": "any",
+        },
+    ), "Test 7 failed!"
+    # Test case 8 - undefined candidate lower than RAW/PIRA is no event with threshold
+    assert raw_pira_progression_result_is_equal_to_target(
         ignore_relapses=False,
         relapse_timestamps=[25, 39],
         follow_up_dataframe=pd.DataFrame(
@@ -2283,8 +2325,9 @@ def test_raw_pira_confirmed():
             "opt_confirmation_time": -1,
             "opt_raw_after_relapse_max_days": 3,
             "opt_raw_before_relapse_max_days": 3,
+            "undefined_progression_wrt_raw_pira_baseline": "greater only",
         },
-    )
+    ), "Test 8 failed!"
 
 
 def test_post_relapse_rebaselining_higher_equal_lower():
@@ -3865,6 +3908,797 @@ def test_undefined_progression_end_option():
     ), "Test 6 failed!"
 
 
+def test_undefined_events_thresholds():
+    test_df_1 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70],
+            "edss_score": [6.0, 7.0, 6.0, 6.0, 6.5, 7.0, 7.5, 7.5],
+        }
+    )
+    test_relapses_1 = [5, 28]
+    common_targets_1 = {
+        "days_since_previous_relapse": [
+            (10, 5),
+            (20, 15),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 32),
+            (70, 42),
+        ],
+        "days_to_next_relapse": [(0, 5), (10, 18), (20, 8)],
+        "is_post_relapse_rebaseline": [(10, True)],
+        "is_raw_pira_rebaseline": [(10, True), (60, True)],
+        "edss_score_used_as_new_raw_pira_reference": [(10, 7), (60, 7.5)],
+    }
+
+    # Test A - no constraints
+    targets_1_A = {
+        "is_post_event_rebaseline": [(40, True), (60, True)],
+        "is_general_rebaseline": [(40, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(40, 6.5), (60, 7.5)],
+        "is_progression": [(40, True), (60, True)],
+        "progression_type": [(40, LABEL_UNDEFINED_PROGRESSION), (60, LABEL_PIRA)],
+        "progression_score": [(40, 6.5), (60, 7.5)],
+        "progression_reference_score": [(40, 6), (60, 7)],
+        "progression_event_id": [(40, 1), (60, 2)],
+    }
+    test_case_1_A_targets = {**targets_1_A, **common_targets_1}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_1,
+        relapse_timestamps=test_relapses_1,
+        targets_dict=test_case_1_A_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "any",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 1A failed!"
+
+    # Test B - equal or greater
+    targets_1_B = {
+        "is_post_event_rebaseline": [(60, True)],
+        "is_general_rebaseline": [(60, True)],
+        "edss_score_used_as_new_general_reference": [(60, 7.5)],
+        "is_progression": [(60, True)],
+        "progression_type": [(60, LABEL_PIRA)],
+        "progression_score": [(60, 7.5)],
+        "progression_reference_score": [(60, 7)],
+        "progression_event_id": [(60, 1)],
+    }
+    test_case_1_B_targets = {**targets_1_B, **common_targets_1}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_1,
+        relapse_timestamps=test_relapses_1,
+        targets_dict=test_case_1_B_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 1B failed!"
+
+    # Test C - greater only
+    targets_1_C = {
+        "is_post_event_rebaseline": [(60, True)],
+        "is_general_rebaseline": [(60, True)],
+        "edss_score_used_as_new_general_reference": [(60, 7.5)],
+        "is_progression": [(60, True)],
+        "progression_type": [(60, LABEL_PIRA)],
+        "progression_score": [(60, 7.5)],
+        "progression_reference_score": [(60, 7)],
+        "progression_event_id": [(60, 1)],
+    }
+    test_case_1_C_targets = {**targets_1_C, **common_targets_1}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_1,
+        relapse_timestamps=test_relapses_1,
+        targets_dict=test_case_1_C_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "greater only",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 1C failed!"
+
+    # Test D - greater only, with roving baseline
+    test_case_1_D_targets = {
+        "days_since_previous_relapse": [
+            (10, 5),
+            (20, 15),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 32),
+            (70, 42),
+        ],
+        "days_to_next_relapse": [(0, 5), (10, 18), (20, 8)],
+        "is_post_relapse_rebaseline": [(10, True), (40, True)],
+        "is_raw_pira_rebaseline": [
+            (10, True),
+            (20, True),
+            (40, True),
+            (50, True),
+            (60, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (10, 7),
+            (20, 6),
+            (40, 6.5),
+            (50, 7),
+            (60, 7.5),
+        ],
+        "is_post_event_rebaseline": [(40, True), (50, True), (60, True)],
+        "is_general_rebaseline": [(40, True), (50, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(40, 6.5), (50, 7), (60, 7.5)],
+        "is_progression": [(40, True), (50, True), (60, True)],
+        "progression_type": [
+            (40, LABEL_UNDEFINED_PROGRESSION),
+            (50, LABEL_PIRA),
+            (60, LABEL_PIRA),
+        ],
+        "progression_score": [(40, 6.5), (50, 7), (60, 7.5)],
+        "progression_reference_score": [(40, 6), (50, 6.5), (60, 7)],
+        "progression_event_id": [(40, 1), (50, 2), (60, 3)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_1,
+        relapse_timestamps=test_relapses_1,
+        targets_dict=test_case_1_D_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "greater only",
+            "opt_baseline_type": "roving",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 1D failed!"
+
+    # Test E - any, with roving baseline
+    test_case_1_E_targets = {
+        "days_since_previous_relapse": [
+            (10, 5),
+            (20, 15),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 32),
+            (70, 42),
+        ],
+        "days_to_next_relapse": [(0, 5), (10, 18), (20, 8)],
+        "is_post_relapse_rebaseline": [(10, True), (40, True)],
+        "is_raw_pira_rebaseline": [
+            (10, True),
+            (20, True),
+            (40, True),
+            (50, True),
+            (60, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (10, 7),
+            (20, 6),
+            (40, 6.5),
+            (50, 7),
+            (60, 7.5),
+        ],
+        "is_post_event_rebaseline": [(40, True), (50, True), (60, True)],
+        "is_general_rebaseline": [(40, True), (50, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(40, 6.5), (50, 7), (60, 7.5)],
+        "is_progression": [(40, True), (50, True), (60, True)],
+        "progression_type": [
+            (40, LABEL_UNDEFINED_PROGRESSION),
+            (50, LABEL_PIRA),
+            (60, LABEL_PIRA),
+        ],
+        "progression_score": [(40, 6.5), (50, 7), (60, 7.5)],
+        "progression_reference_score": [(40, 6), (50, 6.5), (60, 7)],
+        "progression_event_id": [(40, 1), (50, 2), (60, 3)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_1,
+        relapse_timestamps=test_relapses_1,
+        targets_dict=test_case_1_E_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "any",
+            "opt_baseline_type": "roving",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 1E failed!"
+
+    # Test F - equal or greater, with roving baseline
+    test_case_1_F_targets = {
+        "days_since_previous_relapse": [
+            (10, 5),
+            (20, 15),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 32),
+            (70, 42),
+        ],
+        "days_to_next_relapse": [(0, 5), (10, 18), (20, 8)],
+        "is_post_relapse_rebaseline": [(10, True), (40, True)],
+        "is_raw_pira_rebaseline": [
+            (10, True),
+            (20, True),
+            (40, True),
+            (50, True),
+            (60, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (10, 7),
+            (20, 6),
+            (40, 6.5),
+            (50, 7),
+            (60, 7.5),
+        ],
+        "is_post_event_rebaseline": [(40, True), (50, True), (60, True)],
+        "is_general_rebaseline": [(40, True), (50, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(40, 6.5), (50, 7), (60, 7.5)],
+        "is_progression": [(40, True), (50, True), (60, True)],
+        "progression_type": [
+            (40, LABEL_UNDEFINED_PROGRESSION),
+            (50, LABEL_PIRA),
+            (60, LABEL_PIRA),
+        ],
+        "progression_score": [(40, 6.5), (50, 7), (60, 7.5)],
+        "progression_reference_score": [(40, 6), (50, 6.5), (60, 7)],
+        "progression_event_id": [(40, 1), (50, 2), (60, 3)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_1,
+        relapse_timestamps=test_relapses_1,
+        targets_dict=test_case_1_F_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
+            "opt_baseline_type": "roving",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 1F failed!"
+
+    # Test series 2
+    test_df_2 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 30, 40, 50, 60, 70],
+            "edss_score": [6.0, 7.0, 6.0, 6.5, 7.0, 7.5, 7.5],
+        }
+    )
+    test_relapses_2 = [5, 28]
+    common_targets_2 = {
+        "days_since_previous_relapse": [
+            (10, 5),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 32),
+            (70, 42),
+        ],
+        "days_to_next_relapse": [(0, 5), (10, 18)],
+        "is_post_relapse_rebaseline": [(10, True)],
+        "is_raw_pira_rebaseline": [(10, True), (30, True), (50, True), (60, True)],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (10, 7),
+            (30, 6.5),
+            (50, 7),
+            (60, 7.5),
+        ],
+    }
+
+    # Test D - any, with roving baseline
+    targets_2_D = {
+        "is_post_event_rebaseline": [(40, True), (50, True), (60, True)],
+        "is_general_rebaseline": [(40, True), (50, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(40, 6.5), (50, 7), (60, 7.5)],
+        "is_progression": [(40, True), (50, True), (60, True)],
+        "progression_type": [
+            (40, LABEL_UNDEFINED_PROGRESSION),
+            (50, LABEL_PIRA),
+            (60, LABEL_PIRA),
+        ],
+        "progression_score": [(40, 6.5), (50, 7), (60, 7.5)],
+        "progression_reference_score": [(40, 6), (50, 6.5), (60, 7)],
+        "progression_event_id": [(40, 1), (50, 2), (60, 3)],
+    }
+    test_case_2_D_targets = {**targets_2_D, **common_targets_2}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_2,
+        relapse_timestamps=test_relapses_2,
+        targets_dict=test_case_2_D_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "any",
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 2D failed!"
+
+    # Test E - equal or greater, with roving baseline
+    targets_2_E = {
+        "is_post_event_rebaseline": [(40, True), (50, True), (60, True)],
+        "is_general_rebaseline": [(40, True), (50, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(40, 6.5), (50, 7), (60, 7.5)],
+        "is_progression": [(40, True), (50, True), (60, True)],
+        "progression_type": [
+            (40, LABEL_UNDEFINED_PROGRESSION),
+            (50, LABEL_PIRA),
+            (60, LABEL_PIRA),
+        ],
+        "progression_score": [(40, 6.5), (50, 7), (60, 7.5)],
+        "progression_reference_score": [(40, 6), (50, 6.5), (60, 7)],
+        "progression_event_id": [(40, 1), (50, 2), (60, 3)],
+    }
+    test_case_2_E_targets = {**targets_2_E, **common_targets_2}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_2,
+        relapse_timestamps=test_relapses_2,
+        targets_dict=test_case_2_E_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 2E failed!"
+
+    # Test F - greater only, with roving baseline
+    targets_2_F = {
+        "is_post_event_rebaseline": [(50, True), (60, True)],
+        "is_general_rebaseline": [(50, True), (60, True)],
+        "edss_score_used_as_new_general_reference": [(50, 7), (60, 7.5)],
+        "is_progression": [(50, True), (60, True)],
+        "progression_type": [(50, LABEL_PIRA), (60, LABEL_PIRA)],
+        "progression_score": [(50, 7), (60, 7.5)],
+        "progression_reference_score": [(50, 6.5), (60, 7)],
+        "progression_event_id": [(50, 1), (60, 2)],
+    }
+    test_case_2_F_targets = {**targets_2_F, **common_targets_2}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_2,
+        relapse_timestamps=test_relapses_2,
+        targets_dict=test_case_2_F_targets,
+        args_dict={
+            "undefined_progression_wrt_raw_pira_baseline": "greater only",
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 2F failed!"
+
+    # Test series 3
+    test_df_3 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                70,
+                80,
+                90,
+                100,
+                110,
+                120,
+                130,
+                140,
+                150,
+                160,
+                170,
+            ],
+            "edss_score": [
+                1.0,
+                2.0,
+                1.5,
+                2.5,
+                2.0,
+                1.5,
+                3.0,
+                2.5,
+                1.5,
+                3.5,
+                1.5,
+                2.0,
+                2.0,
+                2.5,
+                3.0,
+                3.5,
+                4.0,
+                4.0,
+            ],
+        }
+    )
+    test_relapses_3 = [8, 28, 58, 88]
+    common_targets_3 = {
+        "days_since_previous_relapse": [
+            (10, 2),
+            (20, 12),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 2),
+            (70, 12),
+            (80, 22),
+            (90, 2),
+            (100, 12),
+            (110, 22),
+            (120, 32),
+            (130, 42),
+            (140, 52),
+            (150, 62),
+            (160, 72),
+            (170, 82),
+        ],
+        "days_to_next_relapse": [
+            (0, 8),
+            (10, 18),
+            (20, 8),
+            (30, 28),
+            (40, 18),
+            (50, 8),
+            (60, 28),
+            (70, 18),
+            (80, 8),
+        ],
+        "is_post_relapse_rebaseline": [(20, True), (40, True), (70, True)],
+    }
+
+    # Test A - no constraints
+    targets_3_A = {
+        "is_raw_pira_rebaseline": [
+            (20, True),
+            (40, True),
+            (70, True),
+            (140, True),
+            (160, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (20, 1.5),
+            (40, 2),
+            (70, 2.5),
+            (140, 3),
+            (160, 4),
+        ],
+        "is_post_event_rebaseline": [(110, True), (140, True), (160, True)],
+        "is_general_rebaseline": [(110, True), (140, True), (160, True)],
+        "edss_score_used_as_new_general_reference": [(110, 2), (140, 3), (160, 4)],
+        "is_progression": [(110, True), (140, True), (160, True)],
+        "progression_type": [
+            (110, LABEL_UNDEFINED_PROGRESSION),
+            (140, LABEL_UNDEFINED_PROGRESSION),
+            (160, LABEL_PIRA),
+        ],
+        "progression_score": [(110, 2), (140, 3), (160, 4)],
+        "progression_reference_score": [(110, 1), (140, 2), (160, 3)],
+        "progression_event_id": [(110, 1), (140, 2), (160, 3)],
+    }
+    test_case_3_A_targets = {**targets_3_A, **common_targets_3}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_3,
+        relapse_timestamps=test_relapses_3,
+        targets_dict=test_case_3_A_targets,
+        args_dict={
+            "undefined_progression": "all",
+            "undefined_progression_wrt_raw_pira_baseline": "any",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 3A failed!"
+
+    # Test B - equal or greater
+    targets_3_B = {
+        "is_raw_pira_rebaseline": [(20, True), (40, True), (70, True), (150, True)],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (20, 1.5),
+            (40, 2),
+            (70, 2.5),
+            (150, 3.5),
+        ],
+        "is_post_event_rebaseline": [(130, True), (150, True)],
+        "is_general_rebaseline": [(130, True), (150, True)],
+        "edss_score_used_as_new_general_reference": [(130, 2.5), (150, 3.5)],
+        "is_progression": [(130, True), (150, True)],
+        "progression_type": [(130, LABEL_UNDEFINED_PROGRESSION), (150, LABEL_PIRA)],
+        "progression_score": [(130, 2.5), (150, 3.5)],
+        "progression_reference_score": [(130, 1), (150, 2.5)],
+        "progression_event_id": [(130, 1), (150, 2)],
+    }
+    test_case_3_B_targets = {**targets_3_B, **common_targets_3}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_3,
+        relapse_timestamps=test_relapses_3,
+        targets_dict=test_case_3_B_targets,
+        args_dict={
+            "undefined_progression": "all",
+            "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 3B failed!"
+
+    # Test C - greater only
+    targets_3_C = {
+        "is_raw_pira_rebaseline": [
+            (20, True),
+            (40, True),
+            (70, True),
+            (140, True),
+            (160, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (20, 1.5),
+            (40, 2),
+            (70, 2.5),
+            (140, 3.0),
+            (160, 4),
+        ],
+        "is_post_event_rebaseline": [(140, True), (160, True)],
+        "is_general_rebaseline": [(140, True), (160, True)],
+        "edss_score_used_as_new_general_reference": [(140, 3), (160, 4)],
+        "is_progression": [(140, True), (160, True)],
+        "progression_type": [(140, LABEL_UNDEFINED_PROGRESSION), (160, LABEL_PIRA)],
+        "progression_score": [(140, 3), (160, 4)],
+        "progression_reference_score": [(140, 1), (160, 3)],
+        "progression_event_id": [(140, 1), (160, 2)],
+    }
+    test_case_3_C_targets = {**targets_3_C, **common_targets_3}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_3,
+        relapse_timestamps=test_relapses_3,
+        targets_dict=test_case_3_C_targets,
+        args_dict={
+            "undefined_progression": "all",
+            "undefined_progression_wrt_raw_pira_baseline": "greater only",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 3C failed!"
+
+    # Test series 4
+    test_df_4 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                70,
+                80,
+                90,
+                100,
+                110,
+                120,
+                130,
+                135,
+                140,
+                145,
+                150,
+                160,
+                170,
+            ],
+            "edss_score": [
+                1.0,
+                2.0,
+                1.5,
+                2.5,
+                2.0,
+                1.5,
+                3.0,
+                2.5,
+                1.5,
+                3.5,
+                2.0,
+                2.0,
+                2.0,
+                2.5,
+                2.5,
+                3.0,
+                3.0,
+                3.5,
+                4.0,
+                4.0,
+            ],
+        }
+    )
+    test_relapses_4 = [8, 28, 58, 88]
+    common_targets_4 = {
+        "days_since_previous_relapse": [
+            (10, 2),
+            (20, 12),
+            (30, 2),
+            (40, 12),
+            (50, 22),
+            (60, 2),
+            (70, 12),
+            (80, 22),
+            (90, 2),
+            (100, 12),
+            (110, 22),
+            (120, 32),
+            (130, 42),
+            (135, 47),
+            (140, 52),
+            (145, 57),
+            (150, 62),
+            (160, 72),
+            (170, 82),
+        ],
+        "days_to_next_relapse": [
+            (0, 8),
+            (10, 18),
+            (20, 8),
+            (30, 28),
+            (40, 18),
+            (50, 8),
+            (60, 28),
+            (70, 18),
+            (80, 8),
+        ],
+        "is_post_relapse_rebaseline": [(20, True), (40, True), (70, True)],
+    }
+
+    # Test A - no constraints
+    targets_4_A = {
+        "is_raw_pira_rebaseline": [
+            (20, True),
+            (40, True),
+            (70, True),
+            (140, True),
+            (160, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (20, 1.5),
+            (40, 2),
+            (70, 2.5),
+            (140, 3),
+            (160, 4),
+        ],
+        "is_post_event_rebaseline": [(90, True), (140, True), (160, True)],
+        "is_general_rebaseline": [(90, True), (140, True), (160, True)],
+        "edss_score_used_as_new_general_reference": [(90, 2), (140, 3), (160, 4)],
+        "is_progression": [(90, True), (140, True), (160, True)],
+        "progression_type": [
+            (90, LABEL_UNDEFINED_PROGRESSION),
+            (140, LABEL_UNDEFINED_PROGRESSION),
+            (160, LABEL_PIRA),
+        ],
+        "progression_score": [(90, 2), (140, 3), (160, 4)],
+        "progression_reference_score": [(90, 1), (140, 2), (160, 3)],
+        "progression_event_id": [(90, 1), (140, 2), (160, 3)],
+    }
+    test_case_4_A_targets = {**targets_4_A, **common_targets_4}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_4,
+        relapse_timestamps=test_relapses_4,
+        targets_dict=test_case_4_A_targets,
+        args_dict={
+            "undefined_progression": "all",
+            "undefined_progression_wrt_raw_pira_baseline": "any",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 4A failed!"
+
+    # Test B - equal or greater
+    targets_4_B = {
+        "is_raw_pira_rebaseline": [(20, True), (40, True), (70, True), (150, True)],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (20, 1.5),
+            (40, 2),
+            (70, 2.5),
+            (150, 3.5),
+        ],
+        "is_post_event_rebaseline": [(130, True), (150, True)],
+        "is_general_rebaseline": [(130, True), (150, True)],
+        "edss_score_used_as_new_general_reference": [(130, 2.5), (150, 3.5)],
+        "is_progression": [(130, True), (150, True)],
+        "progression_type": [(130, LABEL_UNDEFINED_PROGRESSION), (150, LABEL_PIRA)],
+        "progression_score": [(130, 2.5), (150, 3.5)],
+        "progression_reference_score": [(130, 1), (150, 2.5)],
+        "progression_event_id": [(130, 1), (150, 2)],
+    }
+    test_case_4_B_targets = {**targets_4_B, **common_targets_4}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_4,
+        relapse_timestamps=test_relapses_4,
+        targets_dict=test_case_4_B_targets,
+        args_dict={
+            "undefined_progression": "all",
+            "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 4B failed!"
+
+    # Test C - greater only
+    targets_4_C = {
+        "is_raw_pira_rebaseline": [
+            (20, True),
+            (40, True),
+            (70, True),
+            (140, True),
+            (160, True),
+        ],
+        "edss_score_used_as_new_raw_pira_reference": [
+            (20, 1.5),
+            (40, 2),
+            (70, 2.5),
+            (140, 3),
+            (160, 4),
+        ],
+        "is_post_event_rebaseline": [(140, True), (160, True)],
+        "is_general_rebaseline": [(140, True), (160, True)],
+        "edss_score_used_as_new_general_reference": [(140, 3), (160, 4)],
+        "is_progression": [(140, True), (160, True)],
+        "progression_type": [(140, LABEL_UNDEFINED_PROGRESSION), (160, LABEL_PIRA)],
+        "progression_score": [(140, 3), (160, 4)],
+        "progression_reference_score": [(140, 1), (160, 3)],
+        "progression_event_id": [(140, 1), (160, 2)],
+    }
+    test_case_4_C_targets = {**targets_4_C, **common_targets_4}
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_df_4,
+        relapse_timestamps=test_relapses_4,
+        targets_dict=test_case_4_C_targets,
+        args_dict={
+            "undefined_progression": "all",
+            "undefined_progression_wrt_raw_pira_baseline": "greater only",
+            "opt_baseline_type": "fixed",
+            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_days": 3,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 4C failed!"
+
+
 # -------------------------
 # Part 4 - multi-event mode
 # --------------------------
@@ -5297,6 +6131,9 @@ if __name__ == "__main__":
 
     print("Testing option to annotate undefined events if they don't mask RAW/PIRA...")
     test_undefined_progression_end_option()
+
+    print("Testing options for thresholds for undefined worsening events...")
+    test_undefined_events_thresholds()
 
     print("\nPart 4 - multi-event mode\n")
     print("Testing multi-event mode...")
