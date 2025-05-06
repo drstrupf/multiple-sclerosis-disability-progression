@@ -64,8 +64,8 @@ class EDSSProgression:
         0  # no tolerance
     )
     # PIRA/RAW options - ignored if no relapses specified
-    opt_raw_before_relapse_max_days: int = 30
-    opt_raw_after_relapse_max_days: int = 90
+    opt_raw_before_relapse_max_time: int = 30
+    opt_raw_after_relapse_max_time: int = 90
     opt_pira_allow_relapses_between_event_and_confirmation: bool = False
     # Minimum increase options
     opt_max_score_that_requires_plus_1: float = 5.0
@@ -185,9 +185,9 @@ class EDSSProgression:
                 "Roving reference confirmation left tolerance must be >= 0."
             )
         # RAW/PIRA arguments
-        if self.opt_raw_before_relapse_max_days < 0:
+        if self.opt_raw_before_relapse_max_time < 0:
             raise ValueError("Max. RAW time before relapse must be >= 0.")
-        if self.opt_raw_after_relapse_max_days < 0:
+        if self.opt_raw_after_relapse_max_time < 0:
             raise ValueError("Max. RAW time after relapse must be >= 0.")
         # Confirmation arguments
         if self.opt_require_confirmation:
@@ -623,11 +623,11 @@ class EDSSProgression:
             # Add buffer times around the relapses (the RAW-window)
             relapses["start_buffer"] = (
                 relapses[relapse_timestamp_column_name]
-                - self.opt_raw_before_relapse_max_days
+                - self.opt_raw_before_relapse_max_time
             )
             relapses["stop_buffer"] = (
                 relapses[relapse_timestamp_column_name]
-                + self.opt_raw_after_relapse_max_days
+                + self.opt_raw_after_relapse_max_time
             )
             # Add the start time of the next relapse to each line
             relapses["start_next"] = relapses["start_buffer"].shift(-1)
@@ -636,7 +636,7 @@ class EDSSProgression:
                 rebaseline_candidates = follow_up_df[
                     follow_up_df[self.time_column_name]
                     > row[relapse_timestamp_column_name]
-                    + self.opt_raw_after_relapse_max_days
+                    + self.opt_raw_after_relapse_max_time
                 ]
                 # If there are candidates, take the first one
                 if len(rebaseline_candidates) > 0:
@@ -730,10 +730,10 @@ class EDSSProgression:
                         progression_type = self.label_pira
                         if (
                             row[self.time_to_next_relapse_column_name]
-                            <= self.opt_raw_before_relapse_max_days
+                            <= self.opt_raw_before_relapse_max_time
                         ) or (
                             row[self.time_since_last_relapse_column_name]
-                            <= self.opt_raw_after_relapse_max_days
+                            <= self.opt_raw_after_relapse_max_time
                         ):
                             progression_type = self.label_raw
                     else:
@@ -824,7 +824,7 @@ class EDSSProgression:
                                             & (
                                                 np.array(relapse_timestamps)
                                                 <= last_confirmation_score_timestamp
-                                                + self.opt_raw_before_relapse_max_days
+                                                + self.opt_raw_before_relapse_max_time
                                             )
                                         ):
                                             progression_type = (
@@ -841,7 +841,7 @@ class EDSSProgression:
                                         confirmation_scores_dataframe.iloc[-1][
                                             self.time_to_next_relapse_column_name
                                         ]
-                                        <= self.opt_raw_before_relapse_max_days
+                                        <= self.opt_raw_before_relapse_max_time
                                     ):
                                         progression_type = (
                                             self.label_pira_confirmed_in_raw_window
@@ -850,7 +850,7 @@ class EDSSProgression:
                                         confirmation_scores_dataframe.iloc[0][
                                             self.time_since_last_relapse_column_name
                                         ]
-                                        <= self.opt_raw_after_relapse_max_days
+                                        <= self.opt_raw_after_relapse_max_time
                                     ):
                                         progression_type = (
                                             self.label_pira_confirmed_in_raw_window

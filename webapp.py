@@ -221,11 +221,11 @@ if __name__ == "__main__":
                 relapse_timestamps=relapse_timestamps,
                 # Options
                 undefined_progression=options_example_2["undefined_progression"],
-                opt_raw_before_relapse_max_days=options_example_2[
-                    "opt_raw_before_relapse_max_days"
+                opt_raw_before_relapse_max_time=options_example_2[
+                    "opt_raw_before_relapse_max_time"
                 ],
-                opt_raw_after_relapse_max_days=options_example_2[
-                    "opt_raw_after_relapse_max_days"
+                opt_raw_after_relapse_max_time=options_example_2[
+                    "opt_raw_after_relapse_max_time"
                 ],
                 opt_pira_allow_relapses_between_event_and_confirmation=options_example_2.get(
                     "opt_pira_allow_relapses_between_event_and_confirmation", False

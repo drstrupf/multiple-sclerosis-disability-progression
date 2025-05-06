@@ -1804,8 +1804,8 @@ def test_get_post_relapse_rebaseline_timestamps():
     test_case_1_target = [8, 36]
     assert Counter(
         edssprogression.EDSSProgression(
-            opt_raw_before_relapse_max_days=2,
-            opt_raw_after_relapse_max_days=1,
+            opt_raw_before_relapse_max_time=2,
+            opt_raw_after_relapse_max_time=1,
         )._get_post_relapse_rebaseline_timestamps(
             follow_up_df=test_dataframe_cases_1_2_3_4,
             relapse_timestamps=test_relapses_cases_1_2_3_4,
@@ -1817,8 +1817,8 @@ def test_get_post_relapse_rebaseline_timestamps():
     test_case_2_target = [36, 48]
     assert Counter(
         edssprogression.EDSSProgression(
-            opt_raw_before_relapse_max_days=4,
-            opt_raw_after_relapse_max_days=12,
+            opt_raw_before_relapse_max_time=4,
+            opt_raw_after_relapse_max_time=12,
         )._get_post_relapse_rebaseline_timestamps(
             follow_up_df=test_dataframe_cases_1_2_3_4,
             relapse_timestamps=test_relapses_cases_1_2_3_4,
@@ -1832,8 +1832,8 @@ def test_get_post_relapse_rebaseline_timestamps():
     test_case_3_target = [36]
     assert Counter(
         edssprogression.EDSSProgression(
-            opt_raw_before_relapse_max_days=4,
-            opt_raw_after_relapse_max_days=4,
+            opt_raw_before_relapse_max_time=4,
+            opt_raw_after_relapse_max_time=4,
         )._get_post_relapse_rebaseline_timestamps(
             follow_up_df=test_dataframe_cases_1_2_3_4,
             relapse_timestamps=test_relapses_cases_1_2_3_4,
@@ -1846,8 +1846,8 @@ def test_get_post_relapse_rebaseline_timestamps():
     test_case_4_target = [60]
     assert Counter(
         edssprogression.EDSSProgression(
-            opt_raw_before_relapse_max_days=4,
-            opt_raw_after_relapse_max_days=20,
+            opt_raw_before_relapse_max_time=4,
+            opt_raw_after_relapse_max_time=20,
         )._get_post_relapse_rebaseline_timestamps(
             follow_up_df=test_dataframe_cases_1_2_3_4,
             relapse_timestamps=test_relapses_cases_1_2_3_4,
@@ -1860,8 +1860,8 @@ def test_get_post_relapse_rebaseline_timestamps():
     test_case_5_target = [28, 48]
     assert Counter(
         edssprogression.EDSSProgression(
-            opt_raw_before_relapse_max_days=4,
-            opt_raw_after_relapse_max_days=4,
+            opt_raw_before_relapse_max_time=4,
+            opt_raw_after_relapse_max_time=4,
         )._get_post_relapse_rebaseline_timestamps(
             follow_up_df=test_dataframe_cases_5,
             relapse_timestamps=test_relapses_cases_5,
@@ -1880,8 +1880,8 @@ def test_get_post_relapse_rebaseline_timestamps():
     test_case_6_target = [50, 60]
     assert Counter(
         edssprogression.EDSSProgression(
-            opt_raw_before_relapse_max_days=2,
-            opt_raw_after_relapse_max_days=7,
+            opt_raw_before_relapse_max_time=2,
+            opt_raw_after_relapse_max_time=7,
         )._get_post_relapse_rebaseline_timestamps(
             follow_up_df=test_dataframe_cases_6,
             relapse_timestamps=test_relapses_cases_6,
@@ -1931,8 +1931,8 @@ def test_roving_raw_pira_descends_to_general():
             "opt_roving_reference_confirmation_time": 0.5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
-            "opt_raw_after_relapse_max_days": 3,
-            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_time": 3,
+            "opt_raw_before_relapse_max_time": 3,
         },
     ), "Roving baseline for RAW/PIRA is bugged..."
 
@@ -1989,8 +1989,8 @@ def test_raw_pira_unconfirmed():
         targets_dict=test_case_2_targets,
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
         },
     ), "Test 2 failed!"
     test_case_3_targets = {
@@ -2014,8 +2014,8 @@ def test_raw_pira_unconfirmed():
         targets_dict=test_case_3_targets,
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 5,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 5,
         },
     ), "Test 3 failed!"
 
@@ -2042,8 +2042,8 @@ def test_raw_pira_unconfirmed():
         targets_dict=test_case_4_targets,
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 5,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 5,
         },
     ), "Test 4 failed!"
     test_case_5_targets = {
@@ -2067,8 +2067,8 @@ def test_raw_pira_unconfirmed():
         targets_dict=test_case_5_targets,
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 5,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 5,
         },
     ), "Test 5 failed!"
 
@@ -2103,8 +2103,8 @@ def test_raw_pira_confirmed():
         relapse_timestamps=test_relapse_timestamps,
         targets_dict=test_case_1_targets,
         args_dict={
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_confirmation_included_values": "all",
@@ -2135,8 +2135,8 @@ def test_raw_pira_confirmed():
         relapse_timestamps=test_relapse_timestamps,
         targets_dict=test_case_2_targets,
         args_dict={
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_included_values": "all",
@@ -2165,8 +2165,8 @@ def test_raw_pira_confirmed():
         relapse_timestamps=test_relapse_timestamps,
         targets_dict=test_case_3_targets,
         args_dict={
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_included_values": "all",
@@ -2194,8 +2194,8 @@ def test_raw_pira_confirmed():
         relapse_timestamps=test_relapse_timestamps,
         targets_dict=test_case_4_targets,
         args_dict={
-            "opt_raw_before_relapse_max_days": 2,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 2,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "all",
@@ -2223,8 +2223,8 @@ def test_raw_pira_confirmed():
         relapse_timestamps=test_relapse_timestamps,
         targets_dict=test_case_5_targets,
         args_dict={
-            "opt_raw_before_relapse_max_days": 2,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 2,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
@@ -2254,8 +2254,8 @@ def test_raw_pira_confirmed():
         relapse_timestamps=test_relapse_timestamps,
         targets_dict=test_case_6_targets,
         args_dict={
-            "opt_raw_before_relapse_max_days": 2,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 2,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
@@ -2301,8 +2301,8 @@ def test_raw_pira_confirmed():
             "opt_roving_reference_confirmation_time": 0.5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
-            "opt_raw_after_relapse_max_days": 3,
-            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_time": 3,
+            "opt_raw_before_relapse_max_time": 3,
             "undefined_progression_wrt_raw_pira_baseline": "any",
         },
     ), "Test 7 failed!"
@@ -2343,8 +2343,8 @@ def test_raw_pira_confirmed():
             "opt_roving_reference_confirmation_time": 0.5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
-            "opt_raw_after_relapse_max_days": 3,
-            "opt_raw_before_relapse_max_days": 3,
+            "opt_raw_after_relapse_max_time": 3,
+            "opt_raw_before_relapse_max_time": 3,
             "undefined_progression_wrt_raw_pira_baseline": "greater only",
         },
     ), "Test 8 failed!"
@@ -2383,8 +2383,8 @@ def test_post_relapse_rebaselining_higher_equal_lower():
         targets_dict=test_case_1_targets,
         args_dict={
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -2410,8 +2410,8 @@ def test_post_relapse_rebaselining_higher_equal_lower():
         targets_dict=test_case_2_targets,
         args_dict={
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -2437,8 +2437,8 @@ def test_post_relapse_rebaselining_higher_equal_lower():
         targets_dict=test_case_3_targets,
         args_dict={
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -2472,8 +2472,8 @@ def test_post_relapse_rebaselining_higher_equal_lower():
         targets_dict=test_case_4_targets,
         args_dict={
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -2517,8 +2517,8 @@ def test_post_relapse_rebaselining_backtracking():
         args_dict={
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": False,
             "opt_minimal_distance_time": 25,
             "opt_minimal_distance_type": "reference",
@@ -2550,8 +2550,8 @@ def test_post_relapse_rebaselining_backtracking():
         args_dict={
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": False,
             "opt_minimal_distance_time": 25,
             "opt_minimal_distance_type": "reference",
@@ -2590,8 +2590,8 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         targets_dict={**test_case_1_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 2,
-            "opt_raw_after_relapse_max_days": 1,
+            "opt_raw_before_relapse_max_time": 2,
+            "opt_raw_after_relapse_max_time": 1,
         },
     ), "Test 1 failed!"
 
@@ -2616,8 +2616,8 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         targets_dict={**test_case_2_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 12,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 12,
         },
     ), "Test 2 failed!"
 
@@ -2642,8 +2642,8 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         targets_dict={**test_case_3_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 4,
         },
     ), "Test 3 failed!"
 
@@ -2667,8 +2667,8 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         targets_dict={**test_case_4_targets, **test_common_targets_cases_1_2_3_4},
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 20,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 20,
         },
     ), "Test 4 failed!"
 
@@ -2698,8 +2698,8 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         targets_dict=test_case_5_targets,
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 4,
         },
     ), "Test 5 failed!"
 
@@ -2729,8 +2729,8 @@ def test_post_relapse_rebaselining_with_missing_and_overlapping():
         targets_dict=test_case_6_targets,
         args_dict={
             "opt_require_confirmation": False,
-            "opt_raw_before_relapse_max_days": 2,
-            "opt_raw_after_relapse_max_days": 7,
+            "opt_raw_before_relapse_max_time": 2,
+            "opt_raw_after_relapse_max_time": 7,
         },
     ), "Test 6 failed!"
 
@@ -2767,8 +2767,8 @@ def test_post_relapse_rebaselining_with_event():
         args_dict={
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
         },
     ), "Test 1 failed!"
     # Test case 2 - event confirmed
@@ -2786,8 +2786,8 @@ def test_post_relapse_rebaselining_with_event():
         args_dict={
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
         },
     ), "Test 2 failed!"
 
@@ -2830,8 +2830,8 @@ def test_undefined_progression_never_option():
             "opt_require_confirmation": False,
             "undefined_progression": "re-baselining only",
             "return_first_event_only": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
         },
     ), "Test 1 failed!"
 
@@ -2852,8 +2852,8 @@ def test_undefined_progression_never_option():
             "opt_require_confirmation": False,
             "undefined_progression": "re-baselining only",
             "return_first_event_only": True,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
         },
     ), "Test 2 failed!"
 
@@ -2879,8 +2879,8 @@ def test_undefined_progression_never_option():
             "opt_require_confirmation": False,
             "undefined_progression": "never",
             "return_first_event_only": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
         },
     ), "Test 3 failed!"
 
@@ -2903,8 +2903,8 @@ def test_undefined_progression_never_option():
             "opt_require_confirmation": False,
             "undefined_progression": "never",
             "return_first_event_only": True,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
         },
     ), "Test 4 failed!"
 
@@ -2936,8 +2936,8 @@ def test_undefined_progression_never_option():
         args_dict={
             "undefined_progression": "re-baselining only",
             "return_first_event_only": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -2955,8 +2955,8 @@ def test_undefined_progression_never_option():
         args_dict={
             "undefined_progression": "never",
             "return_first_event_only": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -2982,8 +2982,8 @@ def test_undefined_progression_never_option():
             "opt_require_confirmation": False,
             "undefined_progression": "never",
             "return_first_event_only": False,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
         },
     ), "Test 7 failed!"
 
@@ -3107,8 +3107,8 @@ def test_undefined_progression_all_option():
         args_dict={
             "opt_require_confirmation": False,
             "undefined_progression": "re-baselining only",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -3173,8 +3173,8 @@ def test_undefined_progression_all_option():
         args_dict={
             "opt_require_confirmation": False,
             "undefined_progression": "never",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -3262,8 +3262,8 @@ def test_undefined_progression_all_option():
         args_dict={
             "opt_require_confirmation": False,
             "undefined_progression": "all",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -3305,8 +3305,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_2, **test_case_4_targets},
         args_dict={
             "undefined_progression": "re-baselining only",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3331,8 +3331,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_2, **test_case_5_targets},
         args_dict={
             "undefined_progression": "re-baselining only",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 90,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 90,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3357,8 +3357,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_2, **test_case_6_targets},
         args_dict={
             "undefined_progression": "all",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3383,8 +3383,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_2, **test_case_7_targets},
         args_dict={
             "undefined_progression": "all",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 90,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 90,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3429,8 +3429,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_3, **test_case_8_targets},
         args_dict={
             "undefined_progression": "re-baselining only",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3455,8 +3455,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_3, **test_case_9_targets},
         args_dict={
             "undefined_progression": "all",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3502,8 +3502,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_4, **test_case_10_targets},
         args_dict={
             "undefined_progression": "re-baselining only",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3528,8 +3528,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_4, **test_case_11_targets},
         args_dict={
             "undefined_progression": "all",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3574,8 +3574,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_5, **test_case_12_targets},
         args_dict={
             "undefined_progression": "re-baselining only",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3603,8 +3603,8 @@ def test_undefined_progression_all_option():
         targets_dict={**test_common_targets_series_5, **test_case_13_targets},
         args_dict={
             "undefined_progression": "all",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3706,8 +3706,8 @@ def test_undefined_progression_end_option():
             "opt_larger_increment_from_0": False,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -3773,8 +3773,8 @@ def test_undefined_progression_end_option():
             "undefined_progression": "end",
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -3815,8 +3815,8 @@ def test_undefined_progression_end_option():
         targets_dict=test_case_3_targets,
         args_dict={
             "undefined_progression": "end",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3858,8 +3858,8 @@ def test_undefined_progression_end_option():
         targets_dict=test_case_4_targets,
         args_dict={
             "undefined_progression": "end",
-            "opt_raw_before_relapse_max_days": 30,
-            "opt_raw_after_relapse_max_days": 30,
+            "opt_raw_before_relapse_max_time": 30,
+            "opt_raw_after_relapse_max_time": 30,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3905,8 +3905,8 @@ def test_undefined_progression_end_option():
         args_dict={
             "opt_require_confirmation": False,
             "undefined_progression": "end",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 10,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 10,
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -3947,8 +3947,8 @@ def test_undefined_progression_end_option():
         args_dict={
             "opt_baseline_type": "fixed",
             "undefined_progression": "end",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -3998,8 +3998,8 @@ def test_undefined_events_thresholds():
         args_dict={
             "undefined_progression_wrt_raw_pira_baseline": "any",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4024,8 +4024,8 @@ def test_undefined_events_thresholds():
         args_dict={
             "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4050,8 +4050,8 @@ def test_undefined_events_thresholds():
         args_dict={
             "undefined_progression_wrt_raw_pira_baseline": "greater only",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4104,8 +4104,8 @@ def test_undefined_events_thresholds():
         args_dict={
             "undefined_progression_wrt_raw_pira_baseline": "greater only",
             "opt_baseline_type": "roving",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_roving_reference_require_confirmation": True,
@@ -4160,8 +4160,8 @@ def test_undefined_events_thresholds():
         args_dict={
             "undefined_progression_wrt_raw_pira_baseline": "any",
             "opt_baseline_type": "roving",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_roving_reference_require_confirmation": True,
@@ -4216,8 +4216,8 @@ def test_undefined_events_thresholds():
         args_dict={
             "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
             "opt_baseline_type": "roving",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_roving_reference_require_confirmation": True,
@@ -4278,8 +4278,8 @@ def test_undefined_events_thresholds():
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4310,8 +4310,8 @@ def test_undefined_events_thresholds():
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4338,8 +4338,8 @@ def test_undefined_events_thresholds():
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4463,8 +4463,8 @@ def test_undefined_events_thresholds():
             "undefined_progression": "all",
             "undefined_progression_wrt_raw_pira_baseline": "any",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4497,8 +4497,8 @@ def test_undefined_events_thresholds():
             "undefined_progression": "all",
             "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4538,8 +4538,8 @@ def test_undefined_events_thresholds():
             "undefined_progression": "all",
             "undefined_progression_wrt_raw_pira_baseline": "greater only",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4669,8 +4669,8 @@ def test_undefined_events_thresholds():
             "undefined_progression": "all",
             "undefined_progression_wrt_raw_pira_baseline": "any",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4703,8 +4703,8 @@ def test_undefined_events_thresholds():
             "undefined_progression": "all",
             "undefined_progression_wrt_raw_pira_baseline": "equal or greater",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -4744,8 +4744,8 @@ def test_undefined_events_thresholds():
             "undefined_progression": "all",
             "undefined_progression_wrt_raw_pira_baseline": "greater only",
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 3,
-            "opt_raw_after_relapse_max_days": 3,
+            "opt_raw_before_relapse_max_time": 3,
+            "opt_raw_after_relapse_max_time": 3,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
         },
@@ -5585,8 +5585,8 @@ def test_multi_event_option():
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "opt_baseline_type": "fixed",
-            "opt_raw_before_relapse_max_days": 4,
-            "opt_raw_after_relapse_max_days": 4,
+            "opt_raw_before_relapse_max_time": 4,
+            "opt_raw_after_relapse_max_time": 4,
         },
     ), "Test 21 failed!"
 
@@ -5662,8 +5662,8 @@ def test_multi_event_option():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 15,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 15,
         },
     ), "Test 22 failed!"
 
@@ -5717,8 +5717,8 @@ def test_multi_event_option():
         args_dict={
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 15,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 15,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -5796,8 +5796,8 @@ def test_multi_event_option():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 15,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 15,
         },
     ), "Test 24 failed!"
 
@@ -5844,8 +5844,8 @@ def test_multi_event_option():
         args_dict={
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 15,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 15,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
         },
@@ -5923,8 +5923,8 @@ def test_multi_event_option():
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "undefined_progression": "end",
-            "opt_raw_before_relapse_max_days": 5,
-            "opt_raw_after_relapse_max_days": 15,
+            "opt_raw_before_relapse_max_time": 5,
+            "opt_raw_after_relapse_max_time": 15,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_larger_increment_from_0": False,

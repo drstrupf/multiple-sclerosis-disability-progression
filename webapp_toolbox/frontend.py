@@ -316,19 +316,19 @@ def undefined_progression_dropdown(key, default="re-baselining only"):
 
 
 def raw_window_dropdown(key):
-    opt_raw_before_relapse_max_days = st.number_input(
+    opt_raw_before_relapse_max_time = st.number_input(
         label="RAW window start (days pre-relapse)",
         min_value=0,
         value=30,
         key=key + "_raw_pre_relapse",
     )
-    opt_raw_after_relapse_max_days = st.number_input(
+    opt_raw_after_relapse_max_time = st.number_input(
         label="RAW window end (days post-relapse)",
         min_value=0,
         value=30,
         key=key + "_raw_post_relapse",
     )
-    return opt_raw_before_relapse_max_days, opt_raw_after_relapse_max_days
+    return opt_raw_before_relapse_max_time, opt_raw_after_relapse_max_time
 
 
 def relapses_in_confirmation_dropdown(key):
@@ -378,13 +378,13 @@ def dynamic_progression_option_input_element(
             key=element_base_key + "_undefined_progression",
             default="re-baselining only",
         )
-        opt_raw_before_relapse_max_days, opt_raw_after_relapse_max_days = (
+        opt_raw_before_relapse_max_time, opt_raw_after_relapse_max_time = (
             raw_window_dropdown(key=element_base_key + "_raw_window")
         )
         rms_options = {
             "undefined_progression": undefined_progression,
-            "opt_raw_before_relapse_max_days": opt_raw_before_relapse_max_days,
-            "opt_raw_after_relapse_max_days": opt_raw_after_relapse_max_days,
+            "opt_raw_before_relapse_max_time": opt_raw_before_relapse_max_time,
+            "opt_raw_after_relapse_max_time": opt_raw_after_relapse_max_time,
         }
     # Baseline type
     option_baseline_type, baseline_confirmation, baseline_confirmation_distance = (

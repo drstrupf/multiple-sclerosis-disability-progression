@@ -31,8 +31,8 @@ def annotate_plot_follow_up(
     opt_roving_reference_confirmation_time_right_side_max_tolerance=np.inf,
     opt_roving_reference_confirmation_time_left_side_max_tolerance=0,
     # PIRA/RAW options
-    opt_raw_before_relapse_max_days=30,
-    opt_raw_after_relapse_max_days=90,
+    opt_raw_before_relapse_max_time=30,
+    opt_raw_after_relapse_max_time=90,
     opt_pira_allow_relapses_between_event_and_confirmation=False,
     # Minimum increase options
     opt_max_score_that_requires_plus_1=5.0,
@@ -110,8 +110,8 @@ def annotate_plot_follow_up(
         opt_roving_reference_confirmation_time_right_side_max_tolerance=opt_roving_reference_confirmation_time_right_side_max_tolerance,
         opt_roving_reference_confirmation_time_left_side_max_tolerance=opt_roving_reference_confirmation_time_left_side_max_tolerance,
         # PIRA/RAW options
-        opt_raw_before_relapse_max_days=opt_raw_before_relapse_max_days,
-        opt_raw_after_relapse_max_days=opt_raw_after_relapse_max_days,
+        opt_raw_before_relapse_max_time=opt_raw_before_relapse_max_time,
+        opt_raw_after_relapse_max_time=opt_raw_after_relapse_max_time,
         opt_pira_allow_relapses_between_event_and_confirmation=opt_pira_allow_relapses_between_event_and_confirmation,
         # Minimum increase options
         opt_max_score_that_requires_plus_1=opt_max_score_that_requires_plus_1,
@@ -184,8 +184,8 @@ def annotate_plot_follow_up(
             if show_raw_window:
                 if make_emf_safe:
                     ax.axvspan(
-                        relapse_timestamp - opt_raw_before_relapse_max_days,
-                        relapse_timestamp + opt_raw_after_relapse_max_days,
+                        relapse_timestamp - opt_raw_before_relapse_max_time,
+                        relapse_timestamp + opt_raw_after_relapse_max_time,
                         ymin=fraction_not_covered,
                         ymax=1 - fraction_not_covered,
                         linewidth=0,
@@ -194,8 +194,8 @@ def annotate_plot_follow_up(
                     )
                 else:
                     ax.axvspan(
-                        relapse_timestamp - opt_raw_before_relapse_max_days,
-                        relapse_timestamp + opt_raw_after_relapse_max_days,
+                        relapse_timestamp - opt_raw_before_relapse_max_time,
+                        relapse_timestamp + opt_raw_after_relapse_max_time,
                         ymin=fraction_not_covered,
                         ymax=1 - fraction_not_covered,
                         linewidth=0,
