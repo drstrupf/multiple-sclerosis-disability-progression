@@ -22,7 +22,9 @@ class EDSSProgression:
     tolerance or right-hand constraints on confirmation time for
     reference or event confirmation, minimum increase + 1.5 for
     score = 0, + 1.0 for scores < 5.5, and + 1 for scores >= 5.5,
-    RAW window 30 days pre- and 90 days post-relapse.
+    RAW window 30 days pre- and 90 days post-relapse, undefined
+    worsening only at post-relapse re-baselining assessments, no
+    constraints.
 
     The effects of individual parameter choices and parameter
     combinations are showcased in the methods.ipynb notebook
@@ -293,7 +295,13 @@ class EDSSProgression:
         opt_confirmation_time_right_side_max_tolerance,
         opt_confirmation_time_left_side_max_tolerance,
     ):
-        """TBD, some thoughts:
+        """This method returns the part of the follow-up dataframe
+        that is relevant for confirmation.
+
+        Returns the first score that satisfies the minimal confirmation
+        distance condition plus - if opt_confirmation_included_values is
+        set to "all" or confirmation is sustained - all scores between
+        event candidate and this score.
 
         The function to get the confirmation scores is separated from
         the function that actually checks the confirmation condition.
@@ -312,16 +320,31 @@ class EDSSProgression:
             right, i.e. if confirmation is required at 12 weeks, the
             first assessment >= 12 weeks from the event is considered
             as confirmation assessment irrespective of its distance.
-            This can be restricted usint the right side max tolerance
+            This can be restricted using the right side max tolerance
             argument (default is infinite) such that events that are
             after confirmation time plus this tolerance will not be
             considered confirmation assessments.
-        -   The argument for left hand tolerance is technically not
-            needed, because it simply sets the confirmation time to
-            confirmation time - tolerance.
+        -   If no right-hand constraint is given, the argument for left 
+            hand tolerance amounts to setting the confirmation time
+            to confirmation time - tolerance. With a right-hand constraint
+            using a left-hand tolerance and reducing the confirmation
+            time are NOT equivalent.
         -   By default, there is no minimum duration of post-event
             follow-up required for 'sustained'. Such a minimal distance
             can be set via the sustained minimal distance argument.
+
+        Args:
+        - current_timestamp: the current score's timestamp
+        - follow_up_dataframe: the dataframe with the entire follow-up
+        - opt_confirmation_time: the minimal confirmation time
+        - opt_confirmation_included_values: included values option
+        - opt_confirmation_sustained_minimal_distance: minimal distance for sustained
+        - opt_confirmation_time_right_side_max_tolerance: right-hand constraint
+        - opt_confirmation_time_left_side_max_tolerance: left-hand tolerance
+
+        Returns:
+        - dataframe: part of the original follow-up dataframe that
+                     is relevant for confirmation
 
         """
         assessments_after_event_candidate = follow_up_dataframe[
@@ -398,9 +421,10 @@ class EDSSProgression:
         confirmation_scores_dataframe,
         additional_lower_threshold,
     ):
-        """TBD, some thoughts:
+        """Determines whether an event is confirmed and the
+        confirmed event score.
 
-        Look at confirmatiom scores and check if they satisfy
+        Looks at confirmatiom scores and checks if they satisfy
         the confirmation conditions (minimal required increase,
         minimum or monotonic) with respect to the specified
         reference score.
@@ -413,6 +437,15 @@ class EDSSProgression:
         which can be used to set the confirmation threshold to a
         given minimum value. This is used for undefined progression
         with a score constraint w.r.t. the RAW/PIRA baseline.
+
+        Args:
+        - current_edss: the current EDSS score
+        - current_reference: the current reference score
+        - confirmation_scores_dataframe: the confirmation scores
+        - additional_lower_threshold: additional threshold
+
+        Returns:
+        - bool, float: confirmed flag, confirmed score
 
         """
         confirmed_flag = False
@@ -445,7 +478,13 @@ class EDSSProgression:
         current_timestamp,
         baselines_df,
     ):
-        """TBD, some thoughts:
+        """Searches previous reference for references that are low
+        enough such that the current EDSS is a progression candidate
+        with respect to them and that satisfy the minimal distance
+        condition.
+
+        Returns the backtracked reference's score and timestamp if
+        one exists, otherwise returns nan.
 
         The idea of this function is that in some cases an increase
         is preceded by a decrease which leads to a re-baselining too
@@ -470,6 +509,16 @@ class EDSSProgression:
         reference is the lowest possible this way. This is important
         for the confirmation step, where scores need to be larger
         than the reference and some increment...
+
+        Args:
+        - current_edss: the current EDSS
+        - current_timestamp: the current timestamp
+        - baselines_df: dataframe with all eligible previous baselines
+
+        Returns:
+        - float, float: the backtracked reference's score, the
+                        backtracked reference's timestamp
+
         """
 
         # From all the previous references, flag those that are
@@ -515,11 +564,20 @@ class EDSSProgression:
         follow_up_df,
         relapse_timestamps,
     ):
-        """TBD, some thoughts:
+        """Adds columns with time to next and time since last
+        relapse to a follow-up dataframe.
 
         The relapses are provided via a list of timestamps. From
         this list, we compute for each EDSS assessment the time
         since the last relapse and the time to the next relapse.
+
+        Args:
+        - follow_up_df: the follow-up dataframe
+        - relapse_timestamps: a list with relapse timestamps
+        
+        Returns:
+        - dataframe: follow-up dataframe with additional columns
+                     for time from last and time to next relapse
 
         """
         # Work on a copy to avoid manipulating the original data.
@@ -604,12 +662,20 @@ class EDSSProgression:
         follow_up_df,
         relapse_timestamps,
     ):
-        """TBD, some thoughts:
+        """Creates a list with all post-relapse re-baselining
+        assessment timestamps.
 
         We need a function that returns the re-baselining assessment
         timestamps for each relapse. We need to jump through a couple
         of hoops here to correctly account for overlapping RAW windows
         and sequences of relapses with no assessments in between.
+
+        Args:
+        - follow_up_df: the follow-up dataframe
+        - relapse_timestamps: a list with relapse timestamps
+
+        Returns:
+        - list: a list of post-relapse re-baselining timestamps
 
         """
         # Helper column, will be dropped.
@@ -786,7 +852,7 @@ class EDSSProgression:
                             )
                             # If unconfirmed, nope, otherwise continue.
                             if is_progression:
-                                # If we already know that it's RAW or UP, we're done.
+                                # If we already know that it's RAW or undefined, we're done.
                                 # Otherwise we have to check for relapses during confirmation,
                                 # unless there are no relapses, of course...
                                 # We also introduce a new type 'PIRA with relapse during confirmation'
