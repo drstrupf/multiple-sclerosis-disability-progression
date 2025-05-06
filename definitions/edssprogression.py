@@ -110,7 +110,7 @@ class EDSSProgression:
     progression_event_id_column_name: str = "progression_event_id"
     label_undefined_progression: str = "Undefined"
     label_pira: str = "PIRA"
-    label_pira_confirmed_in_raw_window: str = "PIRA confirmed in RAW window"
+    label_pira_confirmed_in_raw_window: str = "PIRA with relapse during confirmation"
     label_raw: str = "RAW"
 
     def __post_init__(self):
@@ -666,7 +666,7 @@ class EDSSProgression:
         This function check if an EDSS score is an event by
         checking the minimal distance, minimal increase, and
         confirmation conditions. It also checks whether an
-        event is RAW, PIRA, PIRA confirmed within RAW window,
+        event is RAW, PIRA, PIRA with relapse during confirmation,
         or undefined progression.
 
         Returns progression yes/no, type, event score, and
@@ -789,7 +789,7 @@ class EDSSProgression:
                                 # If we already know that it's RAW or UP, we're done.
                                 # Otherwise we have to check for relapses during confirmation,
                                 # unless there are no relapses, of course...
-                                # We also introduce a new type 'PIRA confirmed during relapse'
+                                # We also introduce a new type 'PIRA with relapse during confirmation'
                                 # to mark events that are outside the RAW window, but confirmed
                                 # by assessments during relapses. Treated like PIRA and RAW for
                                 # baselines etc.
@@ -799,7 +799,7 @@ class EDSSProgression:
                                     # If we don't allow relapses between the event and the
                                     # end of the confirmation interval, or if we consider all
                                     # scores for confirmation, then any event with relapses
-                                    # in this time interval is 'PIRA confirmed within RAW window'.
+                                    # in this time interval is 'PIRA with relapse during confirmation'.
                                     # We check the relapse timestamp list for whether there are
                                     # any in between the assessments. We can use >= and <= since
                                     # if the assessment were at the same time as a relapse, it
@@ -815,7 +815,7 @@ class EDSSProgression:
                                             ].max()
                                         )
                                         # If any relapse timestamp >= current and <= last conf + buffer,
-                                        # the event is 'PIRA confirmed within RAW window'.
+                                        # the event is 'PIRA with relapse during confirmation'.
                                         if max(
                                             (
                                                 np.array(relapse_timestamps)

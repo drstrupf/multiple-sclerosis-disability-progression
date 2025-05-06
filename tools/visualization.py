@@ -68,7 +68,7 @@ def annotate_plot_follow_up(
     progression_event_id_column_name="progression_event_id",
     label_undefined_progression="Undefined",
     label_pira="PIRA",
-    label_pira_confirmed_in_raw_window="PIRA confirmed in RAW window",
+    label_pira_confirmed_in_raw_window="PIRA with relapse during confirmation",
     label_raw="RAW",
     # Plot settings
     edss_color="black",

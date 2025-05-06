@@ -21,7 +21,7 @@ from definitions import edssprogression
 
 LABEL_UNDEFINED_PROGRESSION = "Undefined"
 LABEL_PIRA = "PIRA"
-LABEL_PIRA_CONFIRMED_IN_RAW_WINDOW = "PIRA confirmed in RAW window"
+LABEL_PIRA_CONFIRMED_IN_RAW_WINDOW = "PIRA with relapse during confirmation"
 LABEL_RAW = "RAW"
 
 
