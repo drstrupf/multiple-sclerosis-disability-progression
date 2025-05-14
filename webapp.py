@@ -63,7 +63,7 @@ if __name__ == "__main__":
     # Setup general app layout
     st.title("Disability Progression in Multiple Sclerosis from EDSS Scores")
     st.markdown(
-        "A little playground to explore the myriads of possible definitions of *first disability progression* "
+        "A little playground to explore the myriads of possible definitions of *EDSS disability accrual* "
         + "as implemented in [multiple-sclerosis-disability-progression](https://github.com/drstrupf/multiple-sclerosis-disability-progression)."
     )
 
@@ -115,57 +115,7 @@ if __name__ == "__main__":
 
     st.write("Last cache refresh: " + show_clock_last_cache_refresh())
 
-    st.write("## Instructions")
-    with st.expander(
-        "The four types of EDSS progression in real-world data", expanded=False
-    ):
-        four_types_caption = "The four types of EDSS progression in real-world data."
-        st.image("images/four_types.png", caption=four_types_caption)
-
-    with st.expander("Short description of options", expanded=False):
-        st.markdown(
-            "Toggle the individual definition aspects to view a brief explanation."
-        )
-        if st.checkbox("Baselines"):
-            st.markdown(
-                "* When assessing disability progression with respect to a **fixed baseline**, the reference EDSS "
-                + "score is the score measured at the first assessment."
-                + "\n* When assessing disability progression with respect to a **roving reference**, the reference EDSS "
-                + "score is the lowest previously measured score. Optionally, the roving reference can be subject to "
-                + "a confirmation requirement (e.g. confirmed at the next assessment)."
-            )
-        if st.checkbox("Minimal increase requirement"):
-            st.markdown(
-                "The minimal increase can be constant, or depending on the reference. A special case is requiring "
-                + "a minimal increase of 1.5 if the reference EDSS is 0."
-            )
-        if st.checkbox("Confirmation requirement"):
-            st.markdown(
-                "* For a progression to be *confirmed* at a certain number of weeks, either a) all values within "
-                + "this timespan plus the first one after or b) only the first value after have to fulfill the "
-                + "confirmation condition. A third option is requiring *sustained* progression, i.e. requiring that "
-                + "all subsequent scores have to fulfill the confirmation condition. Optionally, a minimum duration "
-                + "for sustained confirmation can be required.  "
-                + "\n* Confirmation condition: values have to be a) equal or larger than the progression EDSS, or "
-                + "b) equal or larger than the reference plus the minimum required increase.\n"
-            )
-        if st.checkbox("Minimal distance requirement"):
-            st.markdown(
-                "This is an optional requirement for a minimal distance between the progression and a) the previous assessment or "
-                + "b) the reference assessment.\n "
-                + "\nFor *minimal distance to reference*: optionally, adjust for a monotonic decrease in EDSS before the reference "
-                + "such that the minimal distance refers to the first EDSS in a monotonic decrease that is low enough for being a "
-                + "progression reference. "
-                + "*Example*: consider a series of scores [5.0, 4.5, 4.0, 3.5, 5.5], and a minimal increase of + 1.0. "
-                + "In this case, the roving reference for the last score 5.5 would be 3.5, but the relevant timestamp for "
-                + "the minimal distance condition would be that of the second assessment, since 5.5 is a progression with "
-                + "respect to 4.5."
-            )
-            decrease_correction_caption = "Correction for monotonic decrease."
-            st.image("images/example_rollback.png", caption=decrease_correction_caption)
-
-        st.markdown("More explanations coming soon...")
-
+    # Expander with the example for playing around
     st.write("## Explore PIRA and RAW definition options")
     st.markdown(
         "This section illustrates how **relapse-related options** as well as **general progression options** affect the number of "
@@ -267,15 +217,3 @@ if __name__ == "__main__":
             fig.tight_layout()
             sns.despine(bottom=True, left=True, right=True, top=True)
             st.pyplot(fig, clear_figure=True)
-
-    st.write("## Explore event merging options")
-    st.markdown(
-        "This section illustrates how **event merging** affects the number of "
-        + " events, the times to event, and the event types."
-    )
-
-    with st.expander(
-        "Plot follow-up and annotate progression events for example data",
-        expanded=True,
-    ):
-        st.write("Coming soon...")
