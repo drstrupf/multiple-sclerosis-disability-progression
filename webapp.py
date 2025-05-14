@@ -140,8 +140,8 @@ if __name__ == "__main__":
 
         with option_selection_column:
             st.write("Select definition options")
-            options_example_2 = frontend.dynamic_progression_option_input_element(
-                element_base_key="plot_playground_options_example_2",
+            options_example = frontend.dynamic_progression_option_input_element(
+                element_base_key="plot_playground_options_example",
                 default_baseline="roving",
                 default_confirmation_requirement=True,
                 default_confirmation_duration=30,
@@ -170,45 +170,45 @@ if __name__ == "__main__":
                 follow_up_dataframe=edited_example_follow_up_df,
                 relapse_timestamps=relapse_timestamps,
                 # Options
-                undefined_progression=options_example_2["undefined_progression"],
-                opt_raw_before_relapse_max_time=options_example_2[
+                undefined_progression=options_example["undefined_progression"],
+                opt_raw_before_relapse_max_time=options_example[
                     "opt_raw_before_relapse_max_time"
                 ],
-                opt_raw_after_relapse_max_time=options_example_2[
+                opt_raw_after_relapse_max_time=options_example[
                     "opt_raw_after_relapse_max_time"
                 ],
-                opt_pira_allow_relapses_between_event_and_confirmation=options_example_2.get(
+                opt_pira_allow_relapses_between_event_and_confirmation=options_example.get(
                     "opt_pira_allow_relapses_between_event_and_confirmation", False
                 ),
-                opt_baseline_type=options_example_2["opt_baseline_type"],
-                opt_roving_reference_require_confirmation=options_example_2[
+                opt_baseline_type=options_example["opt_baseline_type"],
+                opt_roving_reference_require_confirmation=options_example[
                     "opt_roving_reference_require_confirmation"
                 ],
-                opt_roving_reference_confirmation_time=options_example_2[
+                opt_roving_reference_confirmation_time=options_example[
                     "opt_roving_reference_confirmation_time"
                 ],
-                opt_max_score_that_requires_plus_1=options_example_2[
+                opt_max_score_that_requires_plus_1=options_example[
                     "opt_increase_threshold"
                 ],
-                opt_larger_increment_from_0=options_example_2[
+                opt_larger_increment_from_0=options_example[
                     "opt_larger_minimal_increase_from_0"
                 ],
-                opt_minimal_distance_time=options_example_2[
+                opt_minimal_distance_time=options_example[
                     "opt_minimal_distance_time"
                 ],
-                opt_minimal_distance_type=options_example_2[
+                opt_minimal_distance_type=options_example[
                     "opt_minimal_distance_type"
                 ],
-                opt_minimal_distance_backtrack_decrease=options_example_2[
+                opt_minimal_distance_backtrack_decrease=options_example[
                     "opt_minimal_distance_backtrack_decrease"
                 ],
-                opt_require_confirmation=options_example_2["opt_require_confirmation"],
-                opt_confirmation_time=options_example_2["opt_confirmation_time"],
-                opt_confirmation_type=options_example_2["opt_confirmation_type"],
-                opt_confirmation_included_values=options_example_2[
+                opt_require_confirmation=options_example["opt_require_confirmation"],
+                opt_confirmation_time=options_example["opt_confirmation_time"],
+                opt_confirmation_type=options_example["opt_confirmation_type"],
+                opt_confirmation_included_values=options_example[
                     "opt_confirmation_included_values"
                 ],
-                opt_confirmation_sustained_minimal_distance=options_example_2[
+                opt_confirmation_sustained_minimal_distance=options_example[
                     "opt_confirmation_sustained_minimal_distance"
                 ],
                 xlabel="Days after baseline",

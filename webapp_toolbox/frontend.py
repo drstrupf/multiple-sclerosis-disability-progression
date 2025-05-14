@@ -50,7 +50,7 @@ def baseline_definition_dropdown(key, default_baseline="fixed"):
             opt_roving_reference_confirmation_time = st.number_input(
                 label="Confirmation time for roving reference",
                 min_value=1,
-                value=1,
+                value=30,
                 key=key + "_roving_confirmation_time",
             )
         else:
@@ -173,7 +173,7 @@ def minimal_distance_requirement_dropdown(key):
         option_minimal_distance_time = st.number_input(
             label="Minimal distance",
             min_value=0,
-            value=0,
+            value=30,
             key=key + "_time",
         )
     option_minimal_distance_backtrack_monotonic_decrease = False
