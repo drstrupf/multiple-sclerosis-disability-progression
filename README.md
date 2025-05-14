@@ -8,9 +8,9 @@ Version [1.1.0](https://github.com/drstrupf/multiple-sclerosis-disability-progre
 
 ## How to use the resources in this repository
 
-See [tutorial.ipynb](https://github.com/drstrupf/multiple-sclerosis-disability-progression/blob/acdbcf836ebb5f03ac7d4c114d1280f12a7b8e41/tutorial.ipynb) for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
+See [tutorial.ipynb](https://github.com/drstrupf/multiple-sclerosis-disability-progression/blob/main/tutorial.ipynb) for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
 
-See [methods.ipynb](https://github.com/drstrupf/multiple-sclerosis-disability-progression/blob/acdbcf836ebb5f03ac7d4c114d1280f12a7b8e41/methods.ipynb) for examples for each definition option and combinations of options. Can't load/render the notebook? Try https://nbviewer.org/.
+See [methods.ipynb](https://github.com/drstrupf/multiple-sclerosis-disability-progression/blob/main/methods.ipynb) for examples for each definition option and combinations of options. Can't load/render the notebook? Try https://nbviewer.org/.
 
 Explore the definitions here: https://multiple-sclerosis-disability-progression.streamlit.app/
 
