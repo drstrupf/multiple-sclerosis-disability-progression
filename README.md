@@ -6,9 +6,13 @@ This repository is a collection of tools for assessing disability progression in
 
 Version [1.1.0](https://github.com/drstrupf/multiple-sclerosis-disability-progression/releases/tag/v1.1.0) is the code we used for the publication [Disability progression is a question of definition-A methodological reappraisal by example of primary progressive multiple sclerosis](https://pubmed.ncbi.nlm.nih.gov/39662164/) [1]. This version does not yet support relapses or annotating multiple events. Versions 2.0.0 and later fully cover the annotation functionality of version 1.1.0 and thus reproduce the results generated with this version. The implementation was completely refactored, and the release with relapse support should be used for any further analyses.
 
-Explore the definitions here: https://multiple-sclerosis-disability-progression.streamlit.app/
+## How to use the resources in this repository
 
-See ``tutorial.ipynb`` for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
+See [tutorial.ipynb](https://github.com/drstrupf/multiple-sclerosis-disability-progression/blob/acdbcf836ebb5f03ac7d4c114d1280f12a7b8e41/tutorial.ipynb) for a quick introduction and usage examples of our code. Can't load/render the notebook? Try https://nbviewer.org/.
+
+See [methods.ipynb](https://github.com/drstrupf/multiple-sclerosis-disability-progression/blob/acdbcf836ebb5f03ac7d4c114d1280f12a7b8e41/methods.ipynb) for examples for each definition option and combinations of options. Can't load/render the notebook? Try https://nbviewer.org/.
+
+Explore the definitions here: https://multiple-sclerosis-disability-progression.streamlit.app/
 
 ## Authors
 Gabriel Bsteh<sup>1, 2</sup>, Stefanie Marti<sup>3</sup>, Robert Hoepner<sup>3</sup>
