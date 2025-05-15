@@ -5,6 +5,7 @@ https://multiple-sclerosis-disability-progression.streamlit.app/
 
 """
 
+import gc
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -14,13 +15,17 @@ from datetime import date
 from datetime import datetime
 from datetime import timezone
 
-import matplotlib.pyplot as plt
+import matplotlib
+
+matplotlib.use("Agg")
+from matplotlib import figure
 import seaborn as sns
 
 sns.set_theme(color_codes=True)
 sns.set_style("whitegrid", {"grid.color": "gainsboro"})
 
 from webapp_toolbox import frontend
+from definitions import edssprogression
 from tools import visualization
 
 # Wide layout
@@ -34,6 +39,60 @@ def show_clock_last_cache_refresh():
         datetime.today().strftime("%d.%m.%Y, %H:%M:%S")
         + " "
         + str(datetime.now(timezone.utc).astimezone().tzinfo)
+    )
+
+
+# Cached EDSS disability accrual annotation instance
+@st.cache_data(ttl=60)
+def instantiate_annotator(
+    undefined_progression="re-baselining only",
+    undefined_progression_wrt_raw_pira_baseline="any",
+    opt_baseline_type="roving",
+    opt_roving_reference_require_confirmation=True,
+    opt_roving_reference_confirmation_time=30,
+    opt_roving_reference_confirmation_included_values="all",
+    opt_raw_before_relapse_max_time=30,
+    opt_raw_after_relapse_max_time=90,
+    opt_pira_allow_relapses_between_event_and_confirmation=False,
+    opt_max_score_that_requires_plus_1=5.0,
+    opt_larger_increment_from_0=True,
+    opt_require_confirmation=True,
+    opt_confirmation_time=6 * 30,
+    opt_confirmation_type="minimum",
+    opt_confirmation_included_values="all",
+    opt_confirmation_sustained_minimal_distance=0,
+    opt_minimal_distance_time=0,
+    opt_minimal_distance_type="reference",
+    opt_minimal_distance_backtrack_decrease=True,
+):
+    return edssprogression.EDSSProgression(
+        undefined_progression=undefined_progression,
+        undefined_progression_wrt_raw_pira_baseline=undefined_progression_wrt_raw_pira_baseline,
+        opt_baseline_type=opt_baseline_type,
+        opt_roving_reference_require_confirmation=opt_roving_reference_require_confirmation,
+        opt_roving_reference_confirmation_time=opt_roving_reference_confirmation_time,
+        opt_roving_reference_confirmation_included_values=opt_roving_reference_confirmation_included_values,
+        opt_raw_before_relapse_max_time=opt_raw_before_relapse_max_time,
+        opt_raw_after_relapse_max_time=opt_raw_after_relapse_max_time,
+        opt_pira_allow_relapses_between_event_and_confirmation=opt_pira_allow_relapses_between_event_and_confirmation,
+        opt_max_score_that_requires_plus_1=opt_max_score_that_requires_plus_1,
+        opt_larger_increment_from_0=opt_larger_increment_from_0,
+        opt_require_confirmation=opt_require_confirmation,
+        opt_confirmation_time=opt_confirmation_time,
+        opt_confirmation_type=opt_confirmation_type,
+        opt_confirmation_included_values=opt_confirmation_included_values,
+        opt_confirmation_sustained_minimal_distance=opt_confirmation_sustained_minimal_distance,
+        opt_minimal_distance_time=opt_minimal_distance_time,
+        opt_minimal_distance_type=opt_minimal_distance_type,
+        opt_minimal_distance_backtrack_decrease=opt_minimal_distance_backtrack_decrease,
+    )
+
+
+# Cached annotated dataframe
+@st.cache_data(ttl=60)
+def cached_annotated_df(annotator_instance, follow_up_dataframe, relapse_timestamps):
+    return annotator_instance.add_progression_events_to_follow_up(
+        follow_up_dataframe=follow_up_dataframe, relapse_timestamps=relapse_timestamps
     )
 
 
@@ -165,10 +224,8 @@ if __name__ == "__main__":
                 disabled=False,
                 label_visibility="visible",
             )
-            fig, ax = plt.subplots(1, 1, figsize=(16, 6))
-            visualization.annotate_plot_follow_up(
-                follow_up_dataframe=edited_example_follow_up_df,
-                relapse_timestamps=relapse_timestamps,
+            # Instantiate an annotator
+            annotator_instance = instantiate_annotator(
                 # Options
                 undefined_progression=options_example["undefined_progression"],
                 opt_raw_before_relapse_max_time=options_example[
@@ -193,12 +250,8 @@ if __name__ == "__main__":
                 opt_larger_increment_from_0=options_example[
                     "opt_larger_minimal_increase_from_0"
                 ],
-                opt_minimal_distance_time=options_example[
-                    "opt_minimal_distance_time"
-                ],
-                opt_minimal_distance_type=options_example[
-                    "opt_minimal_distance_type"
-                ],
+                opt_minimal_distance_time=options_example["opt_minimal_distance_time"],
+                opt_minimal_distance_type=options_example["opt_minimal_distance_type"],
                 opt_minimal_distance_backtrack_decrease=options_example[
                     "opt_minimal_distance_backtrack_decrease"
                 ],
@@ -211,9 +264,29 @@ if __name__ == "__main__":
                 opt_confirmation_sustained_minimal_distance=options_example[
                     "opt_confirmation_sustained_minimal_distance"
                 ],
+            )
+
+            # Annotate the dataframe
+            annotated_df = cached_annotated_df(
+                annotator_instance=annotator_instance,
+                follow_up_dataframe=edited_example_follow_up_df,
+                relapse_timestamps=relapse_timestamps,
+            )
+
+            # Plot it
+            fig = figure.Figure(figsize=(16, 6))
+            ax = fig.subplots(1)
+            visualization.plot_annotated_follow_up(
+                annotated_df,
+                opt_raw_before_relapse_max_time=options_example[
+                    "opt_raw_before_relapse_max_time"
+                ],
+                opt_raw_after_relapse_max_time=options_example[
+                    "opt_raw_after_relapse_max_time"
+                ],
                 xlabel="Days after baseline",
                 ax=ax,
             )
             fig.tight_layout()
-            sns.despine(bottom=True, left=True, right=True, top=True)
+            sns.despine(bottom=True, left=True, right=True, top=True, ax=ax)
             st.pyplot(fig, clear_figure=True)

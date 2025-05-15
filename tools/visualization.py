@@ -15,47 +15,48 @@ sns.set_style("whitegrid", {"grid.color": "gainsboro"})
 # TODO: For 'end' option, stop drawing RAW/PIRA baselines
 
 
-def annotate_plot_follow_up(
-    follow_up_dataframe,
-    relapse_timestamps=[],
-    undefined_progression="re-baselining only",  # or "never", "all", "end"
-    undefined_progression_wrt_raw_pira_baseline="greater only",  # "equal or greater", "any"
-    return_first_event_only=False,
-    merge_continuous_events=False,
-    continuous_events_max_repetition_time=90,
-    continuous_events_max_merge_distance=np.inf,
-    opt_baseline_type="roving",
-    opt_roving_reference_require_confirmation=True,
-    opt_roving_reference_confirmation_time=0.5,  # amounts to next confirmed
-    opt_roving_reference_confirmation_included_values="all",  # "last" or "all"
-    opt_roving_reference_confirmation_time_right_side_max_tolerance=np.inf,
-    opt_roving_reference_confirmation_time_left_side_max_tolerance=0,
-    # PIRA/RAW options
-    opt_raw_before_relapse_max_time=30,
-    opt_raw_after_relapse_max_time=90,
-    opt_pira_allow_relapses_between_event_and_confirmation=False,
-    # Minimum increase options
-    opt_max_score_that_requires_plus_1=5.0,
-    opt_larger_increment_from_0=True,
-    # Confirmation options
-    opt_require_confirmation=False,
-    opt_confirmation_time=-1,  # -1 for sustained over follow-up
-    opt_confirmation_type="minimum",  # "minimum" or "monotonic"
-    opt_confirmation_included_values="all",  # "last" or "all"
-    opt_confirmation_sustained_minimal_distance=0,  # only if "sustained"
-    opt_confirmation_time_right_side_max_tolerance=np.inf,  # not for "sustained"
-    opt_confirmation_time_left_side_max_tolerance=0,  # not for "sustained"
-    opt_confirmation_require_confirmation_for_last_visit=True,
-    # Minimal distance options
-    opt_minimal_distance_time=0,
-    opt_minimal_distance_type="reference",  # "reference" or "previous"
-    opt_minimal_distance_backtrack_decrease=True,  # go back to last low enough reference
+# Helper function - get the relapses from an annotated dataframe
+def get_relapse_timestamps_from_annotated_df(
+    annotated_df,
+    time_column_name="days_after_baseline",
+    time_since_last_relapse_column_name="days_since_previous_relapse",
+    time_to_next_relapse_column_name="days_to_next_relapse",
+):
+    """TBD"""
+    # From previous
+    since_previous = annotated_df[
+        [time_column_name, time_since_last_relapse_column_name]
+    ].dropna()
+    since_previous["relapse_timestamp"] = (
+        since_previous[time_column_name]
+        - since_previous[time_since_last_relapse_column_name]
+    )
+    since_previous["relapse_timestamp"] = since_previous["relapse_timestamp"].astype(
+        int
+    )
+    timestamps_part_1 = list(since_previous["relapse_timestamp"].drop_duplicates())
+    # From next
+    to_next = annotated_df[
+        [time_column_name, time_to_next_relapse_column_name]
+    ].dropna()
+    to_next["relapse_timestamp"] = (
+        to_next[time_column_name] + to_next[time_to_next_relapse_column_name]
+    )
+    to_next["relapse_timestamp"] = to_next["relapse_timestamp"].astype(int)
+    timestamps_part_2 = list(to_next["relapse_timestamp"].drop_duplicates())
+    return sorted(list(set(timestamps_part_1 + timestamps_part_2)))
+
+
+def plot_annotated_follow_up(
+    annotated_df,
+    # RAW window - not shown if not provided
+    opt_raw_before_relapse_max_time=np.nan,
+    opt_raw_after_relapse_max_time=np.nan,
     # Input specifications
     edss_score_column_name="edss_score",
     time_column_name="days_after_baseline",
     time_since_last_relapse_column_name="days_since_previous_relapse",
     time_to_next_relapse_column_name="days_to_next_relapse",
-    # Output specifications
     is_general_rebaseline_flag_column_name="is_general_rebaseline",
     is_raw_pira_rebaseline_flag_column_name="is_raw_pira_rebaseline",
     is_post_relapse_rebaseline_flag_column_name="is_post_relapse_rebaseline",
@@ -91,77 +92,32 @@ def annotate_plot_follow_up(
     make_emf_safe=False,  # This replaces alpha with a solid lighter color.
     ax=None,
 ):
+    """TBD - takes already annotated df, reverse engineers relapse
+    timestamps but requires RAW window specs for drawing windows.
+    """
     # Setup ax
     if ax is None:
         ax = plt.gca()
 
-    # Instantiate progression finder
-    progression_finder = edssprogression.EDSSProgression(
-        undefined_progression=undefined_progression,
-        undefined_progression_wrt_raw_pira_baseline=undefined_progression_wrt_raw_pira_baseline,
-        return_first_event_only=return_first_event_only,
-        merge_continuous_events=merge_continuous_events,
-        continuous_events_max_repetition_time=continuous_events_max_repetition_time,
-        continuous_events_max_merge_distance=continuous_events_max_merge_distance,
-        opt_baseline_type=opt_baseline_type,
-        opt_roving_reference_require_confirmation=opt_roving_reference_require_confirmation,
-        opt_roving_reference_confirmation_time=opt_roving_reference_confirmation_time,
-        opt_roving_reference_confirmation_included_values=opt_roving_reference_confirmation_included_values,
-        opt_roving_reference_confirmation_time_right_side_max_tolerance=opt_roving_reference_confirmation_time_right_side_max_tolerance,
-        opt_roving_reference_confirmation_time_left_side_max_tolerance=opt_roving_reference_confirmation_time_left_side_max_tolerance,
-        # PIRA/RAW options
-        opt_raw_before_relapse_max_time=opt_raw_before_relapse_max_time,
-        opt_raw_after_relapse_max_time=opt_raw_after_relapse_max_time,
-        opt_pira_allow_relapses_between_event_and_confirmation=opt_pira_allow_relapses_between_event_and_confirmation,
-        # Minimum increase options
-        opt_max_score_that_requires_plus_1=opt_max_score_that_requires_plus_1,
-        opt_larger_increment_from_0=opt_larger_increment_from_0,
-        # Confirmation options
-        opt_require_confirmation=opt_require_confirmation,
-        opt_confirmation_time=opt_confirmation_time,
-        opt_confirmation_type=opt_confirmation_type,
-        opt_confirmation_included_values=opt_confirmation_included_values,
-        opt_confirmation_sustained_minimal_distance=opt_confirmation_sustained_minimal_distance,
-        opt_confirmation_time_right_side_max_tolerance=opt_confirmation_time_right_side_max_tolerance,
-        opt_confirmation_time_left_side_max_tolerance=opt_confirmation_time_left_side_max_tolerance,
-        opt_confirmation_require_confirmation_for_last_visit=opt_confirmation_require_confirmation_for_last_visit,
-        # Minimal distance options
-        opt_minimal_distance_time=opt_minimal_distance_time,
-        opt_minimal_distance_type=opt_minimal_distance_type,
-        opt_minimal_distance_backtrack_decrease=opt_minimal_distance_backtrack_decrease,
-        # Input specifications
-        edss_score_column_name=edss_score_column_name,
+    # Show RAW window?
+    if (opt_raw_before_relapse_max_time >= 0) and (opt_raw_after_relapse_max_time >= 0):
+        pass
+    else:
+        show_raw_window = False
+
+    # Get relapse timestamps
+    relapse_timestamps = get_relapse_timestamps_from_annotated_df(
+        annotated_df=annotated_df,
         time_column_name=time_column_name,
         time_since_last_relapse_column_name=time_since_last_relapse_column_name,
         time_to_next_relapse_column_name=time_to_next_relapse_column_name,
-        # Output specifications
-        is_general_rebaseline_flag_column_name=is_general_rebaseline_flag_column_name,
-        is_raw_pira_rebaseline_flag_column_name=is_raw_pira_rebaseline_flag_column_name,
-        is_post_relapse_rebaseline_flag_column_name=is_post_relapse_rebaseline_flag_column_name,
-        is_post_event_rebaseline_flag_column_name=is_post_event_rebaseline_flag_column_name,
-        used_as_general_reference_score_flag_column_name=used_as_general_reference_score_flag_column_name,
-        used_as_raw_pira_reference_score_flag_column_name=used_as_raw_pira_reference_score_flag_column_name,
-        is_progression_flag_column_name=is_progression_flag_column_name,
-        progression_type_column_name=progression_type_column_name,
-        progression_score_column_name=progression_score_column_name,
-        progression_event_id_column_name=progression_event_id_column_name,
-        label_undefined_progression=label_undefined_progression,
-        label_pira=label_pira,
-        label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
-        label_raw=label_raw,
-    )
-
-    # Annotate baselines and progression
-    annotated_df = progression_finder.add_progression_events_to_follow_up(
-        follow_up_dataframe,
-        relapse_timestamps=relapse_timestamps,
     )
 
     # Min and max score, used for styling later
     min_edss = annotated_df[edss_score_column_name].min() - 0.5
     max_edss = annotated_df[edss_score_column_name].max() + 0.5
 
-    # Get relapse timestamps
+    # Draw relapses
     if len(relapse_timestamps) > 0:
         # Determine height of axvspan
         height_of_plot = max_edss - min_edss + 0.5
@@ -611,6 +567,195 @@ def annotate_plot_follow_up(
     ax.set_ylabel("EDSS")
 
     return ax
+
+
+def annotate_plot_follow_up(
+    follow_up_dataframe,
+    relapse_timestamps=[],
+    undefined_progression="re-baselining only",  # or "never", "all", "end"
+    undefined_progression_wrt_raw_pira_baseline="greater only",  # "equal or greater", "any"
+    return_first_event_only=False,
+    merge_continuous_events=False,
+    continuous_events_max_repetition_time=90,
+    continuous_events_max_merge_distance=np.inf,
+    opt_baseline_type="roving",
+    opt_roving_reference_require_confirmation=True,
+    opt_roving_reference_confirmation_time=0.5,  # amounts to next confirmed
+    opt_roving_reference_confirmation_included_values="all",  # "last" or "all"
+    opt_roving_reference_confirmation_time_right_side_max_tolerance=np.inf,
+    opt_roving_reference_confirmation_time_left_side_max_tolerance=0,
+    # PIRA/RAW options
+    opt_raw_before_relapse_max_time=30,
+    opt_raw_after_relapse_max_time=90,
+    opt_pira_allow_relapses_between_event_and_confirmation=False,
+    # Minimum increase options
+    opt_max_score_that_requires_plus_1=5.0,
+    opt_larger_increment_from_0=True,
+    # Confirmation options
+    opt_require_confirmation=False,
+    opt_confirmation_time=-1,  # -1 for sustained over follow-up
+    opt_confirmation_type="minimum",  # "minimum" or "monotonic"
+    opt_confirmation_included_values="all",  # "last" or "all"
+    opt_confirmation_sustained_minimal_distance=0,  # only if "sustained"
+    opt_confirmation_time_right_side_max_tolerance=np.inf,  # not for "sustained"
+    opt_confirmation_time_left_side_max_tolerance=0,  # not for "sustained"
+    opt_confirmation_require_confirmation_for_last_visit=True,
+    # Minimal distance options
+    opt_minimal_distance_time=0,
+    opt_minimal_distance_type="reference",  # "reference" or "previous"
+    opt_minimal_distance_backtrack_decrease=True,  # go back to last low enough reference
+    # Input specifications
+    edss_score_column_name="edss_score",
+    time_column_name="days_after_baseline",
+    # Output specifications
+    time_since_last_relapse_column_name="days_since_previous_relapse",
+    time_to_next_relapse_column_name="days_to_next_relapse",
+    is_general_rebaseline_flag_column_name="is_general_rebaseline",
+    is_raw_pira_rebaseline_flag_column_name="is_raw_pira_rebaseline",
+    is_post_relapse_rebaseline_flag_column_name="is_post_relapse_rebaseline",
+    is_post_event_rebaseline_flag_column_name="is_post_event_rebaseline",
+    used_as_general_reference_score_flag_column_name="edss_score_used_as_new_general_reference",
+    used_as_raw_pira_reference_score_flag_column_name="edss_score_used_as_new_raw_pira_reference",
+    is_progression_flag_column_name="is_progression",
+    progression_type_column_name="progression_type",
+    progression_score_column_name="progression_score",
+    progression_event_id_column_name="progression_event_id",
+    label_undefined_progression="Undefined",
+    label_pira="PIRA",
+    label_pira_confirmed_in_raw_window="PIRA with relapse during confirmation",
+    label_raw="RAW",
+    # Plot settings
+    edss_color="black",
+    relapse_color="deeppink",
+    relapse_color_with_alpha="#FFC4E3",
+    general_baseline_color="grey",
+    raw_pira_baseline_color="deeppink",
+    pira_color="#648FFF",
+    label_pira_confirmed_in_raw_window_color="#785EF0",
+    raw_color="#DC267F",
+    undef_color="#FE6100",
+    xlabel="Time",
+    show_baselines=True,
+    show_raw_window=True,
+    show_progression=True,
+    show_rebaselining=False,
+    show_legend=True,
+    move_legend_out=True,
+    legend_loc="best",
+    make_emf_safe=False,  # This replaces alpha with a solid lighter color.
+    ax=None,
+):
+    # Setup ax
+    if ax is None:
+        ax = plt.gca()
+
+    # Instantiate progression finder
+    progression_finder = edssprogression.EDSSProgression(
+        undefined_progression=undefined_progression,
+        undefined_progression_wrt_raw_pira_baseline=undefined_progression_wrt_raw_pira_baseline,
+        return_first_event_only=return_first_event_only,
+        merge_continuous_events=merge_continuous_events,
+        continuous_events_max_repetition_time=continuous_events_max_repetition_time,
+        continuous_events_max_merge_distance=continuous_events_max_merge_distance,
+        opt_baseline_type=opt_baseline_type,
+        opt_roving_reference_require_confirmation=opt_roving_reference_require_confirmation,
+        opt_roving_reference_confirmation_time=opt_roving_reference_confirmation_time,
+        opt_roving_reference_confirmation_included_values=opt_roving_reference_confirmation_included_values,
+        opt_roving_reference_confirmation_time_right_side_max_tolerance=opt_roving_reference_confirmation_time_right_side_max_tolerance,
+        opt_roving_reference_confirmation_time_left_side_max_tolerance=opt_roving_reference_confirmation_time_left_side_max_tolerance,
+        # PIRA/RAW options
+        opt_raw_before_relapse_max_time=opt_raw_before_relapse_max_time,
+        opt_raw_after_relapse_max_time=opt_raw_after_relapse_max_time,
+        opt_pira_allow_relapses_between_event_and_confirmation=opt_pira_allow_relapses_between_event_and_confirmation,
+        # Minimum increase options
+        opt_max_score_that_requires_plus_1=opt_max_score_that_requires_plus_1,
+        opt_larger_increment_from_0=opt_larger_increment_from_0,
+        # Confirmation options
+        opt_require_confirmation=opt_require_confirmation,
+        opt_confirmation_time=opt_confirmation_time,
+        opt_confirmation_type=opt_confirmation_type,
+        opt_confirmation_included_values=opt_confirmation_included_values,
+        opt_confirmation_sustained_minimal_distance=opt_confirmation_sustained_minimal_distance,
+        opt_confirmation_time_right_side_max_tolerance=opt_confirmation_time_right_side_max_tolerance,
+        opt_confirmation_time_left_side_max_tolerance=opt_confirmation_time_left_side_max_tolerance,
+        opt_confirmation_require_confirmation_for_last_visit=opt_confirmation_require_confirmation_for_last_visit,
+        # Minimal distance options
+        opt_minimal_distance_time=opt_minimal_distance_time,
+        opt_minimal_distance_type=opt_minimal_distance_type,
+        opt_minimal_distance_backtrack_decrease=opt_minimal_distance_backtrack_decrease,
+        # Input specifications
+        edss_score_column_name=edss_score_column_name,
+        time_column_name=time_column_name,
+        time_since_last_relapse_column_name=time_since_last_relapse_column_name,
+        time_to_next_relapse_column_name=time_to_next_relapse_column_name,
+        # Output specifications
+        is_general_rebaseline_flag_column_name=is_general_rebaseline_flag_column_name,
+        is_raw_pira_rebaseline_flag_column_name=is_raw_pira_rebaseline_flag_column_name,
+        is_post_relapse_rebaseline_flag_column_name=is_post_relapse_rebaseline_flag_column_name,
+        is_post_event_rebaseline_flag_column_name=is_post_event_rebaseline_flag_column_name,
+        used_as_general_reference_score_flag_column_name=used_as_general_reference_score_flag_column_name,
+        used_as_raw_pira_reference_score_flag_column_name=used_as_raw_pira_reference_score_flag_column_name,
+        is_progression_flag_column_name=is_progression_flag_column_name,
+        progression_type_column_name=progression_type_column_name,
+        progression_score_column_name=progression_score_column_name,
+        progression_event_id_column_name=progression_event_id_column_name,
+        label_undefined_progression=label_undefined_progression,
+        label_pira=label_pira,
+        label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
+        label_raw=label_raw,
+    )
+
+    # Annotate baselines and progression
+    annotated_df = progression_finder.add_progression_events_to_follow_up(
+        follow_up_dataframe,
+        relapse_timestamps=relapse_timestamps,
+    )
+
+    return plot_annotated_follow_up(
+        annotated_df=annotated_df,
+        # RAW window - not shown if not provided
+        opt_raw_before_relapse_max_time=opt_raw_before_relapse_max_time,
+        opt_raw_after_relapse_max_time=opt_raw_after_relapse_max_time,
+        # Input specifications
+        edss_score_column_name=edss_score_column_name,
+        time_column_name=time_column_name,
+        time_since_last_relapse_column_name=time_since_last_relapse_column_name,
+        time_to_next_relapse_column_name=time_to_next_relapse_column_name,
+        is_general_rebaseline_flag_column_name=is_general_rebaseline_flag_column_name,
+        is_raw_pira_rebaseline_flag_column_name=is_raw_pira_rebaseline_flag_column_name,
+        is_post_relapse_rebaseline_flag_column_name=is_post_relapse_rebaseline_flag_column_name,
+        is_post_event_rebaseline_flag_column_name=is_post_event_rebaseline_flag_column_name,
+        used_as_general_reference_score_flag_column_name=used_as_general_reference_score_flag_column_name,
+        used_as_raw_pira_reference_score_flag_column_name=used_as_raw_pira_reference_score_flag_column_name,
+        is_progression_flag_column_name=is_progression_flag_column_name,
+        progression_type_column_name=progression_type_column_name,
+        progression_score_column_name=progression_score_column_name,
+        progression_event_id_column_name=progression_event_id_column_name,
+        label_undefined_progression=label_undefined_progression,
+        label_pira=label_pira,
+        label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
+        label_raw=label_raw,
+        # Plot settings
+        edss_color=edss_color,
+        relapse_color=relapse_color,
+        relapse_color_with_alpha=relapse_color_with_alpha,
+        general_baseline_color=general_baseline_color,
+        raw_pira_baseline_color=raw_pira_baseline_color,
+        pira_color=pira_color,
+        label_pira_confirmed_in_raw_window_color=label_pira_confirmed_in_raw_window_color,
+        raw_color=raw_color,
+        undef_color=undef_color,
+        xlabel=xlabel,
+        show_baselines=show_baselines,
+        show_raw_window=show_raw_window,
+        show_progression=show_progression,
+        show_rebaselining=show_rebaselining,
+        show_legend=show_legend,
+        move_legend_out=move_legend_out,
+        legend_loc=legend_loc,
+        make_emf_safe=make_emf_safe,
+        ax=ax,
+    )
 
 
 if __name__ == "__main__":
