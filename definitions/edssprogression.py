@@ -99,10 +99,10 @@ class EDSSProgression:
     is_raw_pira_rebaseline_flag_column_name: str = "is_raw_pira_rebaseline"
     is_post_relapse_rebaseline_flag_column_name: str = "is_post_relapse_rebaseline"
     is_post_event_rebaseline_flag_column_name: str = "is_post_event_rebaseline"
-    used_as_general_reference_score_flag_column_name: str = (
+    used_as_general_reference_score_column_name: str = (
         "edss_score_used_as_new_general_reference"
     )
-    used_as_raw_pira_reference_score_flag_column_name: str = (
+    used_as_raw_pira_reference_score_column_name: str = (
         "edss_score_used_as_new_raw_pira_reference"
     )
     is_progression_flag_column_name: str = "is_progression"
@@ -1157,8 +1157,8 @@ class EDSSProgression:
         # carried forward after a re-baselining (in case of event
         # or baseline confirmation constraints, the new baseline is
         # not equivalent to the EDSS score determined at the assessment...)
-        annotated_df[self.used_as_general_reference_score_flag_column_name] = np.nan
-        annotated_df[self.used_as_raw_pira_reference_score_flag_column_name] = np.nan
+        annotated_df[self.used_as_general_reference_score_column_name] = np.nan
+        annotated_df[self.used_as_raw_pira_reference_score_column_name] = np.nan
         # Also initialize columns for progression annotation. We keep
         # track of the event, event type, event score, event reference
         # score, and event ID.
@@ -1474,7 +1474,7 @@ class EDSSProgression:
                         True
                     )
                     annotated_df.at[
-                        i, self.used_as_general_reference_score_flag_column_name
+                        i, self.used_as_general_reference_score_column_name
                     ] = confirmed_event_score
                     general_baseline_timestamp = current_timestamp
                     if self.merge_continuous_events:
@@ -1525,7 +1525,7 @@ class EDSSProgression:
                             i, self.is_raw_pira_rebaseline_flag_column_name
                         ] = True
                         annotated_df.at[
-                            i, self.used_as_raw_pira_reference_score_flag_column_name
+                            i, self.used_as_raw_pira_reference_score_column_name
                         ] = new_raw_pira_baseline
                         raw_pira_baseline_timestamp = current_timestamp
                         if self.merge_continuous_events:
@@ -1558,7 +1558,7 @@ class EDSSProgression:
                             i, self.is_raw_pira_rebaseline_flag_column_name
                         ] = True
                         annotated_df.at[
-                            i, self.used_as_raw_pira_reference_score_flag_column_name
+                            i, self.used_as_raw_pira_reference_score_column_name
                         ] = current_edss
                         raw_pira_baselines = pd.DataFrame(
                             {
@@ -1641,7 +1641,7 @@ class EDSSProgression:
                                 ] = True
                                 annotated_df.at[
                                     i,
-                                    self.used_as_general_reference_score_flag_column_name,
+                                    self.used_as_general_reference_score_column_name,
                                 ] = confirmed_new_roving
                                 general_baselines = pd.concat(
                                     [
@@ -1688,7 +1688,7 @@ class EDSSProgression:
                                 ] = True
                                 annotated_df.at[
                                     i,
-                                    self.used_as_raw_pira_reference_score_flag_column_name,
+                                    self.used_as_raw_pira_reference_score_column_name,
                                 ] = confirmed_new_roving
                                 raw_pira_baselines = pd.concat(
                                     [
@@ -1830,7 +1830,7 @@ class EDSSProgression:
                 remainder_general_baseline = progression_events_df[
                     progression_events_df[self.progression_event_id_column_name]
                     == last_progression_event_id
-                ][self.used_as_general_reference_score_flag_column_name].max()
+                ][self.used_as_general_reference_score_column_name].max()
                 # Also get the RAW/PIRA baseline; they MUST be equal, so we add an
                 # assertion that breaks everything if this assumption is wrong or if
                 # there is an implementation error...
@@ -1839,7 +1839,7 @@ class EDSSProgression:
                 remainder_raw_pira_baseline = progression_events_df[
                     progression_events_df[self.progression_event_id_column_name]
                     == last_progression_event_id
-                ][self.used_as_raw_pira_reference_score_flag_column_name].max()
+                ][self.used_as_raw_pira_reference_score_column_name].max()
                 assert (
                     remainder_general_baseline == remainder_raw_pira_baseline
                 ), "Check the 'end' option for undefined, inconsistent baselines!"
@@ -1898,15 +1898,15 @@ class EDSSProgression:
                             i, self.is_general_rebaseline_flag_column_name
                         ] = row[self.is_general_rebaseline_flag_column_name]
                         annotated_df.at[
-                            i, self.used_as_general_reference_score_flag_column_name
-                        ] = row[self.used_as_general_reference_score_flag_column_name]
+                            i, self.used_as_general_reference_score_column_name
+                        ] = row[self.used_as_general_reference_score_column_name]
                         # RAW/PIRA
                         annotated_df.at[
                             i, self.is_raw_pira_rebaseline_flag_column_name
                         ] = row[self.is_raw_pira_rebaseline_flag_column_name]
                         annotated_df.at[
-                            i, self.used_as_raw_pira_reference_score_flag_column_name
-                        ] = row[self.used_as_raw_pira_reference_score_flag_column_name]
+                            i, self.used_as_raw_pira_reference_score_column_name
+                        ] = row[self.used_as_raw_pira_reference_score_column_name]
 
         return annotated_df
 
