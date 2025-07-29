@@ -1,4 +1,13 @@
-"""TBD"""
+"""This module contains a class with EDSS disability accrual
+annotation functionality.
+
+See the methods.ipynb notebook in the repo's main folder for
+an explanation of the available parameters.
+
+See the tutorial.ipynb notebook in the repo's main folder for
+usage examples.
+
+"""
 
 import numpy as np
 import pandas as pd
