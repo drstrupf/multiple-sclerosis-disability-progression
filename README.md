@@ -1,5 +1,5 @@
-# Disability Progression in Multiple Sclerosis
-This repository is a collection of tools for assessing disability progression in Multiple Sclerosis based on changes in Expanded Disability Status Scale (EDSS) scores over time. The event annotation algorithm differentiates between **Progression Independent of Relapse Activity (PIRA)** and **Relapse Associated Worsening (RAW)**, and the additional worsening types **PIRA with relapse during confirmation** and **Undefined Worsening** that are required for supporting non-standardized real-world data from observational cohorts.
+# Disability Accrual in Multiple Sclerosis
+This repository is a collection of tools for assessing disability accrual in Multiple Sclerosis based on changes in Expanded Disability Status Scale (EDSS) scores over time. The event annotation algorithm differentiates between **Progression Independent of Relapse Activity (PIRA)** and **Relapse Associated Worsening (RAW)**, and the additional event types **PIRA with relapse during confirmation** and **Undefined Worsening** that are required for supporting non-standardized real-world data from observational cohorts.
 
 ![Annotated follow-up with PIRA, RAW, and undefined worsening](images/example_with_all_types.png?raw=true "Annotated follow-up with PIRA, RAW, and undefined worsening")
 <sup>**Figure 1** Example of a follow-up annotated with our code. Minimal required EDSS increase + 1, next-confirmed roving reference, events confirmed at the next assessment, RAW window 30 days pre-/post-relapse, default option for undefined worsening (re-baselining only), no minimal distance requirement, no event merging.</sup>
@@ -24,6 +24,9 @@ Gabriel Bsteh<sup>1, 2</sup>, Stefanie Marti<sup>3</sup>, Robert Hoepner<sup>3</
 **Interested in using our code?** Please contact the authors. 
 * [Gabriel Bsteh](https://www.meduniwien.ac.at/web/forschung/researcher-profiles/researcher-profiles/detail/?res=gabriel_bsteh&cHash=0896fd3f091c51c7c5c37b55b83d8def)
 * [Robert Hoepner](http://www.neurologie.insel.ch/de/ueber-uns/teams/details/person/detail/robert-hoepner)
+
+Found a **bug**? Do you have a **feature request**? We would appreciate your feedback!
+Please [**open an issue**](https://github.com/drstrupf/multiple-sclerosis-disability-progression/issues).
 
 ## References
 
