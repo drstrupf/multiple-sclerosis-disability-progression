@@ -55,15 +55,15 @@ class EDSSProgression:
         np.inf
     )  # be more conservative for sparse follow-ups!
     # Baseline options
-    opt_baseline_type: str = "roving"
+    opt_baseline_type: str = "roving" # or "fixed"
     opt_roving_reference_require_confirmation: bool = True
     opt_roving_reference_confirmation_time: float = 30 # 0.5 would amount to next confirmed
     opt_roving_reference_confirmation_included_values: str = "all"  # "last" or "all"
     opt_roving_reference_confirmation_time_right_side_max_tolerance: int = (
         np.inf
-    )  # no constraint
+    )  # np.inf for no constraint
     opt_roving_reference_confirmation_time_left_side_max_tolerance: int = (
-        0  # no tolerance
+        0  # 0 for no tolerance
     )
     # PIRA/RAW options - ignored if no relapses specified
     opt_raw_before_relapse_max_time: int = 30
@@ -727,16 +727,30 @@ class EDSSProgression:
         current_assessment_index,
         additional_lower_threshold,
     ):
-        """TBD, some thoughts:
+        """Check if a score is a progression event.
 
-        This function check if an EDSS score is an event by
+        This function checks if an EDSS score is an event by
         checking the minimal distance, minimal increase, and
-        confirmation conditions. It also checks whether an
+        confirmation conditions. It also determines whether an
         event is RAW, PIRA, PIRA with relapse during confirmation,
         or undefined progression.
 
         Returns progression yes/no, type, event score, and
         the reference score for the event.
+
+        Args:
+        - check_raw_pira: bool, whether candidate score is checked 
+                          for RAW/PIRA or for undefined
+        - annotated_df: follow-up dataframe with time from last and
+                        time to next relapse
+        - relapse_timestamps: list of relapse timestamps
+        - baselines_df: dataframe with RAW/PIRA and general baselines
+        - current_assessment_index: the index of the current assessment
+        - additional_lower_threshold: additional threshold for progression
+
+        Returns:
+        - bool, str, float, float: is_progression, progression_type,
+                                   confirmed_event_score, current_baseline_score
 
         """
         row = annotated_df.loc[current_assessment_index]
@@ -939,7 +953,8 @@ class EDSSProgression:
         iid_progression_type,
         additional_lower_threshold,
     ):
-        """TBD, some thoughts:
+        """Find the indices of merged events, the event score, and 
+        the timestamp of the last event within series of merged events.
 
         This is to identify connected events; we only look at strictly
         monotonically increasing scores, with an optional tolerance for
@@ -958,6 +973,21 @@ class EDSSProgression:
             This is by design in order to make analysis easier (e.g. event
             counts based on rows with 'is_progression == True'). They can
             be identified via the event ID.
+
+        Args:
+        - annotated_df: follow-up dataframe with time from last and
+                        time to next relapse
+        - baselines_df: dataframe with RAW/PIRA and general baselines
+        - relapse_timestamps: list of relapse timestamps
+        - iid_index: the index of the first progression event
+        - iid_confirmed_event_score: the confirmed score of the first event
+        - iid_progression_type: the type of the first event
+        - additional_lower_threshold: additional threshold for progression
+
+        Returns:
+        - list, float, int: indices_of_merged_event, confirmed_event_score,
+                            last_confirmed_progression_timestamp
+
         """
         # Setup loop... We collect the indices of each assessment that
         # is part of the loop in a list, and we also keep track of potential
@@ -1083,7 +1113,25 @@ class EDSSProgression:
         relapse_timestamps,
         undefined_progression,
     ):
-        """TBD"""
+        """Annotates progression events in a follow-up, but with 
+        a limited set of options for undefined worsening. This 
+        function contains most of the actual annotation magic, 
+        but is only a helper for add_progression_events_to_follow_up
+        where it is called once or twice, depending on the choice
+        of undefined worsening option.
+        
+        Args:
+        - follow_up_dataframe: a dataframe with at least the scores
+                               and the corresponding timestamps
+        - relapse_timestamps: list with relapse timestamps
+        - undefined_progression: option for undefined worsening,
+                                 but only "re-baselining only",
+                                 "all", and "never"
+        
+        Returns:
+        - dataframe: dataframe with annotated events
+        
+        """
 
         # Prepare the return dataframe
         annotated_df = follow_up_dataframe.copy()
@@ -1207,8 +1255,8 @@ class EDSSProgression:
                 # the RAW/PIRA baseline. This constraint will also be applied to
                 # confirmation scores.
                 score_is_high_enough_for_undefined_wrt_raw_pira_baseline = False
-                # If we allow undefined progression at assessments where the score
-                # is equal or lower than the previous RAW/PIRA baseline, we have to
+                # If we allow undefined progression at assessments where the score is
+                # equal to or lower than the previous RAW/PIRA baseline, we have to
                 # check all assessments that are post-relapse re-baselining assessments,
                 # irrespective of whether a re-baselining actually happens (residual
                 # disability) or not.
@@ -1665,7 +1713,18 @@ class EDSSProgression:
         follow_up_dataframe,
         relapse_timestamps,
     ):
-        """TBD"""
+        """Add EDSS disability worsening event annotation to
+        an EDSS follow-up dataframe.
+        
+        Args:
+        - follow_up_dataframe: a dataframe with at least the scores
+                               and the corresponding timestamps
+        - relapse_timestamps: list with relapse timestamps
+        
+        Returns:
+        - dataframe: dataframe with annotated events
+        
+        """
         # --------------------------------------------------------------------------------
         # CHECK INPUT DATA AND ARGUMENTS
         # --------------------------------------------------------------------------------
