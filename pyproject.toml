@@ -1,5 +1,5 @@
 [project]
-name = "edssannotation"
+name = "EDSSAnnotation"
 version = "0.1.0"
 description = "Packages required for the EDSS annotation and visualization functionality."
 readme = "README.md"
