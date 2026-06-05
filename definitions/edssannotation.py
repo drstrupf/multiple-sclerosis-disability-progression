@@ -88,6 +88,7 @@ class EDSSAnnotation:
         # --------------------------------------------------------------------------
         # Check argument values
         # --------------------------------------------------------------------------
+        # TODO: disable roving for experimental-symmetric
         if self.annotation_mode not in [
             "accrual",
             "experimental-inverted",
@@ -186,6 +187,20 @@ class EDSSAnnotation:
         """Determine if a score meets the minimum increase or
         decrease condition.
 
+        Uses the arguments
+        - self.opt_max_score_that_requires_plus_1
+        - self.opt_larger_increment_from_0
+
+        The inverted and symmetric mode use these arguments
+        with a flipped sign, i.e. a decrease is large enough
+        if it is at least -1.0 from any reference smaller or
+        equal to opt_max_score_that_requires_plus_1 + 0.5,
+        and at least -0.5 for references above that. With the
+        opt_larger_increment_from_0 set to True, a reference
+        score of 1.5 requires a minimal decrease of 1.5 (i.e.
+        from 1.5 to 0.0 counts as decrease, from 1.5 to 1.0
+        does not).
+
         Increase
         --------
 
@@ -206,31 +221,30 @@ class EDSSAnnotation:
         - baseline EDSS > 1.5 and <= 5.5: decrease of at least 1.0
         - baseline EDSS >= 6.0: decrease of at least 0.5
 
+        Examples for standard definition:
+        - 5.0 -> 5.5 delta not large enough
+        - 5.0 -> 6.0 delta large enough
+        - 5.5 -> 6.0 delta large enough
+        - 5.5 -> 5.0 delta not large enough
+        - 6.0 -> 5.0 delta large enough
+        - 6.0 -> 5.5 delta large enough
+
         Args:
         - current_edss: an EDSS score
         - reference_edss: the reference to which current_edss is compared
 
         Returns:
-        - bool: True if above event threshold
+        - bool, bool: True if large enough increase, decrease
 
         """
         # In annotation mode 'accrual', we only have to check
         # for increases, in inverted only for decreases, and
         # in symmetric for both.
-        if self.annotation_mode == "accrual":
-            check_increase = True
-            check_decrease = False
-        elif self.annotation_mode == "experimental-inverted":
-            check_increase = False
-            check_decrease = True
-        elif self.annotation_mode == "experimental-symmetric":
-            check_increase = True
-            check_decrease = True
         # Prepare return variables
         is_increase = False
         is_decrease = False
         # Check increase if relevant
-        if current_edss > reference_edss and check_increase:
+        if current_edss > reference_edss:
             if self.opt_larger_increment_from_0 and reference_edss == 0:
                 minimal_increase = 1.5
             else:
@@ -241,7 +255,7 @@ class EDSSAnnotation:
             if current_edss >= reference_edss + minimal_increase:
                 is_increase = True
         # Check decrease if relevant
-        elif current_edss < reference_edss and check_decrease:
+        elif current_edss < reference_edss:
             if self.opt_larger_increment_from_0 and reference_edss <= 1.5:
                 minimal_decrease = 1.5
             else:
@@ -252,6 +266,221 @@ class EDSSAnnotation:
             if current_edss <= reference_edss - minimal_decrease:
                 is_decrease = True
         return is_increase, is_decrease
+
+    def _get_confirmation_scores_dataframe(
+        self,
+        current_timestamp,
+        follow_up_dataframe,
+        opt_confirmation_time,
+        opt_confirmation_included_values,
+        opt_confirmation_sustained_minimal_distance,
+        opt_confirmation_time_right_side_max_tolerance,
+        opt_confirmation_time_left_side_max_tolerance,
+    ):
+        """This method returns the part of the follow-up dataframe
+        that is relevant for confirmation.
+
+        Returns the first score that satisfies the minimal confirmation
+        distance condition plus - if opt_confirmation_included_values is
+        set to "all" or confirmation is sustained - all scores between
+        event candidate and this score.
+
+        The function to get the confirmation scores is separated from
+        the function that actually checks the confirmation condition.
+        This will be useful for assessing RAW and PIRA, where we have
+        to check for relapses within the confirmation period or in
+        proximity of the confirmation score.
+
+        We will use the same function to get the confirmation scores
+        for the roving reference. We could use it for post-relapse
+        re-baselining, too, but this is not yet implemented. This is
+        also the reason why we pass the confirmation options as args
+        and not via 'self'.
+
+        Implementation notes
+        -   By default, the confirmation interval is unbounded to the
+            right, i.e. if confirmation is required at 12 weeks, the
+            first assessment >= 12 weeks from the event is considered
+            as confirmation assessment irrespective of its distance.
+            This can be restricted using the right side max tolerance
+            argument (default is infinite) such that events that are
+            after confirmation time plus this tolerance will not be
+            considered confirmation assessments.
+        -   If no right-hand constraint is given, the argument for left
+            hand tolerance amounts to setting the confirmation time
+            to confirmation time - tolerance. With a right-hand constraint
+            using a left-hand tolerance and reducing the confirmation
+            time are NOT equivalent.
+        -   By default, there is no minimum duration of post-event
+            follow-up required for 'sustained'. Such a minimal distance
+            can be set via the sustained minimal distance argument.
+
+        Args:
+        - current_timestamp: the current score's timestamp
+        - follow_up_dataframe: the dataframe with the entire follow-up
+        - opt_confirmation_time: the minimal confirmation time
+        - opt_confirmation_included_values: included values option
+        - opt_confirmation_sustained_minimal_distance: minimal distance for sustained
+        - opt_confirmation_time_right_side_max_tolerance: right-hand constraint
+        - opt_confirmation_time_left_side_max_tolerance: left-hand tolerance
+
+        Returns:
+        - dataframe: part of the original follow-up dataframe that
+                     is relevant for confirmation
+
+        """
+        assessments_after_event_candidate = follow_up_dataframe[
+            follow_up_dataframe[self.time_column_name] > current_timestamp
+        ]
+        # If sustained, just take all that are compatible with the minimal
+        # distance condition (which is 0 by default).
+        # NOTE: The '>=' is required here because the minimal distance is
+        # measured from the event candidate; if the distance is 0, an event
+        # can anyways not confirm itself due to the '>' in the assignment
+        # above, so this is safe.
+        if opt_confirmation_time == -1:
+            confirmation_scores_dataframe = assessments_after_event_candidate[
+                assessments_after_event_candidate[self.time_column_name]
+                >= current_timestamp + opt_confirmation_sustained_minimal_distance
+            ]
+        # If not, start slicing... Idea: take all assessments >= x after,
+        # then obtain the index of the first entry, then for confirmation
+        # take all rows from current up to and including this index.
+        # NOTE: For next confirmation, choose a tiny interval such as 0.5,
+        # don't allow tolerance to the left, and leave the right side
+        # unbounded.
+        else:
+            # Check if the constraint for the maximal distance between
+            # an event candidate and the confirmation assessment is met.
+            assessments_after_end_of_confirmation_interval = (
+                assessments_after_event_candidate[
+                    (
+                        assessments_after_event_candidate[self.time_column_name]
+                        >= current_timestamp
+                        + opt_confirmation_time
+                        - opt_confirmation_time_left_side_max_tolerance
+                    )
+                    & (
+                        assessments_after_event_candidate[self.time_column_name]
+                        <= current_timestamp
+                        + opt_confirmation_time
+                        + opt_confirmation_time_right_side_max_tolerance
+                    )
+                ].copy()
+            )
+            # If there are no confirmation scores available, just return
+            # an empty dataframe. This if/else is required because the
+            # slicing in the 'else' part would throw an error if we used
+            # it on an empty dataframe.
+            if len(assessments_after_end_of_confirmation_interval) == 0:
+                confirmation_scores_dataframe = (
+                    assessments_after_end_of_confirmation_interval
+                )
+            else:
+                first_index_after_confirmation_interval = (
+                    assessments_after_end_of_confirmation_interval.iloc[0].name
+                )
+                # NOTE: loc includes the boundary, so the following takes all
+                # values up to and including the index of the first at or after
+                # confirmation time. See e.g. https://stackoverflow.com/a/31593712
+                # for an explanation of the loc and iloc behaviours.
+                confirmation_scores_dataframe = assessments_after_event_candidate.loc[
+                    :first_index_after_confirmation_interval
+                ]
+                # If we only take the last score for confirmation, return
+                # it as a one-row dataframe (not a series!)
+                if opt_confirmation_included_values == "last":
+                    confirmation_scores_dataframe = confirmation_scores_dataframe.iloc[
+                        [-1]
+                    ]
+
+        return confirmation_scores_dataframe
+
+    def _check_confirmation_scores_and_get_confirmed_score(
+        self,
+        current_edss,
+        current_reference,
+        confirmation_scores_dataframe,
+        additional_lower_threshold,
+    ):
+        """Determines whether an event is confirmed and the
+        confirmed event score.
+
+        Looks at confirmatiom scores and checks if they satisfy
+        the confirmation conditions (minimal required increase,
+        minimum or monotonic) with respect to the specified
+        reference score.
+
+        The confirmation type is loaded from self, since this
+        function is only used for confirming events, not for
+        confirming baselines.
+
+        There is an optional argument additional_lower_threshold,
+        which can be used to set the confirmation threshold to a
+        given minimum value. This is used for undefined progression
+        with a score constraint w.r.t. the RAW/PIRA baseline.
+
+        Args:
+        - current_edss: the current EDSS score
+        - current_reference: the current reference score
+        - confirmation_scores_dataframe: the confirmation scores
+        - additional_lower_threshold: additional threshold
+
+        Returns:
+        - bool, bool, float: confirmed increase flag,
+                             confirmed decrease flag,
+                             confirmed score
+
+        """
+        is_confirmed_increase = False
+        is_confirmed_decrease = False
+        confirmed_edss = np.nan
+        # Make this function safe for empty confirmation dataframes.
+        # We will check this before calling this function, but just in case...
+        if len(confirmation_scores_dataframe) > 0:
+            confirmation_scores = np.array(
+                confirmation_scores_dataframe[self.edss_score_column_name]
+            )
+            if self.opt_confirmation_type == "minimum":
+                # Increase: the lowest confirmation score must satisfy
+                # the minimal increase condition, and also meet the
+                # optional additional lower threshold condition.
+                if current_edss > current_reference:
+                    if self._is_large_enough_increase_or_decrease(
+                        current_edss=min(confirmation_scores),
+                        reference_edss=current_reference,
+                    )[0] and (min(confirmation_scores) >= additional_lower_threshold):
+                        is_confirmed_increase = True
+                        confirmed_edss = min(current_edss, min(confirmation_scores))
+                # Decrease: the highest confirmation score must satisfy
+                # the minimal decrease condition. Additional threshold
+                # not yet implemented.
+                elif current_edss < current_reference:
+                    if self._is_large_enough_increase_or_decrease(
+                        current_edss=max(confirmation_scores),
+                        reference_edss=current_reference,
+                    )[1]:
+                        is_confirmed_decrease = True
+                        confirmed_edss = max(current_edss, max(confirmation_scores))
+            elif self.opt_confirmation_type == "monotonic":
+                # Increase: the lowest confirmation score must be equal
+                # to or larger than the candidate, and also meet the
+                # optional additional lower threshold condition.
+                if current_edss > current_reference:
+                    if (min(confirmation_scores) >= current_edss) and (
+                        min(confirmation_scores) >= additional_lower_threshold
+                    ):
+                        is_confirmed_increase = True
+                        confirmed_edss = current_edss
+                # Decrease: the highest confirmation score must be equal
+                # to or smaller than the candidate, and also meet the
+                # optional additional lower threshold condition.
+                elif current_edss < current_reference:
+                    if max(confirmation_scores) <= current_edss:
+                        is_confirmed_decrease = True
+                        confirmed_edss = current_edss
+
+        return is_confirmed_increase, is_confirmed_decrease, confirmed_edss
 
     def _annotate_events(
         self,
@@ -340,6 +569,12 @@ class EDSSAnnotation:
 
                 # Step 2 - check whether the new score is an accrual
                 # or improvement candidate by score delta.
+                is_increase, is_decrease = self._is_large_enough_increase_or_decrease(
+                    current_edss=current_edss,
+                    reference_edss=general_baselines["baseline_score"][-1],
+                )
+
+                return is_increase, is_decrease
 
                 # Step 3 - check confirmation
 
