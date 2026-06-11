@@ -482,6 +482,70 @@ class EDSSAnnotation:
 
         return is_confirmed_increase, is_confirmed_decrease, confirmed_edss
 
+    def _backtrack_minimal_distance_compatible_reference(
+        self,
+        current_edss,
+        current_timestamp,
+        check_increase,
+        check_decrease,
+        baselines_df,
+    ):
+        """
+        TODO: cover increase and decrease
+
+        """
+        assert check_decrease != check_increase, (
+            "Can't check both increase and decrease!"
+        )
+        # From all the previous references, flag those that are
+        # low enough so that 'current_edss' would be an accrual
+        # with respect to them, or high enough that 'current_edss'
+        # would be an improvement.
+        previous_rebaselines = baselines_df.copy()
+        previous_rebaselines[
+            [
+                "low_enough_to_be_accrual_reference",
+                "high_enough_to_be_improvement_reference",
+            ]
+        ] = previous_rebaselines.apply(
+            lambda row: self._is_large_enough_increase_or_decrease(
+                current_edss=current_edss,
+                reference_edss=row[self.baseline_score_column_name],
+            ),
+            result_type="expand",
+            axis=1,
+        )
+        # Get suitable previous references
+        if check_increase:
+            previous_rebaselines = previous_rebaselines[
+                previous_rebaselines["low_enough_to_be_accrual_reference"]
+            ].copy()
+        elif check_decrease:
+            previous_rebaselines = previous_rebaselines[
+                previous_rebaselines["high_enough_to_be_improvement_reference"]
+            ].copy()
+        # If none of the previous references is low or high
+        # enough, we're done...
+        if len(previous_rebaselines) == 0:
+            return np.nan, np.nan
+        # ... else we have to get those that also fulfill the
+        # minimal distance requirement.
+        else:
+            suitable_and_far_enough = previous_rebaselines[
+                previous_rebaselines[self.baseline_timestamp_column_name]
+                + self.opt_minimal_distance_time
+                <= current_timestamp
+            ].copy()
+            if len(suitable_and_far_enough) > 0:
+                return (
+                    suitable_and_far_enough.iloc[-1][self.baseline_score_column_name],
+                    suitable_and_far_enough.iloc[-1][
+                        self.baseline_timestamp_column_name
+                    ],
+                )
+            else:
+                return np.nan, np.nan
+
     def _annotate_events(
         self,
         follow_up_dataframe,

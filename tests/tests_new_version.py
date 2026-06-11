@@ -549,6 +549,174 @@ def test_check_confirmation_scores_and_get_confirmed_score():
     ), "Test 10 failed!"
 
 
+def test_backtrack_minimal_distance_compatible_reference():
+    test_dataframe = pd.DataFrame(
+        {
+            "baseline_timestamp": [0, 10, 20, 30, 40, 50],
+            "baseline_score": [6.0, 5.5, 5.5, 5.0, 5.0, 4.5],
+        }
+    )
+    # Test case 1 - minimal distance is larger than that to the
+    # previous reference. Must yield the score 5.0 at time 40 for
+    # the closest acceptable reference.
+    assert edssannotation.EDSSAnnotation(
+        opt_minimal_distance_time=20,
+        opt_max_score_that_requires_plus_1=5.0,
+        opt_larger_increment_from_0=True,
+    )._backtrack_minimal_distance_compatible_reference(
+        current_edss=6,
+        current_timestamp=60,
+        check_increase=True,
+        check_decrease=False,
+        baselines_df=test_dataframe,
+    ) == (
+        5.0,
+        40,
+    ), "Test 1 failed!"
+    # Test case 2 - minimal distance is larger than that to the
+    # previous reference. No reference score far enough away is
+    # low enough to serve as a progression reference.
+    assert edssannotation.EDSSAnnotation(
+        opt_minimal_distance_time=20,
+        opt_max_score_that_requires_plus_1=5.0,
+        opt_larger_increment_from_0=True,
+    )._backtrack_minimal_distance_compatible_reference(
+        current_edss=5.5,
+        current_timestamp=60,
+        check_increase=True,
+        check_decrease=False,
+        baselines_df=test_dataframe,
+    ) == (
+        np.nan,
+        np.nan,
+    ), "Test 2 failed!"
+    # TODO: Write more tests, write tests for decrease
+    # Increase, with increase flag
+    bktr_test_3_output = np.array(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=dist
+            )._backtrack_minimal_distance_compatible_reference(
+                current_edss=4.0,
+                current_timestamp=30,
+                check_increase=True,
+                check_decrease=False,
+                baselines_df=pd.DataFrame(
+                    {
+                        "baseline_timestamp": [0, 10, 20],
+                        "baseline_score": [3.5, 3.0, 2.5],
+                    }
+                ),
+            )
+            for dist in [0, 9, 10, 11, 19, 20, 21, 29, 30]
+        ]
+    )
+    np.testing.assert_array_equal(
+        bktr_test_3_output,
+        np.array(
+            [
+                [2.5, 20],
+                [2.5, 20],
+                [2.5, 20],
+                [3, 10],
+                [3, 10],
+                [3, 10],
+                [np.nan, np.nan],
+                [np.nan, np.nan],
+                [np.nan, np.nan],
+            ]
+        ),
+        err_msg="Test 3 failed!",
+    )
+    # Increase, with decrease flag
+    bktr_test_4_output = np.array(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=dist
+            )._backtrack_minimal_distance_compatible_reference(
+                current_edss=4.0,
+                current_timestamp=30,
+                check_increase=False,
+                check_decrease=True,
+                baselines_df=pd.DataFrame(
+                    {
+                        "baseline_timestamp": [0, 10, 20],
+                        "baseline_score": [3.5, 3.0, 2.5],
+                    }
+                ),
+            )
+            for dist in [0, 9, 10, 11, 19, 20, 21, 29, 30]
+        ]
+    )
+    np.testing.assert_array_equal(
+        bktr_test_4_output,
+        np.array([[np.nan, np.nan] for _ in range(9)]),
+        err_msg="Test 4 failed!",
+    )
+    # Decrease, with decrease flag
+    bktr_test_5_output = np.array(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=tmz
+            )._backtrack_minimal_distance_compatible_reference(
+                current_edss=4.0,
+                current_timestamp=30,
+                check_increase=False,
+                check_decrease=True,
+                baselines_df=pd.DataFrame(
+                    {
+                        "baseline_timestamp": [0, 10, 20],
+                        "baseline_score": [4.5, 5.0, 5.5],
+                    }
+                ),
+            )
+            for tmz in [0, 9, 10, 11, 19, 20, 21, 29, 30]
+        ]
+    )
+    np.testing.assert_array_equal(
+        bktr_test_5_output,
+        np.array(
+            [
+                [5.5, 20],
+                [5.5, 20],
+                [5.5, 20],
+                [5, 10],
+                [5, 10],
+                [5, 10],
+                [np.nan, np.nan],
+                [np.nan, np.nan],
+                [np.nan, np.nan],
+            ]
+        ),
+        err_msg="Test 5 failed!",
+    )
+    # Decrease, with increase flag
+    bktr_test_6_output = np.array(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=tmz
+            )._backtrack_minimal_distance_compatible_reference(
+                current_edss=4.0,
+                current_timestamp=30,
+                check_increase=True,
+                check_decrease=False,
+                baselines_df=pd.DataFrame(
+                    {
+                        "baseline_timestamp": [0, 10, 20],
+                        "baseline_score": [4.5, 5.0, 5.5],
+                    }
+                ),
+            )
+            for tmz in [0, 9, 10, 11, 19, 20, 21, 29, 30]
+        ]
+    )
+    np.testing.assert_array_equal(
+        bktr_test_6_output,
+        np.array([[np.nan, np.nan] for _ in range(9)]),
+        err_msg="Test 6 failed!",
+    )
+
+
 if __name__ == "__main__":
     print("\nPart 1 - building blocks\n")
     print("Testing 'is_above_progress_threshold'...")
@@ -559,5 +727,8 @@ if __name__ == "__main__":
 
     print("Testing 'check_confirmation_scores_and_get_confirmed_score'...")
     test_check_confirmation_scores_and_get_confirmed_score()
+
+    print("Testing 'backtrack_minimal_distance_compatible_reference'...")
+    test_backtrack_minimal_distance_compatible_reference()
 
     print("\nAll tests successfully completed.\n")
