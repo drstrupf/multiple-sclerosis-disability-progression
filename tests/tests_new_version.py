@@ -19,6 +19,10 @@ from collections import Counter
 from definitions import edssannotation
 
 
+LABEL_PIRA = "PIRA"
+LABEL_IMPROVEMENT = "Improvement"
+
+
 # Test the increase/decrease delta check
 def test_is_large_enough_increase_or_decrease():
     # Test 1 - minimum required increase + 0.5 irrespective of reference
@@ -717,6 +721,640 @@ def test_backtrack_minimal_distance_compatible_reference():
     )
 
 
+def test_check_assessment_for_progression():
+    # Returns is_event, is_accrual, is_improvement,
+    # event_type, confirmed_event_score,
+    # current_baseline_score
+
+    # Without minimal distance, without confirmation
+    example_follow_up_1 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30],
+            "edss_score": [4.5, 5.5, 5.5, 4.0],
+        }
+    )
+    example_baselines_1 = example_follow_up_1.iloc[:-1].rename(
+        columns={
+            "days_after_baseline": "baseline_timestamp",
+            "edss_score": "baseline_score",
+        }
+    )
+    test_1_target = pd.DataFrame(
+        [
+            [True, True, False, LABEL_PIRA, 5.5, 4.5],
+            [False, False, False, None, np.nan, 5.5],
+            [True, False, True, LABEL_IMPROVEMENT, 4.0, 5.5],
+        ]
+    )
+    test_1_result = pd.DataFrame(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=0,
+                opt_require_confirmation=False,
+                annotation_mode="experimental-symmetric",
+                opt_baseline_type="fixed",
+            )._check_assessment_for_progression(
+                annotated_df=example_follow_up_1,
+                baselines_df=example_baselines_1.iloc[:i],
+                current_assessment_index=i,
+                additional_lower_threshold=0,
+            )
+            for i in range(1, 4)
+        ]
+    )
+    assert test_1_result.equals(test_1_target), "Test 1 failed!"
+
+    # With different minimal distance settings
+    example_follow_up_2 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30],
+            "edss_score": [4.5, 5.0, 5.5, 4.0],
+        }
+    )
+    example_baselines_2 = example_follow_up_2.iloc[:-1].rename(
+        columns={
+            "days_after_baseline": "baseline_timestamp",
+            "edss_score": "baseline_score",
+        }
+    )
+    # No minimal distance, just a different df
+    # NOTE: This looks like PIRA at 20, but actually
+    # isn't because this test always uses the previous
+    # score as the baseline.
+    test_2_target = pd.DataFrame(
+        [
+            [False, False, False, None, np.nan, 4.5],
+            [False, False, False, None, np.nan, 5.0],
+            [True, False, True, LABEL_IMPROVEMENT, 4.0, 5.5],
+        ]
+    )
+    test_2_result = pd.DataFrame(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=0,
+                opt_require_confirmation=False,
+                annotation_mode="experimental-symmetric",
+                opt_baseline_type="fixed",
+            )._check_assessment_for_progression(
+                annotated_df=example_follow_up_2,
+                baselines_df=example_baselines_2.iloc[:i],
+                current_assessment_index=i,
+                additional_lower_threshold=0,
+            )
+            for i in range(1, 4)
+        ]
+    )
+    assert test_2_result.equals(test_2_target), "Test 2 failed!"
+    # Minimal distance to previous
+    test_3_target = pd.DataFrame(
+        [
+            [False, False, False, None, np.nan, 4.5],
+            [False, False, False, None, np.nan, 5.0],
+            [False, False, False, None, np.nan, 5.5],
+        ]
+    )
+    test_3_result = pd.DataFrame(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=10.1,
+                opt_minimal_distance_type="previous",
+                opt_require_confirmation=False,
+                annotation_mode="experimental-symmetric",
+                opt_baseline_type="fixed",
+            )._check_assessment_for_progression(
+                annotated_df=example_follow_up_2,
+                baselines_df=example_baselines_2.iloc[:i],
+                current_assessment_index=i,
+                additional_lower_threshold=0,
+            )
+            for i in range(1, 4)
+        ]
+    )
+    assert test_3_result.equals(test_3_target), "Test 3 failed!"
+    # Minimal distance to reference, without backtracking
+    test_4_target = pd.DataFrame(
+        [
+            [False, False, False, None, np.nan, 4.5],
+            [False, False, False, None, np.nan, 5.0],
+            [False, False, False, None, np.nan, 5.5],
+        ]
+    )
+    test_4_result = pd.DataFrame(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=10.1,
+                opt_minimal_distance_type="reference",
+                opt_minimal_distance_backtrack_decrease=False,
+                opt_require_confirmation=False,
+                annotation_mode="experimental-symmetric",
+                opt_baseline_type="fixed",
+            )._check_assessment_for_progression(
+                annotated_df=example_follow_up_2,
+                baselines_df=example_baselines_2.iloc[:i],
+                current_assessment_index=i,
+                additional_lower_threshold=0,
+            )
+            for i in range(1, 4)
+        ]
+    )
+    assert test_4_result.equals(test_4_target), "Test 4 failed!"
+    # Minimal distance to reference, with backtracking
+    test_5_target = pd.DataFrame(
+        [
+            [False, False, False, None, np.nan, 4.5],
+            [True, True, False, LABEL_PIRA, 5.5, 4.5],
+            [True, False, True, LABEL_IMPROVEMENT, 4, 5],
+        ]
+    )
+    test_5_result = pd.DataFrame(
+        [
+            edssannotation.EDSSAnnotation(
+                opt_minimal_distance_time=10.1,
+                opt_minimal_distance_type="reference",
+                opt_minimal_distance_backtrack_decrease=True,
+                opt_require_confirmation=False,
+                annotation_mode="experimental-symmetric",
+                opt_baseline_type="fixed",
+            )._check_assessment_for_progression(
+                annotated_df=example_follow_up_2,
+                baselines_df=example_baselines_2.iloc[:i],
+                current_assessment_index=i,
+                additional_lower_threshold=0,
+            )
+            for i in range(1, 4)
+        ]
+    )
+    assert test_5_result.equals(test_5_target), "Test 5 failed!"
+
+
+# ----------------------------
+# Part 2 - relapse-independent
+# -----------------------------
+
+
+def raw_pira_progression_result_is_equal_to_target(
+    follow_up_dataframe,
+    targets_dict,
+    args_dict={},
+):
+    annotated_df = edssannotation.EDSSAnnotation(
+        **args_dict
+    ).add_event_annotation_to_follow_up(
+        follow_up_dataframe=follow_up_dataframe,
+    )
+
+    # Initialize target dataframe
+    target_df = follow_up_dataframe.copy()
+    target_df["is_post_event_rebaseline"] = False
+    target_df["is_general_rebaseline"] = False
+    target_df["edss_score_used_as_new_general_reference"] = np.nan
+    target_df["is_event"] = False
+    target_df["is_accrual"] = False
+    target_df["is_improvement"] = False
+    target_df["event_type"] = None
+    target_df["event_score"] = np.nan
+    target_df["event_reference_score"] = np.nan
+    target_df["event_id"] = np.nan
+    target_df["accrual_event_id"] = np.nan
+    target_df["improvement_event_id"] = np.nan
+
+    target_df = target_df.set_index("days_after_baseline")
+    for target_column in targets_dict:
+        for target in targets_dict.get(target_column, []):
+            target_df.at[target[0], target_column] = target[1]
+    target_df = target_df.reset_index()
+
+    return annotated_df.equals(target_df)
+
+
+def test_relapse_independent_confirmation():
+    # Unconfirmed vs. next-confirmed vs. sustained
+    test_dataframe_no_next_sustained = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50],
+            "edss_score": [1, 1, 1.5, 2.0, 2.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_no_next_sustained,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1.0)],
+            "accrual_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": False,
+            "opt_confirmation_time": 0,
+        },
+    ), "Test 1 'unconfirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_no_next_sustained,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1.0)],
+            "accrual_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 2 'next-confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_no_next_sustained,
+        targets_dict={},
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 3 'sustained' failed!"
+
+    # Test various confirmation durations
+    test_dataframe_durations = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [1, 2.5, 2.5, 2.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_durations,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.5)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.5)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 10,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 4 '10 units confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_durations,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 5 '20 units confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_durations,
+        targets_dict={},
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 6 '30 units confirmed' failed!"
+
+    # Test left-hand side tolerance
+    test_dataframe_left_tolerance = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [1, 2.5, 2.5, 2.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_left_tolerance,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 15,
+            "opt_confirmation_time_left_side_max_tolerance": 0,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 7 '15 units confirmed, no tolerance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_left_tolerance,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.5)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.5)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 15,
+            "opt_confirmation_time_left_side_max_tolerance": 5,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 8 '15 units confirmed, 5 units tolerance' failed!"
+
+    # Test right-hand side max. distance constraint
+    test_dataframe_right_constraint = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 30, 40],
+            "edss_score": [1, 2.5, 2.0, 2.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_right_constraint,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 10,
+            "opt_confirmation_time_right_side_max_tolerance": 10,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 9 '10 units confirmed, 10 units tolerance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_right_constraint,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1.0)],
+            "accrual_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 10,
+            "opt_confirmation_time_right_side_max_tolerance": 5,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 10 '10 units confirmed, 5 units tolerance' failed!"
+
+    # Test minimal distance for sustained
+    test_dataframe_sustained_minimal_distance = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30],
+            "edss_score": [1, 2.5, 2.0, 2.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_sustained_minimal_distance,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+            "opt_confirmation_sustained_minimal_distance": 20,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 11 'Sustained, minimum 20 units' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_sustained_minimal_distance,
+        targets_dict={},
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+            "opt_confirmation_sustained_minimal_distance": 21,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 12 'Sustained, minimum 21 units' failed!"
+
+    # Test all vs. last confirmed
+    test_dataframe_all_vs_last = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [1, 2.0, 1.5, 1.5, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_all_vs_last,
+        targets_dict={},
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 13 '30 units confirmed, all values' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_all_vs_last,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 14 '30 units confirmed, last only' failed!"
+
+    # Minimum vs. monotonic
+    test_dataframe_min_vs_monotonic = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [1, 2.5, 2.0, 2.0, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_min_vs_monotonic,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_type": "minimum",
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 15 '30 units confirmed, minimum' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_min_vs_monotonic,
+        targets_dict={},
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_type": "monotonic",
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 16 '30 units confirmed, monotonic' failed!"
+
+    # Minimum/monotonic - correct event scores?
+    test_dataframe_min_vs_monotonic_event_scores = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [1, 2.5, 2.5, 3.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_min_vs_monotonic_event_scores,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.5)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.5)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_type": "minimum",
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 17 '20 units confirmed, minimum' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_min_vs_monotonic_event_scores,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.5)],
+            "is_event": [(10, True)],
+            "is_accrual": [(10, True)],
+            "event_type": [(10, LABEL_PIRA)],
+            "event_score": [(10, 2.5)],
+            "event_reference_score": [(10, 1.0)],
+            "event_id": [(10, 1.0)],
+            "accrual_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_type": "monotonic",
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 18 '20 units confirmed, monotonic' failed!"
+
+    # No confirmation requirement for last assessment
+    test_dataframe_last_confirmed = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_last_confirmed,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1.0)],
+            "accrual_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_confirmation_require_confirmation_for_last_visit": True,
+        },
+    ), "Test 19 'Last requires confirmation' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_last_confirmed,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (50, True)],
+            "is_general_rebaseline": [(30, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0), (50, 3.0)],
+            "is_event": [(30, True), (50, True)],
+            "is_accrual": [(30, True), (50, True)],
+            "event_type": [(30, LABEL_PIRA), (50, LABEL_PIRA)],
+            "event_score": [(30, 2.0), (50, 3.0)],
+            "event_reference_score": [(30, 1.0), (50, 2.0)],
+            "event_id": [(30, 1.0), (50, 2.0)],
+            "accrual_event_id": [(30, 1.0), (50, 2.0)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_confirmation_require_confirmation_for_last_visit": False,
+        },
+    ), "Test 20 'Last does not require confirmation' failed!"
+
+
 if __name__ == "__main__":
     print("\nPart 1 - building blocks\n")
     print("Testing 'is_above_progress_threshold'...")
@@ -730,5 +1368,11 @@ if __name__ == "__main__":
 
     print("Testing 'backtrack_minimal_distance_compatible_reference'...")
     test_backtrack_minimal_distance_compatible_reference()
+
+    print("Testing '_check_assessment_for_progression'...")
+    test_check_assessment_for_progression()
+
+    print("Testing new stuff...")
+    test_relapse_independent_confirmation()
 
     print("\nAll tests successfully completed.\n")

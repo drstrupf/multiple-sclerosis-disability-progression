@@ -97,6 +97,12 @@ class EDSSAnnotation:
             raise ValueError(
                 "Invalid annotation mode! Available options: 'accrual', 'experimental-inverted', 'experimental-symmetric'."
             )
+        if (self.annotation_mode == "experimental-symmetric") and (
+            self.opt_baseline_type == "roving"
+        ):
+            raise ValueError(
+                "Roving reference is not available for 'experimental-symmetric' annotation mode."
+            )
         if self.merge_continuous_events and (
             self.continuous_events_max_repetition_time < 0
         ):
@@ -237,9 +243,6 @@ class EDSSAnnotation:
         - bool, bool: True if large enough increase, decrease
 
         """
-        # In annotation mode 'accrual', we only have to check
-        # for increases, in inverted only for decreases, and
-        # in symmetric for both.
         # Prepare return variables
         is_increase = False
         is_decrease = False
@@ -455,6 +458,7 @@ class EDSSAnnotation:
                 # Decrease: the highest confirmation score must satisfy
                 # the minimal decrease condition. Additional threshold
                 # not yet implemented.
+                # TODO: additional threshold
                 elif current_edss < current_reference:
                     if self._is_large_enough_increase_or_decrease(
                         current_edss=max(confirmation_scores),
@@ -473,8 +477,8 @@ class EDSSAnnotation:
                         is_confirmed_increase = True
                         confirmed_edss = current_edss
                 # Decrease: the highest confirmation score must be equal
-                # to or smaller than the candidate, and also meet the
-                # optional additional lower threshold condition.
+                # to or smaller than the candidate.
+                # TODO: additional threshold
                 elif current_edss < current_reference:
                     if max(confirmation_scores) <= current_edss:
                         is_confirmed_decrease = True
@@ -545,6 +549,398 @@ class EDSSAnnotation:
                 )
             else:
                 return np.nan, np.nan
+
+    def _check_assessment_for_progression(
+        self,
+        annotated_df,
+        baselines_df,
+        current_assessment_index,
+        additional_lower_threshold,
+    ):
+        """Check if a score is a progression event.
+
+        This function checks if an EDSS score is an event by
+        checking the minimal distance, minimal increase or
+        decrease conditions, and confirmation conditions.
+
+        Returns acrual/improvement yes/no, type, event score,
+        and the reference score for the event.
+
+        TODO: Check for annotation mode!
+        annotation_mode: str = (
+            "accrual"  # or "experimental-inverted", "experimental-symmetric"
+        )
+
+        Args:
+        - annotated_df: follow-up dataframe with time from last and
+                        time to next relapse
+        - baselines_df: dataframe with baselines
+        - current_assessment_index: the index of the current assessment
+        - additional_lower_threshold: additional threshold for progression
+
+        Returns:
+        - bool, bool, bool,
+          str, float, float: is_event, is_accrual, is_improvement, event_type,
+                                   confirmed_event_score, current_baseline_score
+        """
+        # Get some scores/timestamps
+        row = annotated_df.loc[current_assessment_index]
+        current_edss = row[self.edss_score_column_name]
+        current_timestamp = row[self.time_column_name]
+        current_baseline_score = baselines_df.iloc[-1]["baseline_score"]
+
+        # Set return variables
+        is_event = False
+        is_accrual = False
+        is_improvement = False
+        event_type = None
+        confirmed_event_score = np.nan
+
+        # Are we looking at improvement or accrual candidate?
+        # Sepending on annotation mode, we check increase only
+        # or decrease only.
+        check_increase = False
+        check_decrease = False
+        if (current_edss > current_baseline_score) and (
+            self.annotation_mode in ["accrual", "experimental-symmetric"]
+        ):
+            check_increase = True
+        elif (current_edss < current_baseline_score) and (
+            self.annotation_mode in ["experimental-inverted", "experimental-symmetric"]
+        ):
+            check_decrease = True
+
+        # If the score is below our additional lower threshold, it is not an
+        # event candidate anyways. # TODO: additional upper threshold
+        if (
+            check_increase and (current_edss >= additional_lower_threshold)
+        ) or check_decrease:
+            # The minimal distance has to be checked first, since it
+            # can change the reference score if we allow backtracking.
+            minimal_distance_condition_satisfied = True
+            if self.opt_minimal_distance_time > 0:
+                if self.opt_minimal_distance_type == "previous":
+                    previous_timestamp = annotated_df.loc[current_assessment_index - 1][
+                        self.time_column_name
+                    ]
+                    distance = current_timestamp - previous_timestamp
+                elif self.opt_minimal_distance_type == "reference":
+                    distance = (
+                        current_timestamp - baselines_df.iloc[-1]["baseline_timestamp"]
+                    )
+                    if self.opt_minimal_distance_backtrack_decrease:
+                        (
+                            backtracked_reference,
+                            backtracked_timestamp,
+                        ) = self._backtrack_minimal_distance_compatible_reference(
+                            current_edss=current_edss,
+                            current_timestamp=current_timestamp,
+                            check_increase=check_increase,
+                            check_decrease=check_decrease,
+                            baselines_df=baselines_df,
+                        )
+                        if backtracked_timestamp >= 0:
+                            distance = current_timestamp - backtracked_timestamp
+                            current_baseline_score = backtracked_reference
+
+                if distance < self.opt_minimal_distance_time:
+                    minimal_distance_condition_satisfied = False
+
+            # Now that the distance is checked, check if the increase is large enough.
+            if minimal_distance_condition_satisfied:
+                # Does it qualify as accrual or improvement?
+                is_increase, is_decrease = self._is_large_enough_increase_or_decrease(
+                    current_edss=current_edss,
+                    reference_edss=current_baseline_score,
+                )
+                if is_increase or is_decrease:
+                    # If we don't require confirmation, we're done.
+                    if not self.opt_require_confirmation:
+                        # Determine event type
+                        is_event = True
+                        is_accrual = is_increase
+                        is_improvement = is_decrease
+                        confirmed_event_score = current_edss
+                        if is_increase:
+                            event_type = self.label_pira
+                        elif is_decrease:
+                            event_type = self.label_improvement
+
+                    # If the last assessment is exempt from confirmation,
+                    # we can also skip the confirmation step.
+                    elif (
+                        self.opt_require_confirmation
+                        and (
+                            not self.opt_confirmation_require_confirmation_for_last_visit
+                        )
+                        and (
+                            current_timestamp
+                            == annotated_df[self.time_column_name].max()
+                        )
+                    ):
+                        is_event = True
+                        is_accrual = is_increase
+                        is_improvement = is_decrease
+                        confirmed_event_score = current_edss
+                        if is_increase:
+                            event_type = self.label_pira
+                        elif is_decrease:
+                            event_type = self.label_improvement
+                    else:
+                        # First, get the confirmation score dataframe.
+                        confirmation_scores_dataframe = self._get_confirmation_scores_dataframe(
+                            current_timestamp=current_timestamp,
+                            follow_up_dataframe=annotated_df,
+                            opt_confirmation_time=self.opt_confirmation_time,
+                            opt_confirmation_included_values=self.opt_confirmation_included_values,
+                            opt_confirmation_sustained_minimal_distance=self.opt_confirmation_sustained_minimal_distance,
+                            opt_confirmation_time_right_side_max_tolerance=self.opt_confirmation_time_right_side_max_tolerance,
+                            opt_confirmation_time_left_side_max_tolerance=self.opt_confirmation_time_left_side_max_tolerance,
+                        )
+                        # If we don't have any confirmation scores, we're done.
+                        # Otherwise we now have to check the conditions.
+                        if len(confirmation_scores_dataframe) > 0:
+                            # Check if confirmed; if not, we don't even have to
+                            # bother with the relapses...
+                            # is_confirmed_increase, is_confirmed_decrease, confirmed_edss
+                            (
+                                is_accrual,
+                                is_improvement,
+                                confirmed_event_score,
+                            ) = self._check_confirmation_scores_and_get_confirmed_score(
+                                current_edss=current_edss,
+                                current_reference=current_baseline_score,  # The UP vs. RAW/PIRA version choice happens at the start.
+                                confirmation_scores_dataframe=confirmation_scores_dataframe,
+                                additional_lower_threshold=additional_lower_threshold,
+                            )
+                            # If unconfirmed, nope, otherwise continue and check event type
+                            # TODO: for accrual, check RAW/PIRA/Undefined
+                            if is_accrual or is_improvement:
+                                is_event = True
+                                if is_increase:
+                                    event_type = self.label_pira
+                                elif is_decrease:
+                                    event_type = self.label_improvement
+
+        return (
+            is_event,
+            is_accrual,
+            is_improvement,
+            event_type,
+            confirmed_event_score,
+            current_baseline_score,
+        )
+
+    def _combine_events_forward_lookup(
+        self,
+        annotated_df,
+        baselines_df,
+        iid_index,
+        iid_confirmed_event_score,
+        iid_event_type,
+        iid_is_accrual,
+        iid_is_improvement,
+        additional_lower_threshold,
+    ):
+        """Find the indices of merged events, the event score, and
+        the timestamp of the last event within series of merged events.
+
+        is_event_flag_column_name: str = "is_event"
+        is_accrual_flag_column_name: str = "is_accrual"
+        is_improvement_flag_column_name: str = "is_improvement"
+        event_type_column_name: str = "event_type"
+        event_score_column_name: str = "event_score"
+        event_reference_score_column_name: str = "event_reference_score"
+        event_id_column_name: str = "event_id"
+        accrual_event_id_column_name: str = "accrual_event_id"
+        improvement_event_id_column_name: str = "improvement_event_id"
+        label_pira: str = "PIRA"  # Only one type for now
+        label_improvement: str = "Improvement"  # Only one type for now
+
+        This is to identify connected events; we only look at strictly
+        monotonically increasing or decreasing scores, with an optional
+        tolerance for identical scores recorded in close temporal proximity.
+
+        Notes:
+        *   Just a little fluke improvement or accrual already stops this
+            process... Show this quirk in the documentation!
+        *   Assessments considered as repetition measurements (i.e.
+            within continuous_events_max_repetition_time) are also flagged
+            as members of the merged event, but not if they are at the end.
+        *   This is meant to be used for PIRA/RAW; undefined events are
+            always considered singular.
+        *   Events included into a merged event series don't get their own
+            'is event' flag or a progression type/score/reference. This is
+            by design in order to make analysis easier (e.g. event counts
+            based on rows with 'is_progression == True'). They can be
+            identified via the event ID.
+
+        Args:
+        - annotated_df: follow-up dataframe with time from last and
+                        time to next relapse
+        - baselines_df: dataframe with RAW/PIRA and general baselines
+        - relapse_timestamps: list of relapse timestamps
+        - iid_index: the index of the first progression event
+        - iid_confirmed_event_score: the confirmed score of the first event
+        - iid_progression_type: the type of the first event
+        - additional_lower_threshold: additional threshold for progression
+
+        Returns:
+        - list, float, int: indices_of_merged_event, confirmed_event_score,
+                            last_confirmed_progression_timestamp
+
+        """
+        # Setup loop... We collect the indices of each assessment that
+        # is part of the loop in a list, and we also keep track of potential
+        # stabilizations or improvements.
+        indices_of_merged_event = [iid_index]
+        stagnation_started = False
+        stagnation_timestamp = annotated_df.at[iid_index, self.time_column_name]
+        last_confirmed_progression_timestamp = annotated_df.at[
+            iid_index, self.time_column_name
+        ]
+        # Now we check each subsequent assessment until we find a
+        # stabilization or improvement. We also initialize a list
+        # where we collect indices of stagnation events, so if they
+        # turn out to be at the end of a merge we can drop them.
+        confirmed_event_score = iid_confirmed_event_score
+        ids_final_stagnation_to_remove = []
+        for i, row in annotated_df.loc[iid_index + 1 :].iterrows():
+            # If the assessment is past the maximal allowed merge
+            # distance, we stop.
+            if (
+                row[self.time_column_name]
+                > last_confirmed_progression_timestamp
+                + self.continuous_events_max_merge_distance
+            ):
+                break
+            # If the score is lower (when merging accrual events) or
+            # higher (when merging improvement events) than the current
+            # confirmed event score, we stop. In this case, any confirmed
+            # score would be lower/higher than the previous one anyways.
+            if iid_is_accrual:
+                if row[self.edss_score_column_name] < confirmed_event_score:
+                    break
+            elif iid_is_improvement:
+                if row[self.edss_score_column_name] > confirmed_event_score:
+                    break
+            # Else we need to test whether the next score from the
+            # next assessment would be an event itself. We use the
+            # same baseline as we used for the IID.
+            else:
+                # (
+                #    new_is_progression,
+                #    new_progression_type,
+                #    new_confirmed_event_score,
+                #    _,
+                # ) = self._check_assessment_for_progression(
+                #    check_raw_pira=True,
+                #    annotated_df=annotated_df,
+                #    relapse_timestamps=relapse_timestamps,
+                #    baselines_df=baselines_df,
+                #    current_assessment_index=i,
+                #    additional_lower_threshold=additional_lower_threshold,
+                # )
+                (
+                    new_is_event,
+                    new_is_accrual,
+                    new_is_improvement,
+                    new_event_type,
+                    new_confirmed_event_score,
+                    _,
+                ) = self._check_assessment_for_progression(
+                    annotated_df=annotated_df,
+                    baselines_df=baselines_df,
+                    current_assessment_index=i,
+                    additional_lower_threshold=additional_lower_threshold,
+                )
+
+                # If the new score is not a progression w.r.t. the IID
+                # baseline anymore, we stop the merge. This could happen
+                # if e.g. a 'next confirmed' requirement is in place.
+                if not new_is_event:
+                    break
+                # We also have to check whether the progression is
+                # still of the same type; otherwise we also stop.
+                if new_event_type != iid_event_type:
+                    break
+                # If the confirmed score is lower than the previous
+                # one when merging accrual events, or higher than
+                # the previous one when merging improvement events,
+                # we consider the merged event over.
+                if (
+                    iid_is_accrual
+                    and (new_confirmed_event_score < confirmed_event_score)
+                ) or (
+                    iid_is_improvement
+                    and (new_confirmed_event_score > confirmed_event_score)
+                ):
+                    break
+                else:
+                    # If the new score leads to an increased event score
+                    # when merging accural events or a decreased event
+                    # score when merging improvement events, we reset the
+                    # stagnation flag and clear the IDs of stagnation events,
+                    # since they are now not at the end of the merge anymore.
+                    if (
+                        iid_is_accrual
+                        and (new_confirmed_event_score > confirmed_event_score)
+                    ) or (
+                        iid_is_improvement
+                        and (new_confirmed_event_score < confirmed_event_score)
+                    ):
+                        # Reset the stagnation flag
+                        stagnation_started = False
+                        # Also reset the IDs to remove list
+                        ids_final_stagnation_to_remove = []
+                    # If we observe a stagnation with respect to the confirmed event score,
+                    # we check whether this event is close enough to the start of the
+                    # stabilization period to be considered a repetition of measurement
+                    # instead of a confirmation of stabilization.
+                    elif new_confirmed_event_score == confirmed_event_score:
+                        # If it is the first score in a series of stable scores, we keep
+                        # the stabilization initiation timestamp and set the 'stabilization
+                        # started' flag.
+                        if not stagnation_started:
+                            stagnation_started = True
+                            # It started at the previous step, so we take the timestamp from there.
+                            stagnation_timestamp = annotated_df.loc[i - 1][
+                                self.time_column_name
+                            ]
+                        # If the current score is close enough to the previous one, we continue
+                        # our loop, but keep track of the index.
+                        if (
+                            row[self.time_column_name] - stagnation_timestamp
+                            <= self.continuous_events_max_repetition_time
+                        ):
+                            # We keep track of the IDs for the stabilization events; if
+                            # they turn out to be at the end, we don't include them in
+                            # the merged event.
+                            ids_final_stagnation_to_remove = (
+                                ids_final_stagnation_to_remove + [i]
+                            )
+                        # If it is past this tolerance window, we consider it a stabilization
+                        # and consider the merged event over.
+                        else:
+                            break
+
+                    # Continue the loop with this new score
+                    confirmed_event_score = new_confirmed_event_score
+                    last_confirmed_progression_timestamp = row[self.time_column_name]
+                    indices_of_merged_event = indices_of_merged_event + [i]
+
+        # Remove final stagnation
+        indices_of_merged_event = [
+            idx
+            for idx in indices_of_merged_event
+            if idx not in ids_final_stagnation_to_remove
+        ]
+
+        return (
+            indices_of_merged_event,
+            confirmed_event_score,
+            last_confirmed_progression_timestamp,
+        )
 
     def _annotate_events(
         self,
@@ -625,24 +1021,294 @@ class EDSSAnnotation:
                 is_improvement = False
                 event_type = None
                 confirmed_event_score = np.nan
+                additional_lower_threshold_for_progression_and_confirmation = 0
 
-                # Step 1 - check the minimal distance requirement
-                # TODO, pass for now.
-                if self.opt_minimal_distance_time > 0:
-                    pass
-
-                # Step 2 - check whether the new score is an accrual
-                # or improvement candidate by score delta.
-                is_increase, is_decrease = self._is_large_enough_increase_or_decrease(
-                    current_edss=current_edss,
-                    reference_edss=general_baselines["baseline_score"][-1],
+                # Step 1 - is it an event?
+                # NOTE: _check_assessment_for_progression also checks for
+                # the annotation mode.
+                (
+                    is_event,
+                    is_accrual,
+                    is_improvement,
+                    event_type,
+                    confirmed_event_score,
+                    current_baseline_score,
+                ) = self._check_assessment_for_progression(
+                    annotated_df=annotated_df,
+                    baselines_df=general_baselines,
+                    current_assessment_index=i,
+                    additional_lower_threshold=additional_lower_threshold_for_progression_and_confirmation,
                 )
+                if is_event:
+                    event_id = event_id + 1
+                if is_accrual:
+                    accrual_event_id = accrual_event_id + 1
+                if is_improvement:
+                    improvement_event_id = improvement_event_id + 1
+                # Step 2 - merge if required
+                # If we merge continuous RAW/PIRA/Improvement events: more to come?
+                if self.merge_continuous_events:
+                    # TODO: add RAW/PIRA in RAW once relapse support is implemented
+                    if is_event and (
+                        event_type
+                        in [
+                            self.label_pira,
+                            self.label_improvement,
+                        ]
+                    ):
+                        (
+                            indices_of_merged_event,
+                            confirmed_event_score,
+                            last_confirmed_timestamp,
+                        ) = self._combine_events_forward_lookup(
+                            annotated_df=annotated_df,
+                            baselines_df=general_baselines,
+                            iid_index=i,
+                            iid_confirmed_event_score=confirmed_event_score,
+                            iid_event_type=event_type,
+                            iid_is_accrual=is_accrual,
+                            iid_is_improvement=is_improvement,
+                            additional_lower_threshold=0,  # Can't fall below IID score anyway
+                        )
+                    elif is_event and (
+                        event_type
+                        not in [
+                            self.label_pira,
+                            self.label_improvement,
+                        ]
+                    ):
+                        indices_of_merged_event = [i]
+                        last_confirmed_timestamp = current_timestamp
 
-                return is_increase, is_decrease
+                # Step 3 - adjust baselines
+                # New baseline? It depends on whether we have found a confirmed event
+                # and on whether we are using a roving reference.
+                # If there's a progression, we discard all our previous references
+                # and continue with the confirmed event score. This will e.g. make
+                # checking for the minimal distance with backtracking easier.
+                if is_event:
+                    # Annotate results...
+                    annotated_df.at[i, self.is_event_flag_column_name] = True
+                    annotated_df.at[i, self.is_accrual_flag_column_name] = is_accrual
+                    annotated_df.at[i, self.is_improvement_flag_column_name] = (
+                        is_improvement
+                    )
+                    annotated_df.at[i, self.event_type_column_name] = event_type
+                    annotated_df.at[i, self.event_score_column_name] = (
+                        confirmed_event_score
+                    )
+                    annotated_df.at[i, self.event_reference_score_column_name] = (
+                        current_baseline_score
+                    )
+                    annotated_df.at[i, self.event_id_column_name] = event_id
+                    if is_accrual:
+                        annotated_df.at[i, self.accrual_event_id_column_name] = (
+                            accrual_event_id
+                        )
+                    elif is_improvement:
+                        annotated_df.at[i, self.improvement_event_id_column_name] = (
+                            improvement_event_id
+                        )
+                    # If we merge events: label them.
+                    if self.merge_continuous_events:
+                        indices_to_skip = indices_to_skip + indices_of_merged_event
+                        for event_index in indices_of_merged_event:
+                            annotated_df.at[event_index, self.event_id_column_name] = (
+                                event_id
+                            )
+                            if is_accrual:
+                                annotated_df.at[
+                                    event_index, self.accrual_event_id_column_name
+                                ] = accrual_event_id
+                            elif is_improvement:
+                                annotated_df.at[
+                                    event_index, self.improvement_event_id_column_name
+                                ] = improvement_event_id
 
-                # Step 3 - check confirmation
+                    # If we only want the first event, we can stop here and we do
+                    # not have to bother anymore about baselines...
+                    if self.return_first_event_only:
+                        break
 
-                # Step 4 - adjust baselines
+                    # ... and update baselines. We discard all previous baselines.
+                    annotated_df.at[
+                        i, self.is_post_event_rebaseline_flag_column_name
+                    ] = True
+                    # Relapse-independent baseline - this one is reset after any
+                    # event irrespective of the event type.
+                    annotated_df.at[i, self.is_general_rebaseline_flag_column_name] = (
+                        True
+                    )
+                    annotated_df.at[
+                        i, self.used_as_general_reference_score_column_name
+                    ] = confirmed_event_score
+                    general_baseline_timestamp = current_timestamp
+                    if self.merge_continuous_events:
+                        general_baseline_timestamp = last_confirmed_timestamp
+                    general_baselines = pd.DataFrame(
+                        {
+                            "baseline_score": [confirmed_event_score],
+                            "baseline_timestamp": [general_baseline_timestamp],
+                        }
+                    )
+
+                # If not an event, check for re-baselining due to roving.
+                # TODO: post-relapse re-baselining
+                # NOTE: 'else' since this block will contain all other
+                # possibilities for a re-baseline.
+                else:
+                    # If we have a roving baseline, the baselines could improve.
+                    # TODO: Write a function for this to avoid all the copying...
+                    if self.opt_baseline_type == "roving":
+                        general_roving_confirmed = False
+                        # Flags for annotation mode
+                        check_for_new_lower_reference = False
+                        check_for_new_higher_reference = False
+
+                        # Do we even have to check roving reference?
+                        if (self.annotation_mode == "accrual") and (
+                            current_edss < general_baselines.iloc[-1]["baseline_score"]
+                        ):
+                            check_for_new_lower_reference = True
+                        elif (self.annotation_mode == "experimental-inverted") and (
+                            current_edss > general_baselines.iloc[-1]["baseline_score"]
+                        ):
+                            check_for_new_higher_reference = True
+
+                        # If roving reference requires confirmation, we need
+                        # the confirmation scores.
+                        if self.opt_roving_reference_require_confirmation and (
+                            check_for_new_lower_reference
+                            or check_for_new_higher_reference
+                        ):
+                            roving_rebaseline_confirmation_scores_df = self._get_confirmation_scores_dataframe(
+                                current_timestamp=current_timestamp,
+                                follow_up_dataframe=annotated_df,
+                                opt_confirmation_time=self.opt_roving_reference_confirmation_time,
+                                opt_confirmation_included_values=self.opt_roving_reference_confirmation_included_values,
+                                opt_confirmation_sustained_minimal_distance=0,  # Sustained is a pointless option for the baseline anyways...
+                                opt_confirmation_time_right_side_max_tolerance=self.opt_roving_reference_confirmation_time_right_side_max_tolerance,
+                                opt_confirmation_time_left_side_max_tolerance=self.opt_roving_reference_confirmation_time_left_side_max_tolerance,
+                            )
+
+                        # Check the general baseline - lower
+                        if check_for_new_lower_reference:
+                            if self.opt_roving_reference_require_confirmation:
+                                if len(roving_rebaseline_confirmation_scores_df) == 0:
+                                    # If there are no scores for confirmation, don't confirm (duh).
+                                    general_roving_confirmed = False
+                                else:
+                                    # All confirmation scores musst be lower than the current baseline
+                                    roving_rebaseline_confirmation_scores = np.array(
+                                        roving_rebaseline_confirmation_scores_df[
+                                            self.edss_score_column_name
+                                        ]
+                                    )
+                                    if (
+                                        max(roving_rebaseline_confirmation_scores)
+                                        < general_baselines.iloc[-1]["baseline_score"]
+                                    ):
+                                        confirmed_new_roving = max(
+                                            max(roving_rebaseline_confirmation_scores),
+                                            current_edss,
+                                        )
+                                        general_roving_confirmed = True
+                                    else:
+                                        general_roving_confirmed = False
+                            else:
+                                # We already know that the current score is lower,
+                                # and without a confirmation requirement, we can
+                                # use it as new roving reference
+                                confirmed_new_roving = current_edss
+                                general_roving_confirmed = True
+
+                        # Check the general baseline - higher
+                        elif check_for_new_higher_reference:
+                            if self.opt_roving_reference_require_confirmation:
+                                if len(roving_rebaseline_confirmation_scores_df) == 0:
+                                    # If there are no scores for confirmation, don't confirm (duh).
+                                    general_roving_confirmed = False
+                                else:
+                                    # All confirmation scores musst be higher than the current baseline
+                                    roving_rebaseline_confirmation_scores = np.array(
+                                        roving_rebaseline_confirmation_scores_df[
+                                            self.edss_score_column_name
+                                        ]
+                                    )
+                                    if (
+                                        min(roving_rebaseline_confirmation_scores)
+                                        > general_baselines.iloc[-1]["baseline_score"]
+                                    ):
+                                        confirmed_new_roving = min(
+                                            min(roving_rebaseline_confirmation_scores),
+                                            current_edss,
+                                        )
+                                        general_roving_confirmed = True
+                                    else:
+                                        general_roving_confirmed = False
+                            else:
+                                # We already know that the current score is higher,
+                                # and without a confirmation requirement, we can
+                                # use it as new roving reference
+                                confirmed_new_roving = current_edss
+                                general_roving_confirmed = True
+
+                        # If confirmed, append a new baseline to our collection.
+                        if general_roving_confirmed:
+                            annotated_df.at[
+                                i, self.is_general_rebaseline_flag_column_name
+                            ] = True
+                            annotated_df.at[
+                                i,
+                                self.used_as_general_reference_score_column_name,
+                            ] = confirmed_new_roving
+                            general_baselines = pd.concat(
+                                [
+                                    general_baselines,
+                                    pd.DataFrame(
+                                        {
+                                            "baseline_score": [confirmed_new_roving],
+                                            "baseline_timestamp": [current_timestamp],
+                                        }
+                                    ),
+                                ]
+                            ).reset_index(drop=True)
+
+        return annotated_df
+
+    def add_event_annotation_to_follow_up(
+        self,
+        follow_up_dataframe,
+    ):
+        """Add EDSS disability worsening event annotation to
+        an EDSS follow-up dataframe.
+
+        ...
+
+        """
+        # --------------------------------------------------------------------------------
+        # CHECK INPUT DATA AND ARGUMENTS
+        # --------------------------------------------------------------------------------
+        # Check if follow-up is well-ordered with unambiguous timestamps
+        assert pd.api.types.is_numeric_dtype(
+            follow_up_dataframe[self.time_column_name]
+        ), "Timestamps must be numeric, e.g. an integer number of days after baseline."
+        # Assert that the input data are well ordered
+        assert (
+            follow_up_dataframe[self.time_column_name].is_monotonic_increasing
+            and follow_up_dataframe[self.time_column_name].is_unique
+        ), "Input data are not well ordered or contain ambiguous timestamps."
+
+        # --------------------------------------------------------------------------------
+        # ANNOTATE PROGRESSION EVENTS TO DATAFRAME
+        # --------------------------------------------------------------------------------
+
+        # First round - NOTE: enough for PIRA vs. Improvement
+        annotated_df = self._annotate_events(
+            follow_up_dataframe=follow_up_dataframe,
+        )
+
+        return annotated_df
 
 
 if __name__ == "__main__":
