@@ -818,29 +818,19 @@ class EDSSAnnotation:
             # higher (when merging improvement events) than the current
             # confirmed event score, we stop. In this case, any confirmed
             # score would be lower/higher than the previous one anyways.
-            if iid_is_accrual:
-                if row[self.edss_score_column_name] < confirmed_event_score:
-                    break
-            elif iid_is_improvement:
-                if row[self.edss_score_column_name] > confirmed_event_score:
-                    break
+            if (
+                iid_is_accrual
+                and (row[self.edss_score_column_name] < confirmed_event_score)
+            ) or (
+                iid_is_improvement
+                and (row[self.edss_score_column_name] > confirmed_event_score)
+            ):
+                break
+
             # Else we need to test whether the next score from the
             # next assessment would be an event itself. We use the
             # same baseline as we used for the IID.
             else:
-                # (
-                #    new_is_progression,
-                #    new_progression_type,
-                #    new_confirmed_event_score,
-                #    _,
-                # ) = self._check_assessment_for_progression(
-                #    check_raw_pira=True,
-                #    annotated_df=annotated_df,
-                #    relapse_timestamps=relapse_timestamps,
-                #    baselines_df=baselines_df,
-                #    current_assessment_index=i,
-                #    additional_lower_threshold=additional_lower_threshold,
-                # )
                 (
                     new_is_event,
                     new_is_accrual,
@@ -1045,6 +1035,7 @@ class EDSSAnnotation:
                     accrual_event_id = accrual_event_id + 1
                 if is_improvement:
                     improvement_event_id = improvement_event_id + 1
+
                 # Step 2 - merge if required
                 # If we merge continuous RAW/PIRA/Improvement events: more to come?
                 if self.merge_continuous_events:
