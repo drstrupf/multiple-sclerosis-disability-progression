@@ -173,9 +173,9 @@ def test_get_confirmation_scores_dataframe():
         opt_confirmation_time_right_side_max_tolerance=np.inf,
         opt_confirmation_time_left_side_max_tolerance=0,
     )
-    assert test_case_2.equals(
-        test_dataframe[test_dataframe["timestamp"] > 50]
-    ), "Test 2 failed!"
+    assert test_case_2.equals(test_dataframe[test_dataframe["timestamp"] > 50]), (
+        "Test 2 failed!"
+    )
     # Test case 3 - sustained, minimal time interval
     # Must yield all assessments following the second one.
     test_case_3 = edssprogression.EDSSProgression(
@@ -203,9 +203,9 @@ def test_get_confirmation_scores_dataframe():
         opt_confirmation_time_right_side_max_tolerance=np.inf,
         opt_confirmation_time_left_side_max_tolerance=0,
     )
-    assert test_case_4.equals(
-        test_dataframe[test_dataframe["timestamp"] > 50]
-    ), "Test 4 failed!"
+    assert test_case_4.equals(test_dataframe[test_dataframe["timestamp"] > 50]), (
+        "Test 4 failed!"
+    )
     # Test case 5 - time interval, assessments available
     # Must yield all assessments following the first one
     # until and including the assessment at 40.
@@ -234,9 +234,9 @@ def test_get_confirmation_scores_dataframe():
         opt_confirmation_time_right_side_max_tolerance=np.inf,
         opt_confirmation_time_left_side_max_tolerance=0,
     )
-    assert test_case_6.equals(
-        test_dataframe[test_dataframe["timestamp"] > 50]
-    ), "Test 6 failed!"
+    assert test_case_6.equals(test_dataframe[test_dataframe["timestamp"] > 50]), (
+        "Test 6 failed!"
+    )
     # Test case 7 - time interval, right side constrained
     # Next is further away, but within tolerance.
     test_case_7 = edssprogression.EDSSProgression(
@@ -264,9 +264,9 @@ def test_get_confirmation_scores_dataframe():
         opt_confirmation_time_right_side_max_tolerance=4,
         opt_confirmation_time_left_side_max_tolerance=0,
     )
-    assert test_case_8.equals(
-        test_dataframe[test_dataframe["timestamp"] > 50]
-    ), "Test 8 failed!"
+    assert test_case_8.equals(test_dataframe[test_dataframe["timestamp"] > 50]), (
+        "Test 8 failed!"
+    )
     # Test case 9 - time interval, left side tolerance standard
     # Must yield assesments at 20 and 30 (30 is first).
     test_case_9 = edssprogression.EDSSProgression(
@@ -1065,7 +1065,9 @@ def test_relapse_independent_baselines():
             "opt_roving_reference_confirmation_time_left_side_max_tolerance": 0,
             "opt_roving_reference_confirmation_time_right_side_max_tolerance": np.inf,
         },
-    ), "Test 7 'Roving reference, 15 units confirmed, no left hand side tolerance' failed!"
+    ), (
+        "Test 7 'Roving reference, 15 units confirmed, no left hand side tolerance' failed!"
+    )
     assert raw_pira_progression_result_is_equal_to_target(
         ignore_relapses=True,
         follow_up_dataframe=test_dataframe_roving_left_right,
@@ -1080,7 +1082,9 @@ def test_relapse_independent_baselines():
             "opt_roving_reference_confirmation_time_left_side_max_tolerance": 5,
             "opt_roving_reference_confirmation_time_right_side_max_tolerance": np.inf,
         },
-    ), "Test 8 'Roving reference, 15 units confirmed, 5 units left hand side tolerance' failed!"
+    ), (
+        "Test 8 'Roving reference, 15 units confirmed, 5 units left hand side tolerance' failed!"
+    )
     assert raw_pira_progression_result_is_equal_to_target(
         ignore_relapses=True,
         follow_up_dataframe=test_dataframe_roving_left_right,
@@ -1095,7 +1099,9 @@ def test_relapse_independent_baselines():
             "opt_roving_reference_confirmation_time_left_side_max_tolerance": 0,
             "opt_roving_reference_confirmation_time_right_side_max_tolerance": 5,
         },
-    ), "Test 9 'Roving reference, 5 units confirmed, no right hand side constraint' failed!"
+    ), (
+        "Test 9 'Roving reference, 5 units confirmed, no right hand side constraint' failed!"
+    )
     assert raw_pira_progression_result_is_equal_to_target(
         ignore_relapses=True,
         follow_up_dataframe=test_dataframe_roving_left_right,
@@ -1107,7 +1113,9 @@ def test_relapse_independent_baselines():
             "opt_roving_reference_confirmation_time_left_side_max_tolerance": 0,
             "opt_roving_reference_confirmation_time_right_side_max_tolerance": 4,
         },
-    ), "Test 10 'Roving reference, 5 units confirmed, 4 units right hand side constraint' failed!"
+    ), (
+        "Test 10 'Roving reference, 5 units confirmed, 4 units right hand side constraint' failed!"
+    )
 
 
 def test_relapse_independent_minimal_distance():
@@ -1823,9 +1831,9 @@ def test_get_post_relapse_rebaseline_timestamps():
             follow_up_df=test_dataframe_cases_1_2_3_4,
             relapse_timestamps=test_relapses_cases_1_2_3_4,
         )
-    ) == Counter(
-        test_case_2_target
-    ), "Test 2 'Rebaseline of first relapse after second relapse, within buffer' failed!"
+    ) == Counter(test_case_2_target), (
+        "Test 2 'Rebaseline of first relapse after second relapse, within buffer' failed!"
+    )
 
     # Test case 3 - rebaseline of first relapse after second relapse,
     # after second buffer (same for both)
@@ -1838,9 +1846,9 @@ def test_get_post_relapse_rebaseline_timestamps():
             follow_up_df=test_dataframe_cases_1_2_3_4,
             relapse_timestamps=test_relapses_cases_1_2_3_4,
         )
-    ) == Counter(
-        test_case_3_target
-    ), "Test 3 'Rebaseline of first relapse after second relapse, after second buffer' failed!"
+    ) == Counter(test_case_3_target), (
+        "Test 3 'Rebaseline of first relapse after second relapse, after second buffer' failed!"
+    )
 
     # Test case 4 - overlapping RAW windows
     test_case_4_target = [60]
@@ -1866,9 +1874,9 @@ def test_get_post_relapse_rebaseline_timestamps():
             follow_up_df=test_dataframe_cases_5,
             relapse_timestamps=test_relapses_cases_5,
         )
-    ) == Counter(
-        test_case_5_target
-    ), "Test 5 'Rebaseline within buffer of next' failed!"
+    ) == Counter(test_case_5_target), (
+        "Test 5 'Rebaseline within buffer of next' failed!"
+    )
 
     # Test case 6 - multiple non-overlapping and overlapping relapses
     test_relapses_cases_6 = [15, 25, 40, 48]
@@ -1886,9 +1894,9 @@ def test_get_post_relapse_rebaseline_timestamps():
             follow_up_df=test_dataframe_cases_6,
             relapse_timestamps=test_relapses_cases_6,
         )
-    ) == Counter(
-        test_case_6_target
-    ), "Test 6 'Rebaseline with multiple overlapping and non-overlapping' failed!"
+    ) == Counter(test_case_6_target), (
+        "Test 6 'Rebaseline with multiple overlapping and non-overlapping' failed!"
+    )
 
 
 def test_roving_raw_pira_descends_to_general():
