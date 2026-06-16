@@ -3101,6 +3101,700 @@ def test_relapse_independent_first_vs_all_events():
     ), "Test 2 'Return first event only' failed!"
 
 
+def test_relapse_independent_multiple_events_rebaselining():
+    # Fixed vs. roving
+    test_dataframe_multiple_fixed_roving = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70],
+            "edss_score": [1, 1, 1.5, 2.0, 2.0, 1.5, 1.5, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_fixed_roving,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1)],
+            "accrual_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
+            "opt_roving_reference_require_confirmation": False,
+        },
+    ), "Test 1 'Fixed baseline' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_fixed_roving,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (50, 1.5),
+                (70, 2.5),
+            ],
+            "is_event": [(30, True), (70, True)],
+            "is_accrual": [(30, True), (70, True)],
+            "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+            "event_score": [(30, 2.0), (70, 2.5)],
+            "event_reference_score": [(30, 1.0), (70, 1.5)],
+            "event_id": [(30, 1), (70, 2)],
+            "accrual_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": False,
+        },
+    ), "Test 2 'Roving reference' failed!"
+
+    # With and without confirmation
+    test_dataframe_multiple_confirmation = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90],
+            "edss_score": [1, 1, 1.5, 2.5, 2.0, 1.5, 1.5, 2.5, 3.0, 3.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_confirmation,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (90, True)],
+            "is_general_rebaseline": [(30, True), (90, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.5), (90, 3.5)],
+            "is_event": [(30, True), (90, True)],
+            "is_accrual": [(30, True), (90, True)],
+            "event_type": [(30, LABEL_PIRA), (90, LABEL_PIRA)],
+            "event_score": [(30, 2.5), (90, 3.5)],
+            "event_reference_score": [(30, 1.0), (90, 2.5)],
+            "event_id": [(30, 1), (90, 2)],
+            "accrual_event_id": [(30, 1), (90, 2)],
+        },
+        args_dict={
+            "opt_baseline_type": "fixed",
+            "opt_require_confirmation": False,
+            "opt_confirmation_time": 0,
+        },
+    ), "Test 3 'Fixed baseline, progression unconfirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_confirmation,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (80, True)],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0), (80, 3.0)],
+            "is_event": [(30, True), (80, True)],
+            "is_accrual": [(30, True), (80, True)],
+            "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+            "event_score": [(30, 2.0), (80, 3.0)],
+            "event_reference_score": [(30, 1.0), (80, 2.0)],
+            "event_id": [(30, 1), (80, 2)],
+            "accrual_event_id": [(30, 1), (80, 2)],
+        },
+        args_dict={
+            "opt_baseline_type": "fixed",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 4 'Fixed baseline, progression next-confirmed' failed!"
+
+    # Symmetric
+    test_dataframe_multiple_symmetric = pd.DataFrame(
+        {
+            "days_after_baseline": [i * 10 for i in range(10)],
+            "edss_score": [1, 1, 1.5, 2.5, 2.0, 1.5, 1.5, 2.5, 3.0, 3.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_symmetric,
+        targets_dict={
+            "is_post_event_rebaseline": [
+                (30, True),
+                (50, True),
+                (70, True),
+                (90, True),
+            ],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True), (90, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.5),
+                (50, 1.5),
+                (70, 2.5),
+                (90, 3.5),
+            ],
+            "is_event": [(30, True), (50, True), (70, True), (90, True)],
+            "is_accrual": [(30, True), (70, True), (90, True)],
+            "is_improvement": [(50, True)],
+            "event_type": [
+                (30, LABEL_PIRA),
+                (50, LABEL_IMPROVEMENT),
+                (70, LABEL_PIRA),
+                (90, LABEL_PIRA),
+            ],
+            "event_score": [
+                (30, 2.5),
+                (50, 1.5),
+                (70, 2.5),
+                (90, 3.5),
+            ],
+            "event_reference_score": [(30, 1.0), (50, 2.5), (70, 1.5), (90, 2.5)],
+            "event_id": [(30, 1), (50, 2), (70, 3), (90, 4)],
+            "accrual_event_id": [(30, 1), (70, 2), (90, 3)],
+            "improvement_event_id": [(50, 1)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-symmetric",
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 5 'Fixed baseline, unconfirmed, symmetric' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_symmetric,
+        targets_dict={
+            "is_post_event_rebaseline": [
+                (30, True),
+                (80, True),
+            ],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (80, 3.0),
+            ],
+            "is_event": [(30, True), (80, True)],
+            "is_accrual": [(30, True), (80, True)],
+            "event_type": [
+                (30, LABEL_PIRA),
+                (80, LABEL_PIRA),
+            ],
+            "event_score": [
+                (30, 2.0),
+                (80, 3.0),
+            ],
+            "event_reference_score": [(30, 1.0), (80, 2.0)],
+            "event_id": [(30, 1), (80, 2)],
+            "accrual_event_id": [(30, 1), (80, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-symmetric",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 6 'Fixed baseline, next-confirmed, symmetric' failed!"
+    # Symmetric and inverted
+    test_dataframe_multiple_symm_inv = pd.DataFrame(
+        {
+            "days_after_baseline": [i * 10 for i in range(10)],
+            "edss_score": [5.0, 5.0, 4.5, 3.5, 4.0, 4.5, 4.5, 3.5, 3.0, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_symm_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [
+                (30, True),
+                (90, True),
+            ],
+            "is_general_rebaseline": [(30, True), (90, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 3.5),
+                (90, 2.5),
+            ],
+            "is_event": [(30, True), (90, True)],
+            "is_improvement": [(30, True), (90, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (90, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 3.5),
+                (90, 2.5),
+            ],
+            "event_reference_score": [(30, 5.0), (90, 3.5)],
+            "event_id": [(30, 1), (90, 2)],
+            "improvement_event_id": [(30, 1), (90, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 7 'Fixed baseline, unconfirmed, inverted' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_symm_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [
+                (30, True),
+                (80, True),
+            ],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 4.0),
+                (80, 3.0),
+            ],
+            "is_event": [(30, True), (80, True)],
+            "is_improvement": [(30, True), (80, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 4.0),
+                (80, 3.0),
+            ],
+            "event_reference_score": [(30, 5.0), (80, 4.0)],
+            "event_id": [(30, 1), (80, 2)],
+            "improvement_event_id": [(30, 1), (80, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 8 'Fixed baseline, next-confirmed, inverted' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_symm_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [
+                (30, True),
+                (50, True),
+                (70, True),
+                (90, True),
+            ],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True), (90, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 3.5),
+                (50, 4.5),
+                (70, 3.5),
+                (90, 2.5),
+            ],
+            "is_event": [(30, True), (50, True), (70, True), (90, True)],
+            "is_improvement": [(30, True), (70, True), (90, True)],
+            "is_accrual": [(50, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (50, LABEL_PIRA),
+                (70, LABEL_IMPROVEMENT),
+                (90, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 3.5),
+                (50, 4.5),
+                (70, 3.5),
+                (90, 2.5),
+            ],
+            "event_reference_score": [(30, 5.0), (50, 3.5), (70, 4.5), (90, 3.5)],
+            "event_id": [(30, 1), (50, 2), (70, 3), (90, 4)],
+            "improvement_event_id": [(30, 1), (70, 2), (90, 3)],
+            "accrual_event_id": [(50, 1)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-symmetric",
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 9 'Fixed baseline, unconfirmed, symmetric' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_symm_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [
+                (30, True),
+                (80, True),
+            ],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 4.0),
+                (80, 3.0),
+            ],
+            "is_event": [(30, True), (80, True)],
+            "is_improvement": [(30, True), (80, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 4.0),
+                (80, 3.0),
+            ],
+            "event_reference_score": [(30, 5.0), (80, 4.0)],
+            "event_id": [(30, 1), (80, 2)],
+            "improvement_event_id": [(30, 1), (80, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-symmetric",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 10 'Fixed baseline, next-confirmed, symmetric' failed!"
+
+    # Multi-event and roving
+    test_dataframe_multiple_rov = pd.DataFrame(
+        {
+            "days_after_baseline": [i * 10 for i in range(8)],
+            "edss_score": [1.0, 1.0, 1.5, 2.0, 2.0, 1.5, 1.5, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_rov,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1)],
+            "accrual_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 11 'Fixed baseline' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_rov,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (50, 1.5),
+                (70, 2.5),
+            ],
+            "is_event": [(30, True), (70, True)],
+            "is_accrual": [(30, True), (70, True)],
+            "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+            "event_score": [(30, 2.0), (70, 2.5)],
+            "event_reference_score": [(30, 1.0), (70, 1.5)],
+            "event_id": [(30, 1), (70, 2)],
+            "accrual_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": False,
+        },
+    ), "Test 12 'Roving baseline' failed!"
+    test_dataframe_multiple_rov["edss_score"] = (
+        4.0 - test_dataframe_multiple_rov["edss_score"]
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_rov,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 3.0)],
+            "event_id": [(30, 1)],
+            "improvement_event_id": [(30, 1)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
+        },
+    ), "Test 13 'Fixed baseline, inverted' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_multiple_rov,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (50, 2.5),
+                (70, 1.5),
+            ],
+            "is_event": [(30, True), (70, True)],
+            "is_improvement": [(30, True), (70, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT), (70, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 2.0), (70, 1.5)],
+            "event_reference_score": [(30, 3.0), (70, 2.5)],
+            "event_id": [(30, 1), (70, 2)],
+            "improvement_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": False,
+        },
+    ), "Test 14 'Roving baseline, inverted' failed!"
+
+    # With backtracking and minimal distance
+    test_dataframe_backtrack = pd.DataFrame(
+        {
+            "days_after_baseline": [i * 10 for i in range(9)],
+            "edss_score": [1.0, 1.0, 1.5, 2.0, 2.0, 0.5, 0.5, 2.5, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_backtrack,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (50, 0.5),
+                (70, 2.5),
+            ],
+            "is_event": [(30, True), (70, True)],
+            "is_accrual": [(30, True), (70, True)],
+            "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+            "event_score": [(30, 2.0), (70, 2.5)],
+            "event_reference_score": [(30, 1.0), (70, 0.5)],
+            "event_id": [(30, 1), (70, 2)],
+            "accrual_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+        },
+    ), "Test 15 'Next-confirmed, no minimal distance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_backtrack,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (50, 0.5),
+            ],
+            "is_event": [(30, True)],
+            "is_accrual": [(30, True)],
+            "event_type": [(30, LABEL_PIRA)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 1.0)],
+            "event_id": [(30, 1)],
+            "accrual_event_id": [(30, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_minimal_distance_time": 30,
+            "opt_minimal_distance_type": "reference",
+            "opt_minimal_distance_backtrack_decrease": True,
+        },
+    ), "Test 16 'Next-confirmed, with distance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [i * 10 for i in range(9)],
+                "edss_score": [1.0, 1.0, 1.5, 1.5, 1.5, 0.5, 0.5, 2.5, 2.5],
+            }
+        ),
+        targets_dict={
+            "is_post_event_rebaseline": [(70, True)],
+            "is_general_rebaseline": [(70, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [
+                (70, 2.5),
+                (50, 0.5),
+            ],
+            "is_event": [(70, True)],
+            "is_accrual": [(70, True)],
+            "event_type": [(70, LABEL_PIRA)],
+            "event_score": [(70, 2.5)],
+            "event_reference_score": [(70, 1.0)],
+            "event_id": [(70, 1)],
+            "accrual_event_id": [(70, 1)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_minimal_distance_time": 30,
+            "opt_minimal_distance_type": "reference",
+            "opt_minimal_distance_backtrack_decrease": True,
+        },
+    ), "Test 16b 'Next-confirmed, with distance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [i * 10 for i in range(9)],
+                "edss_score": [1.0, 1.0, 1.5, 2.0, 2.0, 0.5, 0.5, 3.0, 3.0],
+            }
+        ),
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (70, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [
+                (70, 3.0),
+                (50, 0.5),
+                (30, 2.0),
+            ],
+            "is_event": [(30, True), (70, True)],
+            "is_accrual": [(30, True), (70, True)],
+            "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+            "event_score": [(70, 3.0), (30, 2.0)],
+            "event_reference_score": [(70, 2.0), (30, 1)],
+            "event_id": [(30, 1), (70, 2)],
+            "accrual_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_minimal_distance_time": 30,
+            "opt_minimal_distance_type": "reference",
+            "opt_minimal_distance_backtrack_decrease": True,
+        },
+    ), "Test 16c 'Next-confirmed, with distance' failed!"
+
+    test_dataframe_backtrack["edss_score"] = (
+        5.0 - test_dataframe_backtrack["edss_score"]
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_backtrack,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (50, True), (70, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 3.0),
+                (50, 4.5),
+                (70, 2.5),
+            ],
+            "is_event": [(30, True), (70, True)],
+            "is_improvement": [(30, True), (70, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT), (70, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 3.0), (70, 2.5)],
+            "event_reference_score": [(30, 4.0), (70, 4.5)],
+            "event_id": [(30, 1), (70, 2)],
+            "improvement_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+        },
+    ), "Test 17 'Next-confirmed, no minimal distance, inverted' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_backtrack,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 3.0),
+                (50, 4.5),
+            ],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 3.0)],
+            "event_reference_score": [(30, 4.0)],
+            "event_id": [(30, 1)],
+            "improvement_event_id": [(30, 1)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_minimal_distance_time": 30,
+            "opt_minimal_distance_type": "reference",
+            "opt_minimal_distance_backtrack_decrease": True,
+        },
+    ), "Test 18 'Next-confirmed, with minimal distance, inverted' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [i * 10 for i in range(9)],
+                "edss_score": [4.0, 4.0, 3.5, 3.5, 3.5, 4.5, 4.5, 2.5, 2.5],
+            }
+        ),
+        targets_dict={
+            "is_post_event_rebaseline": [(70, True)],
+            "is_general_rebaseline": [(70, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [
+                (70, 2.5),
+                (50, 4.5),
+            ],
+            "is_event": [(70, True)],
+            "is_improvement": [(70, True)],
+            "event_type": [(70, LABEL_IMPROVEMENT)],
+            "event_score": [(70, 2.5)],
+            "event_reference_score": [(70, 4.0)],
+            "event_id": [(70, 1)],
+            "improvement_event_id": [(70, 1)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_minimal_distance_time": 30,
+            "opt_minimal_distance_type": "reference",
+            "opt_minimal_distance_backtrack_decrease": True,
+        },
+    ), "Test 18b 'Next-confirmed, with minimal distance, inverted' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=pd.DataFrame(
+            {
+                "days_after_baseline": [i * 10 for i in range(9)],
+                "edss_score": [4.0, 4.0, 3.5, 3.0, 3.0, 4.5, 4.5, 2.0, 2.0],
+            }
+        ),
+        targets_dict={
+            "is_post_event_rebaseline": [(70, True), (30, True)],
+            "is_general_rebaseline": [(70, True), (50, True), (30, True)],
+            "edss_score_used_as_new_general_reference": [
+                (70, 2.0),
+                (50, 4.5),
+                (30, 3.0),
+            ],
+            "is_event": [(70, True), (30, True)],
+            "is_improvement": [(70, True), (30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT), (70, LABEL_IMPROVEMENT)],
+            "event_score": [(70, 2.0), (30, 3.0)],
+            "event_reference_score": [(70, 3.0), (30, 4.0)],
+            "event_id": [(30, 1), (70, 2)],
+            "improvement_event_id": [(30, 1), (70, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "roving",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+            "opt_minimal_distance_time": 30,
+            "opt_minimal_distance_type": "reference",
+            "opt_minimal_distance_backtrack_decrease": True,
+        },
+    ), "Test 18c 'Next-confirmed, with minimal distance, inverted' failed!"
+
+
+def test_relapse_independent_multiple_events_merging():
+    # First 20 tests from old test function
+    pass
+
+
 if __name__ == "__main__":
     print("\nPart 1 - building blocks\n")
     print("Testing '_is_large_enough_increase_or_decrease'...")
@@ -3134,12 +3828,11 @@ if __name__ == "__main__":
     print("Testing first vs. all events...")
     test_relapse_independent_first_vs_all_events()
 
-    """
     print("Testing multiple events re-baselining...")
     test_relapse_independent_multiple_events_rebaselining()
 
-    print("Testing post-event re-baselining")
-    """
+    print("Testing event merging....")
+    test_relapse_independent_multiple_events_merging()
 
     # print("\nPart 3 - progression with relapses\n")
 
