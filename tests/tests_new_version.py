@@ -1354,25 +1354,503 @@ def test_relapse_independent_confirmation():
         },
     ), "Test 20 'Last does not require confirmation' failed!"
 
+    # Experimental-inverted mode
+    test_dataframe_inv = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [3.0, 1.0, 1.5, 2.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 1.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 1.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+        },
+    ), "Test 21 'Inverted unconfirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 1.5)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 1.5)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 22 'Inverted next-confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+        },
+    ), "Test 23 'Inverted distance-confirmed' failed!"
+    test_dataframe_inv_min_mono = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [3.0, 1.5, 2.0, 2.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_min_mono,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_confirmation_type": "minimum",
+        },
+    ), "Test 24 'Inverted next-confirmed, minimum' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_min_mono,
+        targets_dict={
+            "is_post_event_rebaseline": [(20, True)],
+            "is_general_rebaseline": [(20, True)],
+            "edss_score_used_as_new_general_reference": [(20, 2.0)],
+            "is_event": [(20, True)],
+            "is_improvement": [(20, True)],
+            "event_type": [(20, LABEL_IMPROVEMENT)],
+            "event_score": [(20, 2.0)],
+            "event_reference_score": [(20, 3.0)],
+            "event_id": [(20, 1.0)],
+            "improvement_event_id": [(20, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_confirmation_type": "monotonic",
+        },
+    ), "Test 25 'Inverted next-confirmed, monotonic' failed!"
+    test_dataframe_inv_all_last = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50],
+            "edss_score": [3.0, 1.5, 2.0, 2.0, 1.5, 2.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_all_last,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+        },
+    ), "Test 26 'Inverted distance-confirmed, all' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_all_last,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 1.5)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 1.5)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "last",
+        },
+    ), "Test 27 'Inverted distance-confirmed, last' failed!"
+    test_dataframe_inv_dists = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50, 60],
+            "edss_score": [3.0, 3.0, 2.5, 1.0, 1.5, 2.0, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_dists,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 1.0)],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 1.0)],
+            "event_reference_score": [(30, 3.0)],
+            "event_id": [(30, 1.0)],
+            "improvement_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+        },
+    ), "Test 28 'Inverted unconfirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_dists,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 1.5)],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 1.5)],
+            "event_reference_score": [(30, 3.0)],
+            "event_id": [(30, 1.0)],
+            "improvement_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 29 'Inverted next-confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_dists,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 3.0)],
+            "event_id": [(30, 1.0)],
+            "improvement_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+        },
+    ), "Test 30 'Inverted distance-confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_dists,
+        targets_dict={},
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+        },
+    ), "Test 31 'Inverted sustained' failed!"
+    test_dataframe_inv_left = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40],
+            "edss_score": [3.0, 1.5, 1.5, 2.0, 2.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_left,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 15,
+            "opt_confirmation_time_left_side_max_tolerance": 0,
+        },
+    ), "Test 32 'Inverted no left-hand tolerance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_left,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 1.5)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 1.5)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 15,
+            "opt_confirmation_time_left_side_max_tolerance": 5,
+        },
+    ), "Test 33 'Inverted with left-hand tolerance' failed!"
+    test_dataframe_inv_right = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 30, 40],
+            "edss_score": [3.0, 1.5, 2.0, 2.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_right,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 10,
+            "opt_confirmation_time_right_side_max_tolerance": np.inf,
+        },
+    ), "Test 34 'Inverted no right-hand constraint' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_right,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 3.0)],
+            "event_id": [(30, 1.0)],
+            "improvement_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 10,
+            "opt_confirmation_time_right_side_max_tolerance": 5,
+        },
+    ), "Test 35 'Inverted with right-hand constraint' failed!"
+    test_dataframe_inv_left_right = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 40],
+            "edss_score": [3.0, 2.0, 2.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_left_right,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_time_left_side_max_tolerance": 5,
+            "opt_confirmation_time_right_side_max_tolerance": 10,
+        },
+    ), "Test 36 'Inverted left-hand tolerance and right-hand constraint' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_left_right,
+        targets_dict={},
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 15,
+            "opt_confirmation_time_left_side_max_tolerance": 0,
+            "opt_confirmation_time_right_side_max_tolerance": 10,
+        },
+    ), "Test 37 'Inverted no left-hand tolerance but right-hand constraint' failed!"
+    test_dataframe_inv_sust = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30],
+            "edss_score": [3.0, 1.5, 2.0, 2.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_sust,
+        targets_dict={
+            "is_post_event_rebaseline": [(10, True)],
+            "is_general_rebaseline": [(10, True)],
+            "edss_score_used_as_new_general_reference": [(10, 2.0)],
+            "is_event": [(10, True)],
+            "is_improvement": [(10, True)],
+            "event_type": [(10, LABEL_IMPROVEMENT)],
+            "event_score": [(10, 2.0)],
+            "event_reference_score": [(10, 3.0)],
+            "event_id": [(10, 1.0)],
+            "improvement_event_id": [(10, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+            "opt_confirmation_sustained_minimal_distance": 20,
+        },
+    ), "Test 38 'Inverted sustained minimal distance' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_sust,
+        targets_dict={},
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": -1,
+            "opt_confirmation_sustained_minimal_distance": 21,
+        },
+    ), "Test 39 'Inverted sustained minimal distance' failed!"
+    test_dataframe_last_ext = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50],
+            "edss_score": [3.0, 3.0, 2.5, 2.0, 1.5, 1.0],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_last_ext,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_improvement": [(30, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 3.0)],
+            "event_id": [(30, 1.0)],
+            "improvement_event_id": [(30, 1.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_confirmation_require_confirmation_for_last_visit": True,
+        },
+    ), "Test 40 'Inverted, last must be confirmed' failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_last_ext,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (50, True)],
+            "is_general_rebaseline": [(30, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0), (50, 1.0)],
+            "is_event": [(30, True), (50, True)],
+            "is_improvement": [(30, True), (50, True)],
+            "event_type": [(30, LABEL_IMPROVEMENT), (50, LABEL_IMPROVEMENT)],
+            "event_score": [(30, 2.0), (50, 1.0)],
+            "event_reference_score": [(30, 3.0), (50, 2.0)],
+            "event_id": [(30, 1.0), (50, 2.0)],
+            "improvement_event_id": [(30, 1.0), (50, 2.0)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "opt_confirmation_require_confirmation_for_last_visit": False,
+        },
+    ), "Test 41 'Inverted, last must not be confirmed' failed!"
+
 
 if __name__ == "__main__":
     print("\nPart 1 - building blocks\n")
-    print("Testing 'is_above_progress_threshold'...")
+    print("Testing '_is_large_enough_increase_or_decrease'...")
     test_is_large_enough_increase_or_decrease()
 
-    print("Testing 'get_confirmation_scores_dataframe'...")
+    print("Testing '_get_confirmation_scores_dataframe'...")
     test_get_confirmation_scores_dataframe()
 
-    print("Testing 'check_confirmation_scores_and_get_confirmed_score'...")
+    print("Testing '_check_confirmation_scores_and_get_confirmed_score'...")
     test_check_confirmation_scores_and_get_confirmed_score()
 
-    print("Testing 'backtrack_minimal_distance_compatible_reference'...")
+    print("Testing '_backtrack_minimal_distance_compatible_reference'...")
     test_backtrack_minimal_distance_compatible_reference()
 
     print("Testing '_check_assessment_for_progression'...")
     test_check_assessment_for_progression()
 
-    print("Testing new stuff...")
+    print("\nPart 2 - relapse independent progression\n")
+    print("Testing confirmation...")
     test_relapse_independent_confirmation()
+
+    """
+    print("Testing baselines...")
+    test_relapse_independent_baselines()
+
+    print("Testing minimal distance...")
+    test_relapse_independent_minimal_distance()
+
+    print("Testing first vs. all events...")
+    test_relapse_independent_first_vs_all_events()
+
+    print("Testing multiple events re-baselining...")
+    test_relapse_independent_multiple_events_rebaselining()
+    """
+
+    # print("\nPart 3 - progression with relapses\n")
+
+    # print("\nPart 4 - multi-event mode\n")
+    # print("Testing multi-event mode...")
+    # test_multi_event_option()
 
     print("\nAll tests successfully completed.\n")
