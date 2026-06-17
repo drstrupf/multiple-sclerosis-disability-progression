@@ -72,8 +72,8 @@ class EDSSAnnotation:
         "edss_score_used_as_new_general_reference"
     )
     is_event_flag_column_name: str = "is_event"
-    is_accrual_flag_column_name: str = "is_accrual"
-    is_improvement_flag_column_name: str = "is_improvement"
+    is_accrual_flag_column_name: str = "is_accrual_event"
+    is_improvement_flag_column_name: str = "is_improvement_event"
     event_type_column_name: str = "event_type"
     event_score_column_name: str = "event_score"
     event_reference_score_column_name: str = "event_reference_score"

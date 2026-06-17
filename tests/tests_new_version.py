@@ -722,7 +722,7 @@ def test_backtrack_minimal_distance_compatible_reference():
 
 
 def test_check_assessment_for_progression():
-    # Returns is_event, is_accrual, is_improvement,
+    # Returns is_event, is_accrual_event, is_improvement_event,
     # event_type, confirmed_event_score,
     # current_baseline_score
 
@@ -909,8 +909,8 @@ def raw_pira_progression_result_is_equal_to_target(
     target_df["is_general_rebaseline"] = False
     target_df["edss_score_used_as_new_general_reference"] = np.nan
     target_df["is_event"] = False
-    target_df["is_accrual"] = False
-    target_df["is_improvement"] = False
+    target_df["is_accrual_event"] = False
+    target_df["is_improvement_event"] = False
     target_df["event_type"] = None
     target_df["event_score"] = np.nan
     target_df["event_reference_score"] = np.nan
@@ -942,7 +942,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -961,7 +961,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -996,7 +996,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.5)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.5)],
             "event_reference_score": [(10, 1.0)],
@@ -1016,7 +1016,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -1053,7 +1053,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -1074,7 +1074,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.5)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.5)],
             "event_reference_score": [(10, 1.0)],
@@ -1103,7 +1103,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -1124,7 +1124,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -1153,7 +1153,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -1202,7 +1202,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -1231,7 +1231,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -1270,7 +1270,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.5)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.5)],
             "event_reference_score": [(10, 1.0)],
@@ -1291,7 +1291,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.5)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.5)],
             "event_reference_score": [(10, 1.0)],
@@ -1320,7 +1320,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -1340,7 +1340,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True), (50, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0), (50, 3.0)],
             "is_event": [(30, True), (50, True)],
-            "is_accrual": [(30, True), (50, True)],
+            "is_accrual_event": [(30, True), (50, True)],
             "event_type": [(30, LABEL_PIRA), (50, LABEL_PIRA)],
             "event_score": [(30, 2.0), (50, 3.0)],
             "event_reference_score": [(30, 1.0), (50, 2.0)],
@@ -1368,7 +1368,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 1.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 1.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1387,7 +1387,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 1.5)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 1.5)],
             "event_reference_score": [(10, 3.0)],
@@ -1407,7 +1407,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1433,7 +1433,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1454,7 +1454,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_improvement": [(20, True)],
+            "is_improvement_event": [(20, True)],
             "event_type": [(20, LABEL_IMPROVEMENT)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 3.0)],
@@ -1481,7 +1481,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1502,7 +1502,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 1.5)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 1.5)],
             "event_reference_score": [(10, 3.0)],
@@ -1529,7 +1529,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 1.0)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 1.0)],
             "event_reference_score": [(30, 3.0)],
@@ -1548,7 +1548,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 1.5)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 1.5)],
             "event_reference_score": [(30, 3.0)],
@@ -1568,7 +1568,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 3.0)],
@@ -1603,7 +1603,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1624,7 +1624,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 1.5)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 1.5)],
             "event_reference_score": [(10, 3.0)],
@@ -1651,7 +1651,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1672,7 +1672,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 3.0)],
@@ -1699,7 +1699,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1738,7 +1738,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -1775,7 +1775,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 3.0)],
@@ -1796,7 +1796,7 @@ def test_relapse_independent_confirmation():
             "is_general_rebaseline": [(30, True), (50, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0), (50, 1.0)],
             "is_event": [(30, True), (50, True)],
-            "is_improvement": [(30, True), (50, True)],
+            "is_improvement_event": [(30, True), (50, True)],
             "event_type": [(30, LABEL_IMPROVEMENT), (50, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0), (50, 1.0)],
             "event_reference_score": [(30, 3.0), (50, 2.0)],
@@ -2127,7 +2127,7 @@ def test_min_increase_settings():
                 (80, 4.0),
             ],
             "is_event": [(20, True), (40, True), (60, True), (80, True)],
-            "is_accrual": [(20, True), (40, True), (60, True), (80, True)],
+            "is_accrual_event": [(20, True), (40, True), (60, True), (80, True)],
             "event_type": [
                 (20, LABEL_PIRA),
                 (40, LABEL_PIRA),
@@ -2161,7 +2161,7 @@ def test_min_increase_settings():
                 (70, 3.5),
             ],
             "is_event": [(30, True), (50, True), (70, True)],
-            "is_accrual": [(30, True), (50, True), (70, True)],
+            "is_accrual_event": [(30, True), (50, True), (70, True)],
             "event_type": [
                 (30, LABEL_PIRA),
                 (50, LABEL_PIRA),
@@ -2196,7 +2196,7 @@ def test_min_increase_settings():
                 (80, 4.0),
             ],
             "is_event": [(30, True), (50, True), (70, True), (80, True)],
-            "is_accrual": [(30, True), (50, True), (70, True), (80, True)],
+            "is_accrual_event": [(30, True), (50, True), (70, True), (80, True)],
             "event_type": [
                 (30, LABEL_PIRA),
                 (50, LABEL_PIRA),
@@ -2238,7 +2238,7 @@ def test_min_increase_settings():
                 (60, 4.0),
             ],
             "is_event": [(30, True), (40, True), (60, True)],
-            "is_accrual": [(30, True), (40, True), (60, True)],
+            "is_accrual_event": [(30, True), (40, True), (60, True)],
             "event_type": [
                 (30, LABEL_PIRA),
                 (40, LABEL_PIRA),
@@ -2281,7 +2281,7 @@ def test_min_increase_settings():
                 (80, 0.0),
             ],
             "is_event": [(20, True), (40, True), (60, True), (80, True)],
-            "is_improvement": [(20, True), (40, True), (60, True), (80, True)],
+            "is_improvement_event": [(20, True), (40, True), (60, True), (80, True)],
             "event_type": [
                 (20, LABEL_IMPROVEMENT),
                 (40, LABEL_IMPROVEMENT),
@@ -2316,7 +2316,7 @@ def test_min_increase_settings():
                 (60, 1.0),
             ],
             "is_event": [(20, True), (40, True), (60, True)],
-            "is_improvement": [(20, True), (40, True), (60, True)],
+            "is_improvement_event": [(20, True), (40, True), (60, True)],
             "event_type": [
                 (20, LABEL_IMPROVEMENT),
                 (40, LABEL_IMPROVEMENT),
@@ -2362,7 +2362,7 @@ def test_min_increase_settings():
                 (50, True),
                 (80, True),
             ],
-            "is_improvement": [
+            "is_improvement_event": [
                 (10, True),
                 (30, True),
                 (50, True),
@@ -2406,7 +2406,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -2428,7 +2428,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_accrual": [(20, True)],
+            "is_accrual_event": [(20, True)],
             "event_type": [(20, LABEL_PIRA)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 1.0)],
@@ -2468,7 +2468,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_accrual": [(20, True)],
+            "is_accrual_event": [(20, True)],
             "event_type": [(20, LABEL_PIRA)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 1.0)],
@@ -2491,7 +2491,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_accrual": [(20, True)],
+            "is_accrual_event": [(20, True)],
             "event_type": [(20, LABEL_PIRA)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 1.0)],
@@ -2534,7 +2534,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_accrual": [(10, True)],
+            "is_accrual_event": [(10, True)],
             "event_type": [(10, LABEL_PIRA)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 1.0)],
@@ -2590,7 +2590,7 @@ def test_relapse_independent_minimal_distance():
                 (30, 4.0),
             ],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 4.0)],
             "event_reference_score": [(30, 3.0)],
@@ -2647,7 +2647,7 @@ def test_relapse_independent_minimal_distance():
                 (60, 3.5),
             ],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 4.5)],
             "event_reference_score": [(30, 3.0)],
@@ -2681,7 +2681,7 @@ def test_relapse_independent_minimal_distance():
                 (60, 3.5),
             ],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 4.0)],
             "event_reference_score": [(30, 3.0)],
@@ -2709,7 +2709,7 @@ def test_relapse_independent_minimal_distance():
                 (30, 3.5),
             ],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 3.5)],
             "event_reference_score": [(30, 2.5)],
@@ -2756,7 +2756,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -2788,7 +2788,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(10, True)],
             "edss_score_used_as_new_general_reference": [(10, 2.0)],
             "is_event": [(10, True)],
-            "is_improvement": [(10, True)],
+            "is_improvement_event": [(10, True)],
             "event_type": [(10, LABEL_IMPROVEMENT)],
             "event_score": [(10, 2.0)],
             "event_reference_score": [(10, 3.0)],
@@ -2810,7 +2810,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_improvement": [(20, True)],
+            "is_improvement_event": [(20, True)],
             "event_type": [(20, LABEL_IMPROVEMENT)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 3.0)],
@@ -2843,7 +2843,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_improvement": [(20, True)],
+            "is_improvement_event": [(20, True)],
             "event_type": [(20, LABEL_IMPROVEMENT)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 3.0)],
@@ -2865,7 +2865,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(20, True)],
             "edss_score_used_as_new_general_reference": [(20, 2.0)],
             "is_event": [(20, True)],
-            "is_improvement": [(20, True)],
+            "is_improvement_event": [(20, True)],
             "event_type": [(20, LABEL_IMPROVEMENT)],
             "event_score": [(20, 2.0)],
             "event_reference_score": [(20, 3.0)],
@@ -2926,7 +2926,7 @@ def test_relapse_independent_minimal_distance():
             "is_general_rebaseline": [(10, True), (30, True)],
             "edss_score_used_as_new_general_reference": [(10, 3.0), (30, 2.0)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 3.0)],
@@ -2960,7 +2960,7 @@ def test_relapse_independent_minimal_distance():
                 (30, 2.0),
             ],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 3.0)],
@@ -3013,7 +3013,7 @@ def test_relapse_independent_minimal_distance():
                 (30, 2.5),
             ],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.5)],
             "event_reference_score": [(30, 3.5)],
@@ -3071,7 +3071,7 @@ def test_relapse_independent_first_vs_all_events():
                 (70, 4.0),
             ],
             "is_event": [(30, True), (50, True), (70, True)],
-            "is_accrual": [(30, True), (50, True), (70, True)],
+            "is_accrual_event": [(30, True), (50, True), (70, True)],
             "event_type": [(30, LABEL_PIRA), (50, LABEL_PIRA), (70, LABEL_PIRA)],
             "event_score": [(30, 2.0), (50, 3.0), (70, 4.0)],
             "event_reference_score": [(30, 1.0), (50, 2.0), (70, 3.0)],
@@ -3087,7 +3087,7 @@ def test_relapse_independent_first_vs_all_events():
         follow_up_dataframe=test_dataframe_first_all_events,
         targets_dict={
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -3116,7 +3116,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -3140,7 +3140,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (70, 2.5),
             ],
             "is_event": [(30, True), (70, True)],
-            "is_accrual": [(30, True), (70, True)],
+            "is_accrual_event": [(30, True), (70, True)],
             "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
             "event_score": [(30, 2.0), (70, 2.5)],
             "event_reference_score": [(30, 1.0), (70, 1.5)],
@@ -3168,7 +3168,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "is_general_rebaseline": [(30, True), (90, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.5), (90, 3.5)],
             "is_event": [(30, True), (90, True)],
-            "is_accrual": [(30, True), (90, True)],
+            "is_accrual_event": [(30, True), (90, True)],
             "event_type": [(30, LABEL_PIRA), (90, LABEL_PIRA)],
             "event_score": [(30, 2.5), (90, 3.5)],
             "event_reference_score": [(30, 1.0), (90, 2.5)],
@@ -3188,7 +3188,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "is_general_rebaseline": [(30, True), (80, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0), (80, 3.0)],
             "is_event": [(30, True), (80, True)],
-            "is_accrual": [(30, True), (80, True)],
+            "is_accrual_event": [(30, True), (80, True)],
             "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
             "event_score": [(30, 2.0), (80, 3.0)],
             "event_reference_score": [(30, 1.0), (80, 2.0)],
@@ -3226,8 +3226,8 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (90, 3.5),
             ],
             "is_event": [(30, True), (50, True), (70, True), (90, True)],
-            "is_accrual": [(30, True), (70, True), (90, True)],
-            "is_improvement": [(50, True)],
+            "is_accrual_event": [(30, True), (70, True), (90, True)],
+            "is_improvement_event": [(50, True)],
             "event_type": [
                 (30, LABEL_PIRA),
                 (50, LABEL_IMPROVEMENT),
@@ -3264,7 +3264,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (80, 3.0),
             ],
             "is_event": [(30, True), (80, True)],
-            "is_accrual": [(30, True), (80, True)],
+            "is_accrual_event": [(30, True), (80, True)],
             "event_type": [
                 (30, LABEL_PIRA),
                 (80, LABEL_PIRA),
@@ -3304,7 +3304,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (90, 2.5),
             ],
             "is_event": [(30, True), (90, True)],
-            "is_improvement": [(30, True), (90, True)],
+            "is_improvement_event": [(30, True), (90, True)],
             "event_type": [
                 (30, LABEL_IMPROVEMENT),
                 (90, LABEL_IMPROVEMENT),
@@ -3336,7 +3336,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (80, 3.0),
             ],
             "is_event": [(30, True), (80, True)],
-            "is_improvement": [(30, True), (80, True)],
+            "is_improvement_event": [(30, True), (80, True)],
             "event_type": [
                 (30, LABEL_IMPROVEMENT),
                 (80, LABEL_IMPROVEMENT),
@@ -3373,8 +3373,8 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (90, 2.5),
             ],
             "is_event": [(30, True), (50, True), (70, True), (90, True)],
-            "is_improvement": [(30, True), (70, True), (90, True)],
-            "is_accrual": [(50, True)],
+            "is_improvement_event": [(30, True), (70, True), (90, True)],
+            "is_accrual_event": [(50, True)],
             "event_type": [
                 (30, LABEL_IMPROVEMENT),
                 (50, LABEL_PIRA),
@@ -3411,7 +3411,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (80, 3.0),
             ],
             "is_event": [(30, True), (80, True)],
-            "is_improvement": [(30, True), (80, True)],
+            "is_improvement_event": [(30, True), (80, True)],
             "event_type": [
                 (30, LABEL_IMPROVEMENT),
                 (80, LABEL_IMPROVEMENT),
@@ -3446,7 +3446,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -3469,7 +3469,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (70, 2.5),
             ],
             "is_event": [(30, True), (70, True)],
-            "is_accrual": [(30, True), (70, True)],
+            "is_accrual_event": [(30, True), (70, True)],
             "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
             "event_score": [(30, 2.0), (70, 2.5)],
             "event_reference_score": [(30, 1.0), (70, 1.5)],
@@ -3492,7 +3492,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             "is_general_rebaseline": [(30, True)],
             "edss_score_used_as_new_general_reference": [(30, 2.0)],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 3.0)],
@@ -3516,7 +3516,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (70, 1.5),
             ],
             "is_event": [(30, True), (70, True)],
-            "is_improvement": [(30, True), (70, True)],
+            "is_improvement_event": [(30, True), (70, True)],
             "event_type": [(30, LABEL_IMPROVEMENT), (70, LABEL_IMPROVEMENT)],
             "event_score": [(30, 2.0), (70, 1.5)],
             "event_reference_score": [(30, 3.0), (70, 2.5)],
@@ -3549,7 +3549,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (70, 2.5),
             ],
             "is_event": [(30, True), (70, True)],
-            "is_accrual": [(30, True), (70, True)],
+            "is_accrual_event": [(30, True), (70, True)],
             "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
             "event_score": [(30, 2.0), (70, 2.5)],
             "event_reference_score": [(30, 1.0), (70, 0.5)],
@@ -3574,7 +3574,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (50, 0.5),
             ],
             "is_event": [(30, True)],
-            "is_accrual": [(30, True)],
+            "is_accrual_event": [(30, True)],
             "event_type": [(30, LABEL_PIRA)],
             "event_score": [(30, 2.0)],
             "event_reference_score": [(30, 1.0)],
@@ -3607,7 +3607,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (50, 0.5),
             ],
             "is_event": [(70, True)],
-            "is_accrual": [(70, True)],
+            "is_accrual_event": [(70, True)],
             "event_type": [(70, LABEL_PIRA)],
             "event_score": [(70, 2.5)],
             "event_reference_score": [(70, 1.0)],
@@ -3641,7 +3641,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (30, 2.0),
             ],
             "is_event": [(30, True), (70, True)],
-            "is_accrual": [(30, True), (70, True)],
+            "is_accrual_event": [(30, True), (70, True)],
             "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
             "event_score": [(70, 3.0), (30, 2.0)],
             "event_reference_score": [(70, 2.0), (30, 1)],
@@ -3674,7 +3674,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (70, 2.5),
             ],
             "is_event": [(30, True), (70, True)],
-            "is_improvement": [(30, True), (70, True)],
+            "is_improvement_event": [(30, True), (70, True)],
             "event_type": [(30, LABEL_IMPROVEMENT), (70, LABEL_IMPROVEMENT)],
             "event_score": [(30, 3.0), (70, 2.5)],
             "event_reference_score": [(30, 4.0), (70, 4.5)],
@@ -3700,7 +3700,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (50, 4.5),
             ],
             "is_event": [(30, True)],
-            "is_improvement": [(30, True)],
+            "is_improvement_event": [(30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT)],
             "event_score": [(30, 3.0)],
             "event_reference_score": [(30, 4.0)],
@@ -3734,7 +3734,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (50, 4.5),
             ],
             "is_event": [(70, True)],
-            "is_improvement": [(70, True)],
+            "is_improvement_event": [(70, True)],
             "event_type": [(70, LABEL_IMPROVEMENT)],
             "event_score": [(70, 2.5)],
             "event_reference_score": [(70, 4.0)],
@@ -3769,7 +3769,7 @@ def test_relapse_independent_multiple_events_rebaselining():
                 (30, 3.0),
             ],
             "is_event": [(70, True), (30, True)],
-            "is_improvement": [(70, True), (30, True)],
+            "is_improvement_event": [(70, True), (30, True)],
             "event_type": [(30, LABEL_IMPROVEMENT), (70, LABEL_IMPROVEMENT)],
             "event_score": [(70, 2.0), (30, 3.0)],
             "event_reference_score": [(70, 3.0), (30, 4.0)],
@@ -3791,8 +3791,1676 @@ def test_relapse_independent_multiple_events_rebaselining():
 
 
 def test_relapse_independent_multiple_events_merging():
-    # First 20 tests from old test function
-    pass
+    # Test case 1 - unconfirmed merged
+    test_dataframe_case_1 = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 40, 50, 60, 65, 70, 80, 90],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.5, 4.0, 4.5, 4.0],
+        }
+    )
+    test_case_1_targets = {
+        "is_post_event_rebaseline": [(30, True)],
+        "is_general_rebaseline": [(30, True)],
+        "edss_score_used_as_new_general_reference": [(30, 4.5)],
+        "is_event": [(30, True)],
+        "is_accrual_event": [(30, True)],
+        "event_type": [(30, LABEL_PIRA)],
+        "event_score": [(30, 4.5)],
+        "event_reference_score": [(30, 1.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_1,
+        targets_dict=test_case_1_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+        },
+    ), "Test 1 failed!"
+
+    # Test case 1b - unconfirmed merged, first only
+    test_case_1b_targets = {
+        "is_post_event_rebaseline": [],
+        "is_general_rebaseline": [],
+        "edss_score_used_as_new_general_reference": [],
+        "is_event": [(30, True)],
+        "is_accrual_event": [(30, True)],
+        "event_type": [(30, LABEL_PIRA)],
+        "event_score": [(30, 4.5)],
+        "event_reference_score": [(30, 1.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_1,
+        targets_dict=test_case_1b_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "return_first_event_only": True,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+        },
+    ), "Test 1b failed!"
+
+    # Test case 2 - next-confirmed merged
+    test_case_2_targets = {
+        "is_post_event_rebaseline": [(30, True)],
+        "is_general_rebaseline": [(30, True)],
+        "edss_score_used_as_new_general_reference": [(30, 4)],
+        "is_event": [(30, True)],
+        "is_accrual_event": [(30, True)],
+        "event_type": [(30, LABEL_PIRA)],
+        "event_score": [(30, 4)],
+        "event_reference_score": [(30, 1.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_1,
+        targets_dict=test_case_2_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 2 failed!"
+
+    # Tolerance, case 3
+    test_dataframe_case_3 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.5, 4.0, 4.5, 4.5, 5.0, 5.5],
+        }
+    )
+    test_case_3_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True), (110, True)],
+        "is_general_rebaseline": [(30, True), (80, True), (110, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 4.5), (110, 5.5)],
+        "is_event": [(30, True), (80, True), (110, True)],
+        "is_accrual_event": [(30, True), (80, True), (110, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA), (110, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5), (110, 5.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5), (110, 4.5)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_3,
+        targets_dict=test_case_3_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+        },
+    ), "Test 3 failed!"
+
+    # Tolerance, case 4
+    test_case_4_targets = {
+        "is_post_event_rebaseline": [(30, True), (110, True)],
+        "is_general_rebaseline": [(30, True), (110, True)],
+        "edss_score_used_as_new_general_reference": [(30, 4.5), (110, 5.5)],
+        "is_event": [(30, True), (110, True)],
+        "is_accrual_event": [(30, True), (110, True)],
+        "event_type": [(30, LABEL_PIRA), (110, LABEL_PIRA)],
+        "event_score": [(30, 4.5), (110, 5.5)],
+        "event_reference_score": [(30, 1.0), (110, 4.5)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+            (110, 2),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+            (110, 2),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_3,
+        targets_dict=test_case_4_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+        },
+    ), "Test 4 failed!"
+
+    # Tolerance, case 5
+    test_case_5_targets = {
+        "is_post_event_rebaseline": [(30, True)],
+        "is_general_rebaseline": [(30, True)],
+        "edss_score_used_as_new_general_reference": [(30, 5.5)],
+        "is_event": [(30, True)],
+        "is_accrual_event": [(30, True)],
+        "event_type": [(30, LABEL_PIRA)],
+        "event_score": [(30, 5.5)],
+        "event_reference_score": [(30, 1.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+            (90, 1),
+            (100, 1),
+            (110, 1),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (65, 1),
+            (70, 1),
+            (80, 1),
+            (90, 1),
+            (100, 1),
+            (110, 1),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_3,
+        targets_dict=test_case_5_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+        },
+    ), "Test 5 failed!"
+
+    # Test case 6 - dip, unconfirmed
+    test_dataframe_case_6 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.0, 4.0, 4.5, 4.5, 5.0, 5.5],
+        }
+    )
+    test_case_6_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True), (110, True)],
+        "is_general_rebaseline": [(30, True), (80, True), (110, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 4.5), (110, 5.5)],
+        "is_event": [(30, True), (80, True), (110, True)],
+        "is_accrual_event": [(30, True), (80, True), (110, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA), (110, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5), (110, 5.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5), (110, 4.5)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_6,
+        targets_dict=test_case_6_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+        },
+    ), "Test 6 failed!"
+
+    # Test case 7 - dip, unconfirmed
+    test_case_7_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True), (110, True)],
+        "is_general_rebaseline": [(30, True), (80, True), (110, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 4.5), (110, 5.5)],
+        "is_event": [(30, True), (80, True), (110, True)],
+        "is_accrual_event": [(30, True), (80, True), (110, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA), (110, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5), (110, 5.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5), (110, 4.5)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_6,
+        targets_dict=test_case_7_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+        },
+    ), "Test 7 failed!"
+
+    # Test case 8 - dip, unconfirmed
+    test_case_8_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 5.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 5.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (80, 2),
+            (90, 2),
+            (100, 2),
+            (110, 2),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (80, 2),
+            (90, 2),
+            (100, 2),
+            (110, 2),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_6,
+        targets_dict=test_case_8_targets,
+        args_dict={
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+        },
+    ), "Test 8 failed!"
+
+    # Test case 9 - dip, next-confirmed
+    test_dataframe_case_9 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.0, 4.0, 4.5, 4.5, 5.0, 5.5],
+        }
+    )
+    test_case_9_targets = {
+        "is_post_event_rebaseline": [(30, True), (70, True)],
+        "is_general_rebaseline": [(30, True), (70, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3), (70, 4.5)],
+        "is_event": [(30, True), (70, True)],
+        "is_accrual_event": [(30, True), (70, True)],
+        "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+        "event_score": [(30, 3), (70, 4.5)],
+        "event_reference_score": [(30, 1.0), (70, 3.0)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (70, 2), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (70, 2), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_9,
+        targets_dict=test_case_9_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 9 failed!"
+
+    # Test case 10 - dip, next-confirmed
+    test_case_10_targets = {
+        "is_post_event_rebaseline": [(30, True), (70, True)],
+        "is_general_rebaseline": [(30, True), (70, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.0), (70, 4.5)],
+        "is_event": [(30, True), (70, True)],
+        "is_accrual_event": [(30, True), (70, True)],
+        "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+        "event_score": [(30, 3.0), (70, 4.5)],
+        "event_reference_score": [(30, 1.0), (70, 3.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (70, 2),
+            (80, 2),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (70, 2),
+            (80, 2),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_9,
+        targets_dict=test_case_10_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 10 failed!"
+
+    # Test case 11 - dip, next-confirmed
+    test_case_11_targets = {
+        "is_post_event_rebaseline": [(30, True), (70, True)],
+        "is_general_rebaseline": [(30, True), (70, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.0), (70, 5.0)],
+        "is_event": [(30, True), (70, True)],
+        "is_accrual_event": [(30, True), (70, True)],
+        "event_type": [(30, LABEL_PIRA), (70, LABEL_PIRA)],
+        "event_score": [(30, 3.0), (70, 5.0)],
+        "event_reference_score": [(30, 1.0), (70, 3.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (70, 2),
+            (80, 2),
+            (90, 2),
+            (100, 2),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (70, 2),
+            (80, 2),
+            (90, 2),
+            (100, 2),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_9,
+        targets_dict=test_case_11_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 11 failed!"
+
+    # Test case 12 - dip, 20 units confirmed
+    test_dataframe_case_12 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.0, 4.0, 4.5, 4.5, 5.0, 5.5],
+        }
+    )
+    test_case_12_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_12,
+        targets_dict=test_case_12_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_included_values": "last",
+        },
+    ), "Test 12 failed!"
+
+    # Test case 13 - dip, 20 units confirmed
+    test_case_13_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_12,
+        targets_dict=test_case_13_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_included_values": "last",
+        },
+    ), "Test 13 failed!"
+
+    # Test case 14 - dip, 20 units confirmed
+    test_case_14_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.5)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (80, 2),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (60, 1),
+            (80, 2),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_12,
+        targets_dict=test_case_14_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_included_values": "last",
+        },
+    ), "Test 14 failed!"
+
+    # Test case 15 - dip with stagnation, next-confirmed
+    test_dataframe_case_15 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.0, 3.0, 4.5, 4.5, 5.0, 5.5],
+        }
+    )
+    test_case_15_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.0), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.0), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.0)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_15,
+        targets_dict=test_case_15_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 15 failed!"
+
+    # Test case 16 - dip with stagnation, next-confirmed
+    test_case_16_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.0), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.0), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.0)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_15,
+        targets_dict=test_case_16_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 16 failed!"
+
+    # Test case 17 - dip with stagnation, next-confirmed
+    test_case_17_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.0), (80, 5.0)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.0), (80, 5.0)],
+        "event_reference_score": [(30, 1.0), (80, 3.0)],
+        "event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (80, 2),
+            (90, 2),
+            (100, 2),
+        ],
+        "accrual_event_id": [
+            (30, 1),
+            (40, 1),
+            (50, 1),
+            (80, 2),
+            (90, 2),
+            (100, 2),
+        ],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_15,
+        targets_dict=test_case_17_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+        },
+    ), "Test 17 failed!"
+
+    # Test case 18 - dip with stagnation, 20 units last confirmed
+    test_dataframe_case_18 = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [1, 1, 1.5, 2.0, 2.5, 3.0, 3.5, 3.0, 3.0, 4.5, 4.5, 5.0, 5.5],
+        }
+    )
+    test_case_18_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (65, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (65, 3.0), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.0)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_18,
+        targets_dict=test_case_18_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_included_values": "last",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+        },
+    ), "Test 18 failed!"
+
+    # Test case 19 - dip with stagnation, 20 units last confirmed
+    test_case_19_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (65, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (65, 3.0), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.0)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_18,
+        targets_dict=test_case_19_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_included_values": "last",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+        },
+    ), "Test 19 failed!"
+
+    # Test case 20 - dip with stagnation, 20 units last confirmed
+    test_case_20_targets = {
+        "is_post_event_rebaseline": [(30, True), (80, True)],
+        "is_general_rebaseline": [(30, True), (65, True), (80, True)],
+        "edss_score_used_as_new_general_reference": [(30, 3.5), (65, 3.0), (80, 4.5)],
+        "is_event": [(30, True), (80, True)],
+        "is_accrual_event": [(30, True), (80, True)],
+        "event_type": [(30, LABEL_PIRA), (80, LABEL_PIRA)],
+        "event_score": [(30, 3.5), (80, 4.5)],
+        "event_reference_score": [(30, 1.0), (80, 3.0)],
+        "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+        "accrual_event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2)],
+    }
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_case_18,
+        targets_dict=test_case_20_targets,
+        args_dict={
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 20,
+            "opt_confirmation_included_values": "last",
+            "opt_roving_reference_require_confirmation": True,
+            "opt_roving_reference_confirmation_time": 0.5,
+        },
+    ), "Test 20 failed!"
+
+    # Inverted mode
+    test_dataframe_inv = pd.DataFrame(
+        {
+            "days_after_baseline": [0, 10, 20, 30, 50, 60, 65, 70],
+            "edss_score": [5.0, 5.0, 4.5, 4.0, 3.0, 2.5, 2.0, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (50, True), (65, True)],
+            "is_general_rebaseline": [(30, True), (50, True), (65, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 4.0),
+                (50, 3.0),
+                (65, 2.0),
+            ],
+            "is_event": [(30, True), (50, True), (65, True)],
+            "is_improvement_event": [(30, True), (50, True), (65, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (50, LABEL_IMPROVEMENT),
+                (65, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 4.0),
+                (50, 3.0),
+                (65, 2.0),
+            ],
+            "event_reference_score": [
+                (30, 5.0),
+                (50, 4.0),
+                (65, 3.0),
+            ],
+            "event_id": [(30, 1), (50, 2), (65, 3)],
+            "improvement_event_id": [(30, 1), (50, 2), (65, 3)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+        },
+    ), "Test 21 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (50, True)],
+            "is_general_rebaseline": [(30, True), (50, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 4.0),
+                (50, 1.5),
+            ],
+            "is_event": [(30, True), (50, True)],
+            "is_improvement_event": [(30, True), (50, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (50, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 4.0),
+                (50, 1.5),
+            ],
+            "event_reference_score": [
+                (30, 5.0),
+                (50, 4.0),
+            ],
+            "event_id": [(30, 1), (50, 2), (60, 2), (65, 2), (70, 2)],
+            "improvement_event_id": [(30, 1), (50, 2), (60, 2), (65, 2), (70, 2)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "merge_continuous_events": True,
+            "continuous_events_max_merge_distance": 10,
+            "opt_require_confirmation": False,
+        },
+    ), "Test 22 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 1.5),
+            ],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 1.5),
+            ],
+            "event_reference_score": [
+                (30, 5.0),
+            ],
+            "event_id": [(30, 1), (50, 1), (60, 1), (65, 1), (70, 1)],
+            "improvement_event_id": [(30, 1), (50, 1), (60, 1), (65, 1), (70, 1)],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "merge_continuous_events": True,
+            "continuous_events_max_merge_distance": np.inf,
+            "opt_require_confirmation": False,
+        },
+    ), "Test 23 failed!"
+    test_dataframe_inv_rep = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [
+                5.5,
+                5.5,
+                5.0,
+                4.5,
+                4.0,
+                3.5,
+                3.0,
+                3.0,
+                2.5,
+                2.0,
+                2.0,
+                1.5,
+                1,
+            ],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_rep,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (80, True), (110, True)],
+            "is_general_rebaseline": [(30, True), (80, True), (110, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 3.0),
+                (80, 2.0),
+                (110, 1.0),
+            ],
+            "is_event": [(30, True), (80, True), (110, True)],
+            "is_improvement_event": [(30, True), (80, True), (110, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+                (110, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 3.0),
+                (80, 2.0),
+                (110, 1.0),
+            ],
+            "event_reference_score": [
+                (30, 5.5),
+                (80, 3.0),
+                (110, 2.0),
+            ],
+            "event_id": [(30, 1), (40, 1), (50, 1), (60, 1), (80, 2), (110, 3)],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+                (110, 3),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 4,
+        },
+    ), "Test 24 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_rep,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (110, True)],
+            "is_general_rebaseline": [(30, True), (110, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 2.0),
+                (110, 1.0),
+            ],
+            "is_event": [(30, True), (110, True)],
+            "is_improvement_event": [(30, True), (110, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (110, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 2.0),
+                (110, 1.0),
+            ],
+            "event_reference_score": [
+                (30, 5.5),
+                (110, 2.0),
+            ],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (110, 2),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (110, 2),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+        },
+    ), "Test 25 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_rep,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 1.0),
+            ],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 1.0),
+            ],
+            "event_reference_score": [
+                (30, 5.5),
+            ],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+                (110, 1),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+                (110, 1),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+        },
+    ), "Test 26 failed!"
+    test_dataframe_inv_stag = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [
+                5.5,
+                5.5,
+                5.0,
+                4.5,
+                4.0,
+                3.5,
+                3.0,
+                3.0,
+                3.0,
+                2.0,
+                2.0,
+                1.5,
+                1,
+            ],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_stag,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (80, True), (110, True)],
+            "is_general_rebaseline": [(30, True), (80, True), (110, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 3.0),
+                (80, 2.0),
+                (110, 1.0),
+            ],
+            "is_event": [(30, True), (80, True), (110, True)],
+            "is_improvement_event": [(30, True), (80, True), (110, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+                (110, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 3.0),
+                (80, 2.0),
+                (110, 1.0),
+            ],
+            "event_reference_score": [
+                (30, 5.5),
+                (80, 3.0),
+                (110, 2.0),
+            ],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+                (110, 3),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+                (110, 3),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 5,
+        },
+    ), "Test 27 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_stag,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 1.0),
+            ],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 1.0),
+            ],
+            "event_reference_score": [
+                (30, 5.5),
+            ],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+                (110, 1),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+                (110, 1),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+        },
+    ), "Test 28 failed!"
+    test_dataframe_inv_stag_end = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+            ],
+            "edss_score": [4.0, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.5, 1.5],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_stag_end,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [
+                (30, 1.5),
+            ],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [
+                (30, 1.5),
+            ],
+            "event_reference_score": [
+                (30, 4.0),
+            ],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 10,
+        },
+    ), "Test 29 failed!"
+    test_dataframe_inv_impr = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [
+                5.5,
+                5.5,
+                5.0,
+                4.5,
+                4.0,
+                3.5,
+                3.0,
+                3.5,
+                2.5,
+                2.0,
+                2.0,
+                1.5,
+                1,
+            ],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_impr,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (80, True)],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [(30, 3.0), (80, 1.0)],
+            "is_event": [(30, True), (80, True)],
+            "is_improvement_event": [(30, True), (80, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 3.0), (80, 1.0)],
+            "event_reference_score": [(30, 5.5), (80, 3.0)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+                (90, 2),
+                (100, 2),
+                (110, 2),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+                (90, 2),
+                (100, 2),
+                (110, 2),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": False,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 20,
+        },
+    ), "Test 30 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_impr,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 1.5)],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 1.5)],
+            "event_reference_score": [(30, 5.5)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 20,
+        },
+    ), "Test 31 failed!"
+    test_dataframe_inv_impr.at[7, "edss_score"] = 4.0
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_impr,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (70, True)],
+            "is_general_rebaseline": [(30, True), (70, True)],
+            "edss_score_used_as_new_general_reference": [(30, 3.5), (70, 1.5)],
+            "is_event": [(30, True), (70, True)],
+            "is_improvement_event": [(30, True), (70, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (70, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 3.5), (70, 1.5)],
+            "event_reference_score": [(30, 5.5), (70, 3.5)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (70, 2),
+                (80, 2),
+                (90, 2),
+                (100, 2),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (70, 2),
+                (80, 2),
+                (90, 2),
+                (100, 2),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 20,
+        },
+    ), "Test 32 failed!"
+    test_dataframe_inv_conf = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [
+                5.5,
+                5.5,
+                5.0,
+                4.5,
+                4.0,
+                3.5,
+                3.0,
+                3.5,
+                3.5,
+                2.0,
+                2.0,
+                1.5,
+                1,
+            ],
+        }
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_conf,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 1.5)],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 1.5)],
+            "event_reference_score": [(30, 5.5)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (80, 1),
+                (90, 1),
+                (100, 1),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 20,
+        },
+    ), "Test 33 failed!"
+    test_dataframe_inv_conf.at[8, "edss_score"] = 4.0
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_conf,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (80, True)],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [(30, 3.5), (80, 1.5)],
+            "is_event": [(30, True), (80, True)],
+            "is_improvement_event": [(30, True), (80, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 3.5), (80, 1.5)],
+            "event_reference_score": [(30, 5.5), (80, 3.5)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (80, 2),
+                (90, 2),
+                (100, 2),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (80, 2),
+                (90, 2),
+                (100, 2),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 0.5,
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 20,
+        },
+    ), "Test 34 failed!"
+    test_dataframe_inv_conf_lst = pd.DataFrame(
+        {
+            "days_after_baseline": [
+                0,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                65,
+                70,
+                75,
+                80,
+                90,
+                100,
+                110,
+            ],
+            "edss_score": [
+                1,
+                1,
+                1.5,
+                2.0,
+                2.5,
+                3.0,
+                3.5,
+                3.0,
+                2.5,
+                3.0,
+                4.5,
+                4.5,
+                5.0,
+                5.5,
+            ],
+        }
+    )
+    test_dataframe_inv_conf_lst["edss_score"] = (
+        6.5 - test_dataframe_inv_conf_lst["edss_score"]
+    )
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_conf_lst,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True)],
+            "is_general_rebaseline": [(30, True)],
+            "edss_score_used_as_new_general_reference": [(30, 2.0)],
+            "is_event": [(30, True)],
+            "is_improvement_event": [(30, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 2.0)],
+            "event_reference_score": [(30, 5.5)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (75, 1),
+                (80, 1),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (65, 1),
+                (70, 1),
+                (75, 1),
+                (80, 1),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "all",
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 30,
+        },
+    ), "Test 35 failed!"
+    assert raw_pira_progression_result_is_equal_to_target(
+        follow_up_dataframe=test_dataframe_inv_conf_lst,
+        targets_dict={
+            "is_post_event_rebaseline": [(30, True), (80, True)],
+            "is_general_rebaseline": [(30, True), (80, True)],
+            "edss_score_used_as_new_general_reference": [(30, 3.0), (80, 2.0)],
+            "is_event": [(30, True), (80, True)],
+            "is_improvement_event": [(30, True), (80, True)],
+            "event_type": [
+                (30, LABEL_IMPROVEMENT),
+                (80, LABEL_IMPROVEMENT),
+            ],
+            "event_score": [(30, 3.0), (80, 2.0)],
+            "event_reference_score": [(30, 5.5), (80, 3.0)],
+            "event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+            ],
+            "improvement_event_id": [
+                (30, 1),
+                (40, 1),
+                (50, 1),
+                (60, 1),
+                (80, 2),
+            ],
+        },
+        args_dict={
+            "annotation_mode": "experimental-inverted",
+            "opt_require_confirmation": True,
+            "opt_confirmation_time": 30,
+            "opt_confirmation_included_values": "last",
+            "merge_continuous_events": True,
+            "continuous_events_max_repetition_time": 30,
+        },
+    ), "Test 36 failed!"
+
+    # Symmetric mode?
 
 
 if __name__ == "__main__":
