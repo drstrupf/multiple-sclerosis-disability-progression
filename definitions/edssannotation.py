@@ -64,8 +64,6 @@ class EDSSAnnotation:
     edss_score_column_name: str = "edss_score"
     time_column_name: str = "days_after_baseline"
     # Output specifications
-    time_since_last_relapse_column_name: str = "days_since_previous_relapse"
-    time_to_next_relapse_column_name: str = "days_to_next_relapse"
     is_general_rebaseline_flag_column_name: str = "is_general_rebaseline"
     is_post_event_rebaseline_flag_column_name: str = "is_post_event_rebaseline"
     used_as_general_reference_score_column_name: str = (
