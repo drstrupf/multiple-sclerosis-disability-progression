@@ -205,7 +205,7 @@ def test_get_confirmation_scores_dataframe():
         "Test 2 failed!"
     )
     # Test case 3 - sustained, minimal time interval
-    # Must yield all assessments following the second one.
+    # Must yield all assessments following the first one.
     test_case_3 = edssannotation.EDSSAnnotation(
         time_column_name="timestamp",
     )._get_confirmation_scores_dataframe(
@@ -217,7 +217,23 @@ def test_get_confirmation_scores_dataframe():
         opt_confirmation_time_right_side_max_tolerance=np.inf,
         opt_confirmation_time_left_side_max_tolerance=0,
     )
-    assert test_case_3.equals(test_dataframe.iloc[2:]), "Test 3 failed!"
+    assert test_case_3.equals(test_dataframe.iloc[1:]), "Test 3 failed!"
+    # Test case 3b - sustained, minimal time interval, too long.
+    # Must yield an empty dataframe.
+    test_case_3 = edssannotation.EDSSAnnotation(
+        time_column_name="timestamp",
+    )._get_confirmation_scores_dataframe(
+        current_timestamp=0,
+        follow_up_dataframe=test_dataframe,
+        opt_confirmation_time=-1,
+        opt_confirmation_included_values="all",
+        opt_confirmation_sustained_minimal_distance=51,
+        opt_confirmation_time_right_side_max_tolerance=np.inf,
+        opt_confirmation_time_left_side_max_tolerance=0,
+    )
+    assert test_case_3.equals(test_dataframe[test_dataframe["timestamp"] > 50]), (
+        "Test 3b failed!"
+    )
     # Test case 4 - sustained, minimal time interval, no assessments available
     # Must yield an empty dataframe.
     test_case_4 = edssannotation.EDSSAnnotation(

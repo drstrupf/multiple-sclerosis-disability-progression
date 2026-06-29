@@ -333,17 +333,23 @@ class EDSSAnnotation:
         assessments_after_event_candidate = follow_up_dataframe[
             follow_up_dataframe[self.time_column_name] > current_timestamp
         ]
-        # If sustained, just take all that are compatible with the minimal
-        # distance condition (which is 0 by default).
-        # NOTE: The '>=' is required here because the minimal distance is
-        # measured from the event candidate; if the distance is 0, an event
-        # can anyways not confirm itself due to the '>' in the assignment
-        # above, so this is safe.
+        # If sustained, just take all assessments after the event candidate.
+        # If a minimal distance is specified, check whether the resulting
+        # remaining dataframe covers the required distance.
         if opt_confirmation_time == -1:
-            confirmation_scores_dataframe = assessments_after_event_candidate[
-                assessments_after_event_candidate[self.time_column_name]
-                >= current_timestamp + opt_confirmation_sustained_minimal_distance
-            ]
+            confirmation_scores_dataframe = assessments_after_event_candidate
+            # Check minimal distance; if it is too short, return an empty dataframe.
+            if (
+                len(
+                    assessments_after_event_candidate[
+                        assessments_after_event_candidate[self.time_column_name]
+                        >= current_timestamp
+                        + opt_confirmation_sustained_minimal_distance
+                    ]
+                )
+                == 0
+            ):
+                confirmation_scores_dataframe = confirmation_scores_dataframe.iloc[0:0]
         # If not, start slicing... Idea: take all assessments >= x after,
         # then obtain the index of the first entry, then for confirmation
         # take all rows from current up to and including this index.
