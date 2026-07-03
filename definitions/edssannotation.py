@@ -3,6 +3,23 @@ or improvement annotation functionality.
 
 PIRA only!
 
+Notes for future features:
+
+-   Warn if user selects roving reference confirmation but no
+    event confirmation
+
+-   Warn if roving reference confirmation is longer than event
+    confirmation
+
+-   Warn if events are last confirmed with a confirmation time
+    greater than the one for the roving reference
+
+-   Symmetric mode: undefined events option "all" only
+
+-   General: reduce complexity of args and number of arg combos
+    in new default symmetric mode. Don't allow weird stuff such
+    as last confirmation.
+
 """
 
 import numpy as np
