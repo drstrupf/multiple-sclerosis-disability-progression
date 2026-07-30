@@ -14,6 +14,8 @@ Notes for future features:
 -   Warn if events are last confirmed with a confirmation time
     greater than the one for the roving reference
 
+-   Warn or disable last confirmation in merged mode?
+
 -   Symmetric mode: undefined events option "all" only
 
 -   General: reduce complexity of args and number of arg combos
@@ -22,9 +24,10 @@ Notes for future features:
 
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
-from dataclasses import dataclass
 
 
 @dataclass
@@ -330,8 +333,10 @@ class EDSSAnnotation:
             using a left-hand tolerance and reducing the confirmation
             time are NOT equivalent.
         -   By default, there is no minimum duration of post-event
-            follow-up required for 'sustained'. Such a minimal distance
-            can be set via the sustained minimal distance argument.
+            follow-up required for 'sustained'. The only requirement
+            is that at least one assessment after the event candidate
+            exists. A minimal distance can be set via the sustained
+            minimal distance argument.
 
         Args:
         - current_timestamp: the current score's timestamp
@@ -347,6 +352,8 @@ class EDSSAnnotation:
                      is relevant for confirmation
 
         """
+        # Get all assessment after the candidate. The candidate itself
+        # must not be included, thus '>' in the selection condition.
         assessments_after_event_candidate = follow_up_dataframe[
             follow_up_dataframe[self.time_column_name] > current_timestamp
         ]
@@ -376,6 +383,9 @@ class EDSSAnnotation:
         else:
             # Check if the constraint for the maximal distance between
             # an event candidate and the confirmation assessment is met.
+            # NOTE: This should technically be called 'at or after event',
+            # since at least one event has to be >= confirmation time from
+            # candidate to allow confirmatio. This is reflected by the '>='.
             assessments_after_end_of_confirmation_interval = (
                 assessments_after_event_candidate[
                     (
@@ -431,8 +441,8 @@ class EDSSAnnotation:
         confirmed event score.
 
         Looks at confirmatiom scores and checks if they satisfy
-        the confirmation conditions (minimal required increase,
-        minimum or monotonic) with respect to the specified
+        the confirmation conditions (minimal required increase or
+        decrease, minimum or monotonic) with respect to the specified
         reference score.
 
         The confirmation type is loaded from self, since this
@@ -443,6 +453,9 @@ class EDSSAnnotation:
         which can be used to set the confirmation threshold to a
         given minimum value. This is used for undefined progression
         with a score constraint w.r.t. the RAW/PIRA baseline.
+
+        The function also returns flags for whether it is a confirmed
+        increase or a confirmed decrease.
 
         Args:
         - current_edss: the current EDSS score
@@ -480,13 +493,14 @@ class EDSSAnnotation:
                 # the minimal decrease condition. Additional threshold
                 # not yet implemented.
                 # TODO: additional threshold
-                elif current_edss < current_reference:
-                    if self._is_large_enough_increase_or_decrease(
+                elif (current_edss < current_reference) and (
+                    self._is_large_enough_increase_or_decrease(
                         current_edss=max(confirmation_scores),
                         reference_edss=current_reference,
-                    )[1]:
-                        is_confirmed_decrease = True
-                        confirmed_edss = max(current_edss, max(confirmation_scores))
+                    )[1]
+                ):
+                    is_confirmed_decrease = True
+                    confirmed_edss = max(current_edss, max(confirmation_scores))
             elif self.opt_confirmation_type == "monotonic":
                 # Increase: the lowest confirmation score must be equal
                 # to or larger than the candidate, and also meet the
@@ -500,10 +514,11 @@ class EDSSAnnotation:
                 # Decrease: the highest confirmation score must be equal
                 # to or smaller than the candidate.
                 # TODO: additional threshold
-                elif current_edss < current_reference:
-                    if max(confirmation_scores) <= current_edss:
-                        is_confirmed_decrease = True
-                        confirmed_edss = current_edss
+                elif (current_edss < current_reference) and (
+                    max(confirmation_scores) <= current_edss
+                ):
+                    is_confirmed_decrease = True
+                    confirmed_edss = current_edss
 
         return is_confirmed_increase, is_confirmed_decrease, confirmed_edss
 
@@ -515,8 +530,57 @@ class EDSSAnnotation:
         check_decrease,
         baselines_df,
     ):
-        """
-        TODO: cover increase and decrease
+        """Searches previous reference for references that are low
+        enough for the current EDSS to be an accrual candidate with
+        respect to them, or high enough for the current EDSS to be an
+        improvement candidate with respect to them, and that satisfy
+        the minimal distance condition.
+
+        Returns the backtracked reference's score and timestamp if
+        one exists, otherwise returns nan.
+
+        This function is only required when using a roving reference,
+        not for a fixed baseline. It is thus not used for the symmetric
+        annotation mode.
+
+        The idea of this function is that in some cases an increase
+        is preceded by a decrease which leads to a re-baselining too
+        close to the potential increase. In this case, it would not
+        be an accrual, however it would have been if the baseline had
+        been stable at a higher level. This might not really make sense
+        from a clinical point of view. One solution would of course be
+        to require confirmation of a new roving baseline over a time >=
+        the minimal distance, but there are published works where the roving
+        baseline is NOT confirmed, and even this would not solve the issue
+        for all confirmation options.
+
+        References before previous events are NOT allowed as we reset
+        the baseline after an event. The same  holds for post-relapse
+        re-baselining assessments. However, this can be ensured by
+        selecting the 'baselines_df' input appropriately, thus we don't
+        have to implement it here.
+
+        The reference only ever decreases for 'accrual' mode and only
+        ever increases in 'improvement' mode (overall in relapse-free,
+        or per post-relapse or post-event period), so it makes sense to
+        take the closest reference to the candidate, because the reference
+        is the lowest possible or highest possible, respectively, this way.
+        This is important for the confirmation step, where scores need to
+        be larger or smaller, respectively, than the reference and some
+        increment...
+
+        Args:
+        - current_edss: the current EDSS
+        - current_timestamp: the current timestamp
+        - check_increase: a flag whether to indicate that the candidate
+                          is an increase
+        - check_decrease: a flag whether to indicate that the candidate
+                          is a decrease
+        - baselines_df: dataframe with all eligible previous baselines
+
+        Returns:
+        - float, float: the backtracked reference's score, the
+                        backtracked reference's timestamp
 
         """
         assert check_decrease != check_increase, (
@@ -618,7 +682,7 @@ class EDSSAnnotation:
         confirmed_event_score = np.nan
 
         # Are we looking at improvement or accrual candidate?
-        # Sepending on annotation mode, we check increase only
+        # Depending on annotation mode, we check increase only
         # or decrease only.
         check_increase = False
         check_decrease = False
@@ -766,18 +830,6 @@ class EDSSAnnotation:
         """Find the indices of merged events, the event score, and
         the timestamp of the last event within series of merged events.
 
-        is_event_flag_column_name: str = "is_event"
-        is_accrual_flag_column_name: str = "is_accrual"
-        is_improvement_flag_column_name: str = "is_improvement"
-        event_type_column_name: str = "event_type"
-        event_score_column_name: str = "event_score"
-        event_reference_score_column_name: str = "event_reference_score"
-        event_id_column_name: str = "event_id"
-        accrual_event_id_column_name: str = "accrual_event_id"
-        improvement_event_id_column_name: str = "improvement_event_id"
-        label_pira: str = "PIRA"  # Only one type for now
-        label_improvement: str = "Improvement"  # Only one type for now
-
         This is to identify connected events; we only look at strictly
         monotonically increasing or decreasing scores, with an optional
         tolerance for identical scores recorded in close temporal proximity.
@@ -803,7 +855,9 @@ class EDSSAnnotation:
         - relapse_timestamps: list of relapse timestamps
         - iid_index: the index of the first progression event
         - iid_confirmed_event_score: the confirmed score of the first event
-        - iid_progression_type: the type of the first event
+        - iid_event_type: the type of the first event
+        - iid_is_accrual: Flag that is true if the IID is accrual
+        - iid_is_improvement: Flag that is true if the IID is improvement
         - additional_lower_threshold: additional threshold for progression
 
         Returns:
