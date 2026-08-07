@@ -1,8 +1,6 @@
 """This module contains a class with EDSS disability accrual
 or improvement annotation functionality.
 
-PIRA only!
-
 Notes for future features:
 
 -   Warn if user selects roving reference confirmation but no
@@ -14,7 +12,7 @@ Notes for future features:
 -   Warn if events are last confirmed with a confirmation time
     greater than the one for the roving reference
 
--   Warn or disable last confirmation in merged mode?
+-   Warn of or disable last confirmation in merged mode?
 
 -   General: reduce complexity of args and number of arg combos
     in new default symmetric mode. Don't allow weird stuff such
@@ -203,6 +201,30 @@ class EDSSAnnotation:
             raise ValueError("Confirmation right hand side tolerance must be >= 0.")
         if self.opt_confirmation_time_left_side_max_tolerance < 0:
             raise ValueError("Confirmation left hand side tolerance must be >= 0.")
+        # Confirmation requirement combos
+        if (
+            (self.opt_baseline_type == "roving")
+            and (self.opt_roving_reference_require_confirmation)
+            and (not self.opt_require_confirmation)
+        ):
+            raise ValueError(
+                "Invalid confirmation options. If confirmation for roving reference is required, it must also be required for events."
+            )
+        if (
+            (self.opt_baseline_type == "roving")
+            and (self.opt_roving_reference_require_confirmation)
+            and (self.opt_require_confirmation)
+            and (
+                (self.opt_confirmation_time != -1)
+                and (
+                    self.opt_roving_reference_confirmation_time
+                    > self.opt_confirmation_time
+                )
+            )
+        ):
+            raise ValueError(
+                "Invalid confirmation options. Confirmation time for events must be equal or larger than confirmation time for roving reference."
+            )
         # Minimal distance arguments
         if self.opt_minimal_distance_type not in [
             "reference",

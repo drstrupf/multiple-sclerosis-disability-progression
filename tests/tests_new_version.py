@@ -1042,6 +1042,7 @@ def test_relapse_independent_confirmation():
         args_dict={
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 1 'unconfirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1063,6 +1064,7 @@ def test_relapse_independent_confirmation():
         args_dict={
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 2 'next-confirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1447,6 +1449,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": True,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 19 'Last requires confirmation' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1469,6 +1472,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 20 'Last does not require confirmation' failed!"
 
@@ -1498,6 +1502,7 @@ def test_relapse_independent_confirmation():
         args_dict={
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 21 'Inverted unconfirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1520,6 +1525,7 @@ def test_relapse_independent_confirmation():
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 22 'Inverted next-confirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1542,6 +1548,7 @@ def test_relapse_independent_confirmation():
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 23 'Inverted distance-confirmed' failed!"
     test_dataframe_inv_min_mono = pd.DataFrame(
@@ -1571,6 +1578,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_type": "minimum",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 24 'Inverted next-confirmed, minimum' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1594,6 +1602,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_type": "monotonic",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 25 'Inverted next-confirmed, monotonic' failed!"
     test_dataframe_inv_all_last = pd.DataFrame(
@@ -1623,6 +1632,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "all",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 26 'Inverted distance-confirmed, all' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1673,6 +1683,7 @@ def test_relapse_independent_confirmation():
         args_dict={
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 28 'Inverted unconfirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1695,6 +1706,7 @@ def test_relapse_independent_confirmation():
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 29 'Inverted next-confirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1717,6 +1729,7 @@ def test_relapse_independent_confirmation():
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 30 'Inverted distance-confirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1726,6 +1739,7 @@ def test_relapse_independent_confirmation():
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 31 'Inverted sustained' failed!"
     test_dataframe_inv_left = pd.DataFrame(
@@ -1755,6 +1769,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 0,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 32 'Inverted no left-hand tolerance' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1778,6 +1793,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 33 'Inverted with left-hand tolerance' failed!"
     test_dataframe_inv_right = pd.DataFrame(
@@ -1807,6 +1823,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_time_right_side_max_tolerance": np.inf,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 34 'Inverted no right-hand constraint' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1830,6 +1847,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_time_right_side_max_tolerance": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 35 'Inverted with right-hand constraint' failed!"
     test_dataframe_inv_left_right = pd.DataFrame(
@@ -1860,6 +1878,7 @@ def test_relapse_independent_confirmation():
             "opt_confirmation_time": 20,
             "opt_confirmation_time_left_side_max_tolerance": 5,
             "opt_confirmation_time_right_side_max_tolerance": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 36 'Inverted left-hand tolerance and right-hand constraint' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1871,6 +1890,7 @@ def test_relapse_independent_confirmation():
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 0,
             "opt_confirmation_time_right_side_max_tolerance": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 37 'Inverted no left-hand tolerance but right-hand constraint' failed!"
     test_dataframe_inv_sust = pd.DataFrame(
@@ -1900,6 +1920,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_confirmation_sustained_minimal_distance": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 38 'Inverted sustained minimal distance' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1910,6 +1931,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_confirmation_sustained_minimal_distance": 21,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 39 'Inverted sustained minimal distance' failed!"
     test_dataframe_last_ext = pd.DataFrame(
@@ -1939,6 +1961,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": True,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 40 'Inverted, last must be confirmed' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -1962,6 +1985,7 @@ def test_relapse_independent_confirmation():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 41 'Inverted, last must not be confirmed' failed!"
 
@@ -2335,6 +2359,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
             "opt_larger_increment_from_0": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 1 'Plus 1 irrespective of reference' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -2374,6 +2399,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
             "opt_larger_increment_from_0": True,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 2 'Plus 1.5 from 0, plus 1 else' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -2417,6 +2443,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 3.0,
             "opt_larger_increment_from_0": True,
+            "opt_baseline_type": "fixed",
         },
     ), (
         "Test 3 'Plus 1.5 from 0, plus 1 for references up to and including 3.0, plus 0.5 else' failed!"
@@ -2464,6 +2491,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 3.0,
             "opt_larger_increment_from_0": True,
+            "opt_baseline_type": "fixed",
         },
     ), (
         "Test 4 'Plus 1.5 from 0, plus 1 for references up to and including 3.0, plus 0.5 else' failed!"
@@ -2516,6 +2544,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
             "opt_larger_increment_from_0": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 5 'Plus 1 irrespective of reference, inverted' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -2556,6 +2585,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
             "opt_larger_increment_from_0": True,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 6 'Plus 1.5 from 0, plus 1 else, inverted' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -2620,6 +2650,7 @@ def test_min_increase_settings():
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 3.0,
             "opt_larger_increment_from_0": True,
+            "opt_baseline_type": "fixed",
         },
     ), (
         "Test 7 'Plus 1.5 from 0, plus 1 for references up to and including 3.0, plus 0.5 else, inverted' failed!"
@@ -3408,6 +3439,7 @@ def test_relapse_independent_first_vs_all_events():
         args_dict={
             "return_first_event_only": False,
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 1 'Return all events' failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -3424,6 +3456,7 @@ def test_relapse_independent_first_vs_all_events():
         args_dict={
             "return_first_event_only": True,
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 2 'Return first event only' failed!"
 
@@ -4261,6 +4294,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 1 failed!"
 
@@ -4301,6 +4335,7 @@ def test_relapse_independent_multiple_events_merging():
             "return_first_event_only": True,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 1b failed!"
 
@@ -4341,6 +4376,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 2 failed!"
 
@@ -4400,6 +4436,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 3 failed!"
 
@@ -4443,6 +4480,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 4 failed!"
 
@@ -4490,6 +4528,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 5 failed!"
 
@@ -4549,6 +4588,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 6 failed!"
 
@@ -4574,6 +4614,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 7 failed!"
 
@@ -4617,6 +4658,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 8 failed!"
 
@@ -4677,6 +4719,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 9 failed!"
 
@@ -4715,6 +4758,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 10 failed!"
 
@@ -4757,6 +4801,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 11 failed!"
 
@@ -4818,6 +4863,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 12 failed!"
 
@@ -4845,6 +4891,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 13 failed!"
 
@@ -4884,6 +4931,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 14 failed!"
 
@@ -4944,6 +4992,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 15 failed!"
 
@@ -4970,6 +5019,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 16 failed!"
 
@@ -5010,6 +5060,7 @@ def test_relapse_independent_multiple_events_merging():
             "continuous_events_max_repetition_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 17 failed!"
 
@@ -5180,6 +5231,7 @@ def test_relapse_independent_multiple_events_merging():
         args_dict={
             "annotation_mode": "experimental-inverted",
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 21 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -5218,6 +5270,7 @@ def test_relapse_independent_multiple_events_merging():
             "merge_continuous_events": True,
             "continuous_events_max_merge_distance": 10,
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 22 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -5251,6 +5304,7 @@ def test_relapse_independent_multiple_events_merging():
             "merge_continuous_events": True,
             "continuous_events_max_merge_distance": np.inf,
             "opt_require_confirmation": False,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 23 failed!"
     test_dataframe_inv_rep = pd.DataFrame(
@@ -5335,6 +5389,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 24 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -5391,6 +5446,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 25 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -5446,6 +5502,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 26 failed!"
     test_dataframe_inv_stag = pd.DataFrame(
@@ -5537,6 +5594,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 27 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -5592,6 +5650,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 28 failed!"
     test_dataframe_inv_stag_end = pd.DataFrame(
@@ -5651,6 +5710,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 29 failed!"
     test_dataframe_inv_impr = pd.DataFrame(
@@ -5729,6 +5789,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 30 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
@@ -5775,6 +5836,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 31 failed!"
     test_dataframe_inv_impr.at[7, EDSS_SCORE] = 4.0
@@ -5819,6 +5881,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 32 failed!"
     test_dataframe_inv_conf = pd.DataFrame(
@@ -5899,6 +5962,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 33 failed!"
     test_dataframe_inv_conf.at[8, EDSS_SCORE] = 4.0
@@ -5941,6 +6005,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 20,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 34 failed!"
     test_dataframe_inv_conf_lst = pd.DataFrame(
@@ -6025,6 +6090,7 @@ def test_relapse_independent_multiple_events_merging():
             "opt_confirmation_included_values": "all",
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 30,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 35 failed!"
     assert raw_pira_progression_result_is_equal_to_target(
