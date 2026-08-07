@@ -243,6 +243,10 @@ class EDSSAnnotation:
         self.check_pira_flag_name = "check_pira"
         self.check_raw_flag_name = "check_raw"
 
+        self.accrual_mode_name = "accrual"
+        self.inverted_mode_name = "experimental-inverted"
+        self.symmetric_mode_name = "experimental-symmetric"
+
     def _is_large_enough_increase_or_decrease(
         self,
         current_edss,
@@ -879,7 +883,7 @@ class EDSSAnnotation:
         check_increase = False
         check_decrease = False
         if (current_edss > current_baseline_score) and (
-            self.annotation_mode in ["accrual", "experimental-symmetric"]
+            self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]
         ):
             # If we are in PIRA mode and the candidate is in a
             # RAW window, we can stop. The check for RAW will be
@@ -902,7 +906,7 @@ class EDSSAnnotation:
             and (current_edss < current_baseline_score)
             and (
                 self.annotation_mode
-                in ["experimental-inverted", "experimental-symmetric"]
+                in [self.inverted_mode_name, self.symmetric_mode_name]
             )
         ):
             check_decrease = True
@@ -1341,14 +1345,14 @@ class EDSSAnnotation:
         annotated_df[self.is_general_rebaseline_flag_column_name] = False
         # If in accrual or symmetric mode, also set a flag for the
         # PIRA baseline.
-        if self.annotation_mode in ["accrual", "experimental-symmetric"]:
+        if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
             annotated_df[self.is_pira_rebaseline_flag_column_name] = False
         # Let's also keep track of the scores that are actually
         # carried forward after a re-baselining (in case of event
         # or baseline confirmation constraints, the new baseline is
         # not equivalent to the EDSS score determined at the assessment...)
         annotated_df[self.used_as_general_reference_score_column_name] = np.nan
-        if self.annotation_mode in ["accrual", "experimental-symmetric"]:
+        if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
             annotated_df[self.used_as_pira_reference_score_column_name] = np.nan
         # Also initialize columns for progression annotation. We keep
         # track of the event, event type, event score, event reference
@@ -1386,7 +1390,7 @@ class EDSSAnnotation:
             }
         )
         # PIRA baselines are ignored in inverted mode.
-        if self.annotation_mode in ["accrual", "experimental-symmetric"]:
+        if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
             pira_baselines = pd.DataFrame(
                 {
                     self.baseline_score_column_name: [study_baseline_score],
@@ -1472,7 +1476,7 @@ class EDSSAnnotation:
                     # In improvement only mode, we don't check PIRA. In accrual,
                     # we test all types if there are relapses, and PIRA only if
                     # there are no relapses. In symmetric mode, we test all types.
-                    if self.annotation_mode == "accrual":
+                    if self.annotation_mode == self.accrual_mode_name:
                         # Always check PIRA first, then RAW/undefined/improvement
                         # if there are relapses.
                         baselines_to_check = [
@@ -1490,7 +1494,7 @@ class EDSSAnnotation:
                                     self.check_raw_flag_name: True,
                                 },
                             ]
-                    elif self.annotation_mode == "experimental-symmetric":
+                    elif self.annotation_mode == self.symmetric_mode_name:
                         # Always check PIRA first.
                         baselines_to_check = [
                             {
@@ -1504,7 +1508,7 @@ class EDSSAnnotation:
                                 self.check_raw_flag_name: True,
                             },
                         ]
-                    elif self.annotation_mode == "experimental-inverted":
+                    elif self.annotation_mode == self.inverted_mode_name:
                         # Don't look for PIRA at all.
                         baselines_to_check = [
                             {
@@ -1673,7 +1677,10 @@ class EDSSAnnotation:
                     )
 
                     # RAW/PIRA baseline.
-                    if self.annotation_mode in ["accrual", "experimental-symmetric"]:
+                    if self.annotation_mode in [
+                        self.accrual_mode_name,
+                        self.symmetric_mode_name,
+                    ]:
                         annotated_df.at[i, self.is_pira_rebaseline_flag_column_name] = (
                             True
                         )
@@ -1746,14 +1753,14 @@ class EDSSAnnotation:
                         check_for_new_higher_pira_reference = False
 
                         # Do we even have to check roving reference?
-                        if (self.annotation_mode == "accrual") and (
+                        if (self.annotation_mode == self.accrual_mode_name) and (
                             current_edss
                             < general_baselines.iloc[-1][
                                 self.baseline_score_column_name
                             ]
                         ):
                             check_for_new_lower_general_reference = True
-                        elif (self.annotation_mode == "experimental-inverted") and (
+                        elif (self.annotation_mode == self.inverted_mode_name) and (
                             current_edss
                             > general_baselines.iloc[-1][
                                 self.baseline_score_column_name
@@ -1761,7 +1768,7 @@ class EDSSAnnotation:
                         ):
                             check_for_new_higher_general_reference = True
 
-                        if (self.annotation_mode == "accrual") and (
+                        if (self.annotation_mode == self.accrual_mode_name) and (
                             current_edss
                             < pira_baselines.iloc[-1][self.baseline_score_column_name]
                         ):
