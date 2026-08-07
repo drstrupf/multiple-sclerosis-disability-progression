@@ -24,6 +24,10 @@ LABEL_RAW = "RAW"
 LABEL_UNDEFINED = "Undefined"
 LABEL_IMPROVEMENT = "Improvement"
 
+ACCRUAL_MODE_NAME = "accrual"
+INVERTED_MODE_NAME = "experimental-inverted"
+SYMMETRIC_MODE_NAME = "experimental-symmetric"
+
 BASELINE_TIMESTAMP = "baseline_timestamp"
 BASELINE_SCORE = "baseline_score"
 
@@ -760,7 +764,7 @@ def test_check_assessment_for_event():
             edssannotation.EDSSAnnotation(
                 opt_minimal_distance_time=0,
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_1,
@@ -807,7 +811,7 @@ def test_check_assessment_for_event():
             edssannotation.EDSSAnnotation(
                 opt_minimal_distance_time=0,
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_2,
@@ -836,7 +840,7 @@ def test_check_assessment_for_event():
                 opt_minimal_distance_time=10.1,
                 opt_minimal_distance_type="previous",
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_2,
@@ -857,7 +861,7 @@ def test_check_assessment_for_event():
                 opt_minimal_distance_time=10.1,
                 opt_minimal_distance_type="previous",
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_2,
@@ -887,7 +891,7 @@ def test_check_assessment_for_event():
                 opt_minimal_distance_type="reference",
                 opt_minimal_distance_backtrack_decrease=False,
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_2,
@@ -909,7 +913,7 @@ def test_check_assessment_for_event():
                 opt_minimal_distance_type="reference",
                 opt_minimal_distance_backtrack_decrease=False,
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_2,
@@ -939,7 +943,7 @@ def test_check_assessment_for_event():
                 opt_minimal_distance_type="reference",
                 opt_minimal_distance_backtrack_decrease=True,
                 opt_require_confirmation=False,
-                annotation_mode="experimental-symmetric",
+                annotation_mode=SYMMETRIC_MODE_NAME,
                 opt_baseline_type="fixed",
             )._check_assessment_for_event(
                 annotated_df=example_follow_up_2,
@@ -958,7 +962,7 @@ def test_check_assessment_for_event():
 
 # ----------------------------
 # Part 2 - relapse-independent
-# -----------------------------
+# ----------------------------
 
 
 def raw_pira_progression_result_is_equal_to_target(
@@ -979,20 +983,21 @@ def raw_pira_progression_result_is_equal_to_target(
     )
 
     # Initialize target dataframe
+    # NOTE: DO NOT CHANGE COLUMN ORDER!
     target_df = follow_up_dataframe.copy()
     target_df[DAYS_SINCE_PREVIOUS_RELAPSE] = np.nan
     target_df[DAYS_TO_NEXT_RELAPSE] = np.nan
     target_df[IS_POST_EVENT_REBASELINE] = False
     target_df[IS_GENERAL_REBASELINE] = False
-    if args_dict.get("annotation_mode", "accrual") in [
-        "accrual",
-        "experimental-symmetric",
+    if args_dict.get("annotation_mode", ACCRUAL_MODE_NAME) in [
+        ACCRUAL_MODE_NAME,
+        SYMMETRIC_MODE_NAME,
     ]:
         target_df[IS_PIRA_REBASELINE] = False
     target_df[EDSS_SCORE_USED_AS_NEW_GENERAL_REFERENCE] = np.nan
-    if args_dict.get("annotation_mode", "accrual") in [
-        "accrual",
-        "experimental-symmetric",
+    if args_dict.get("annotation_mode", ACCRUAL_MODE_NAME) in [
+        ACCRUAL_MODE_NAME,
+        SYMMETRIC_MODE_NAME,
     ]:
         target_df[EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE] = np.nan
     target_df[IS_EVENT] = False
@@ -1040,6 +1045,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_baseline_type": "fixed",
@@ -1062,6 +1068,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "fixed",
@@ -1100,6 +1107,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_baseline_type": "fixed",
@@ -1122,6 +1130,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_baseline_type": "fixed",
@@ -1131,6 +1140,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_durations,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_baseline_type": "fixed",
@@ -1161,6 +1171,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 0,
@@ -1184,6 +1195,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 5,
@@ -1215,6 +1227,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_time_right_side_max_tolerance": 10,
@@ -1238,6 +1251,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_time_right_side_max_tolerance": 5,
@@ -1269,6 +1283,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_confirmation_sustained_minimal_distance": 20,
@@ -1279,6 +1294,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_sustained_minimal_distance,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_confirmation_sustained_minimal_distance": 21,
@@ -1297,6 +1313,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_all_vs_last,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "all",
@@ -1320,6 +1337,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
@@ -1351,6 +1369,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_type": "minimum",
@@ -1361,6 +1380,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_min_vs_monotonic,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_type": "monotonic",
@@ -1392,6 +1412,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_type": "minimum",
@@ -1415,6 +1436,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_type": "monotonic",
@@ -1446,6 +1468,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": True,
@@ -1469,6 +1492,7 @@ def test_relapse_independent_confirmation():
             ACCRUAL_EVENT_ID: [(30, 1.0), (50, 2.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": False,
@@ -1500,7 +1524,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -1522,7 +1546,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "fixed",
@@ -1545,7 +1569,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_baseline_type": "fixed",
@@ -1574,7 +1598,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_type": "minimum",
@@ -1598,7 +1622,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(20, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_type": "monotonic",
@@ -1628,7 +1652,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "all",
@@ -1652,10 +1676,11 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "fixed",
         },
     ), "Test 27 'Inverted distance-confirmed, last' failed!"
     test_dataframe_inv_dists = pd.DataFrame(
@@ -1681,7 +1706,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -1703,7 +1728,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "fixed",
@@ -1726,7 +1751,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_baseline_type": "fixed",
@@ -1736,7 +1761,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_inv_dists,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_baseline_type": "fixed",
@@ -1765,7 +1790,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 0,
@@ -1789,7 +1814,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 5,
@@ -1819,7 +1844,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_time_right_side_max_tolerance": np.inf,
@@ -1843,7 +1868,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_confirmation_time_right_side_max_tolerance": 5,
@@ -1873,7 +1898,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_time_left_side_max_tolerance": 5,
@@ -1885,7 +1910,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_inv_left_right,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 15,
             "opt_confirmation_time_left_side_max_tolerance": 0,
@@ -1916,7 +1941,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(10, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_confirmation_sustained_minimal_distance": 20,
@@ -1927,7 +1952,7 @@ def test_relapse_independent_confirmation():
         follow_up_dataframe=test_dataframe_inv_sust,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": -1,
             "opt_confirmation_sustained_minimal_distance": 21,
@@ -1957,7 +1982,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(30, 1.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": True,
@@ -1981,7 +2006,7 @@ def test_relapse_independent_confirmation():
             IMPROVEMENT_EVENT_ID: [(30, 1.0), (50, 2.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_confirmation_require_confirmation_for_last_visit": False,
@@ -2002,6 +2027,7 @@ def test_relapse_independent_baselines():
         follow_up_dataframe=test_dataframe_fixed_roving,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
         },
     ), "Test 1 'Fixed baseline' failed!"
@@ -2014,6 +2040,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.0), (60, 3.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_roving_reference_confirmation_time": 0,
@@ -2028,6 +2055,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.5), (30, 4.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
@@ -2042,6 +2070,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 20,
@@ -2064,6 +2093,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 20,
@@ -2079,6 +2109,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 20,
@@ -2102,6 +2133,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 15,
@@ -2120,6 +2152,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 15,
@@ -2138,6 +2171,7 @@ def test_relapse_independent_baselines():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 4.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 5,
@@ -2151,6 +2185,7 @@ def test_relapse_independent_baselines():
         follow_up_dataframe=test_dataframe_roving_left_right,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 5,
@@ -2172,7 +2207,7 @@ def test_relapse_independent_baselines():
         follow_up_dataframe=test_dataframe_fixed_roving_inv,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "fixed",
         },
     ), "Test 11 'Fixed baseline' for inverted failed!"
@@ -2191,7 +2226,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 2.0), (60, 2.5)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_roving_reference_confirmation_time": 0,
@@ -2206,7 +2241,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 1.5)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 20,
@@ -2222,7 +2257,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 2.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 20,
@@ -2238,7 +2273,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 1.5), (30, 2.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
@@ -2259,7 +2294,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 1.5)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 15,
@@ -2275,7 +2310,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 2.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 15,
@@ -2291,7 +2326,7 @@ def test_relapse_independent_baselines():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 2.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 5,
@@ -2302,7 +2337,7 @@ def test_relapse_independent_baselines():
         follow_up_dataframe=test_dataframe_fixed_roving_inv_tol,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 5,
@@ -2355,6 +2390,7 @@ def test_min_increase_settings():
             ACCRUAL_EVENT_ID: [(20, 1.0), (40, 2.0), (60, 3.0), (80, 4.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
@@ -2395,6 +2431,7 @@ def test_min_increase_settings():
             ACCRUAL_EVENT_ID: [(30, 1.0), (50, 2.0), (70, 3.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
@@ -2439,6 +2476,7 @@ def test_min_increase_settings():
             ACCRUAL_EVENT_ID: [(30, 1.0), (50, 2.0), (70, 3.0), (80, 4.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 3.0,
@@ -2487,6 +2525,7 @@ def test_min_increase_settings():
             ACCRUAL_EVENT_ID: [(30, 1.0), (40, 2.0), (60, 3.0)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 3.0,
@@ -2539,7 +2578,7 @@ def test_min_increase_settings():
             IMPROVEMENT_EVENT_ID: [(20, 1.0), (40, 2.0), (60, 3.0), (80, 4.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
@@ -2580,7 +2619,7 @@ def test_min_increase_settings():
             IMPROVEMENT_EVENT_ID: [(20, 1.0), (40, 2.0), (60, 3.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 10,
@@ -2645,7 +2684,7 @@ def test_min_increase_settings():
             IMPROVEMENT_EVENT_ID: [(10, 1.0), (30, 2.0), (50, 3.0), (80, 4.0)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
             "opt_max_score_that_requires_plus_1": 3.0,
@@ -2682,6 +2721,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(10, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 10,
@@ -2706,6 +2746,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(20, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
@@ -2717,6 +2758,7 @@ def test_relapse_independent_minimal_distance():
         follow_up_dataframe=test_dataframe_distances_to_reference,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 31,
             "opt_minimal_distance_type": "reference",
@@ -2748,6 +2790,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(20, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
             "opt_minimal_distance_type": "reference",
@@ -2773,6 +2816,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(20, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
             "opt_minimal_distance_type": "reference",
@@ -2785,6 +2829,7 @@ def test_relapse_independent_minimal_distance():
         follow_up_dataframe=test_dataframe_distances_to_reference_confirmed,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
             "opt_minimal_distance_type": "reference",
@@ -2818,6 +2863,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(10, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 10,
@@ -2828,6 +2874,7 @@ def test_relapse_independent_minimal_distance():
         follow_up_dataframe=test_dataframe_distances_to_previous,
         targets_dict={},
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 11,
             "opt_minimal_distance_type": "previous",
@@ -2850,6 +2897,7 @@ def test_relapse_independent_minimal_distance():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 3.0), (20, 2.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 15,
@@ -2882,6 +2930,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -2899,6 +2948,7 @@ def test_relapse_independent_minimal_distance():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 3.0), (20, 2.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 25,
@@ -2955,6 +3005,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 15,
@@ -3001,6 +3052,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 15,
@@ -3035,6 +3087,7 @@ def test_relapse_independent_minimal_distance():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 0,
@@ -3053,6 +3106,7 @@ def test_relapse_independent_minimal_distance():
             EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 3.0), (20, 2.5)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
             "opt_minimal_distance_time": 15,
@@ -3086,7 +3140,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(10, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 10,
@@ -3097,7 +3151,7 @@ def test_relapse_independent_minimal_distance():
         follow_up_dataframe=test_dataframe_distances_to_previous_inv,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 11,
             "opt_minimal_distance_type": "previous",
@@ -3120,7 +3174,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(10, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 10,
@@ -3144,7 +3198,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(20, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
@@ -3155,7 +3209,7 @@ def test_relapse_independent_minimal_distance():
         follow_up_dataframe=test_dataframe_distances_to_previous_inv,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 31,
@@ -3179,7 +3233,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(20, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_minimal_distance_time": 20,
@@ -3203,7 +3257,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(20, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 10,
             "opt_baseline_type": "fixed",
@@ -3215,7 +3269,7 @@ def test_relapse_independent_minimal_distance():
         follow_up_dataframe=test_dataframe_distances_to_previous_inv,
         targets_dict={},
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 11,
             "opt_baseline_type": "fixed",
@@ -3237,7 +3291,7 @@ def test_relapse_independent_minimal_distance():
             # EDSS_SCORE_USED_AS_NEW_PIRA_REFERENCE: [(10, 3.0), (20, 3.5)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3268,7 +3322,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(30, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3306,7 +3360,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(30, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3330,7 +3384,7 @@ def test_relapse_independent_minimal_distance():
             # ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3368,7 +3422,7 @@ def test_relapse_independent_minimal_distance():
             IMPROVEMENT_EVENT_ID: [(30, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_baseline_type": "roving",
@@ -3393,7 +3447,7 @@ def test_relapse_independent_minimal_distance():
             # ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_baseline_type": "roving",
@@ -3437,6 +3491,7 @@ def test_relapse_independent_first_vs_all_events():
             ACCRUAL_EVENT_ID: [(30, 1), (50, 2), (70, 3)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "return_first_event_only": False,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
@@ -3454,6 +3509,7 @@ def test_relapse_independent_first_vs_all_events():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "return_first_event_only": True,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
@@ -3486,6 +3542,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
             "opt_roving_reference_require_confirmation": False,
@@ -3516,6 +3573,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3546,6 +3604,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (90, 2)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_require_confirmation": False,
             "opt_confirmation_time": 0,
@@ -3568,6 +3627,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (80, 2)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_baseline_type": "fixed",
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
@@ -3625,7 +3685,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(50, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-symmetric",
+            "annotation_mode": SYMMETRIC_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -3662,7 +3722,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (80, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-symmetric",
+            "annotation_mode": SYMMETRIC_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "fixed",
@@ -3707,7 +3767,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1), (90, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -3744,7 +3804,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1), (80, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "fixed",
@@ -3794,7 +3854,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(50, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-symmetric",
+            "annotation_mode": SYMMETRIC_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -3831,7 +3891,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1), (80, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-symmetric",
+            "annotation_mode": SYMMETRIC_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "fixed",
@@ -3862,6 +3922,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -3891,6 +3952,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3916,7 +3978,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -3945,7 +4007,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": False,
@@ -3984,6 +4046,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4014,6 +4077,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4052,6 +4116,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(70, 1)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4092,6 +4157,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             ACCRUAL_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4128,7 +4194,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4158,7 +4224,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4196,7 +4262,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(70, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4236,7 +4302,7 @@ def test_relapse_independent_multiple_events_rebaselining():
             IMPROVEMENT_EVENT_ID: [(30, 1), (70, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "opt_baseline_type": "roving",
@@ -4291,6 +4357,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_1,
         targets_dict=test_case_1_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
@@ -4331,6 +4398,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_1,
         targets_dict=test_case_1b_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "return_first_event_only": True,
             "merge_continuous_events": True,
@@ -4372,6 +4440,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_1,
         targets_dict=test_case_2_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
@@ -4433,6 +4502,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_3,
         targets_dict=test_case_3_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
@@ -4477,6 +4547,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_3,
         targets_dict=test_case_4_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
@@ -4525,6 +4596,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_3,
         targets_dict=test_case_5_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
@@ -4585,6 +4657,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_6,
         targets_dict=test_case_6_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
@@ -4611,6 +4684,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_6,
         targets_dict=test_case_7_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
@@ -4655,6 +4729,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_6,
         targets_dict=test_case_8_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
@@ -4715,6 +4790,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_9,
         targets_dict=test_case_9_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
             "opt_require_confirmation": True,
@@ -4754,6 +4830,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_9,
         targets_dict=test_case_10_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
@@ -4797,6 +4874,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_9,
         targets_dict=test_case_11_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "opt_require_confirmation": True,
@@ -4858,6 +4936,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_12,
         targets_dict=test_case_12_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
             "opt_require_confirmation": True,
@@ -4886,6 +4965,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_12,
         targets_dict=test_case_13_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
@@ -4926,6 +5006,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_12,
         targets_dict=test_case_14_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "opt_require_confirmation": True,
@@ -4988,6 +5069,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_15,
         targets_dict=test_case_15_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
             "opt_require_confirmation": True,
@@ -5015,6 +5097,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_15,
         targets_dict=test_case_16_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
@@ -5056,6 +5139,7 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_15,
         targets_dict=test_case_17_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "opt_require_confirmation": True,
@@ -5117,11 +5201,13 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_18,
         targets_dict=test_case_18_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -5146,11 +5232,13 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_18,
         targets_dict=test_case_19_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -5175,11 +5263,13 @@ def test_relapse_independent_multiple_events_merging():
         follow_up_dataframe=test_dataframe_case_18,
         targets_dict=test_case_20_targets,
         args_dict={
+            "annotation_mode": ACCRUAL_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 20,
             "opt_confirmation_included_values": "last",
+            "opt_baseline_type": "roving",
             "opt_roving_reference_require_confirmation": True,
             "opt_roving_reference_confirmation_time": 0.5,
         },
@@ -5229,7 +5319,7 @@ def test_relapse_independent_multiple_events_merging():
             IMPROVEMENT_EVENT_ID: [(30, 1), (50, 2), (65, 3)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "opt_baseline_type": "fixed",
         },
@@ -5266,7 +5356,7 @@ def test_relapse_independent_multiple_events_merging():
             IMPROVEMENT_EVENT_ID: [(30, 1), (50, 2), (60, 2), (65, 2), (70, 2)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_merge_distance": 10,
             "opt_require_confirmation": False,
@@ -5300,7 +5390,7 @@ def test_relapse_independent_multiple_events_merging():
             IMPROVEMENT_EVENT_ID: [(30, 1), (50, 1), (60, 1), (65, 1), (70, 1)],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "merge_continuous_events": True,
             "continuous_events_max_merge_distance": np.inf,
             "opt_require_confirmation": False,
@@ -5385,7 +5475,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 4,
@@ -5442,7 +5532,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
@@ -5498,7 +5588,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
@@ -5590,7 +5680,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 5,
@@ -5646,7 +5736,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
@@ -5706,7 +5796,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 10,
@@ -5785,7 +5875,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": False,
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 20,
@@ -5831,7 +5921,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
@@ -5876,7 +5966,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
@@ -5957,7 +6047,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
@@ -6000,7 +6090,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 0.5,
             "merge_continuous_events": True,
@@ -6084,7 +6174,7 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "all",
@@ -6125,16 +6215,18 @@ def test_relapse_independent_multiple_events_merging():
             ],
         },
         args_dict={
-            "annotation_mode": "experimental-inverted",
+            "annotation_mode": INVERTED_MODE_NAME,
             "opt_require_confirmation": True,
             "opt_confirmation_time": 30,
             "opt_confirmation_included_values": "last",
             "merge_continuous_events": True,
             "continuous_events_max_repetition_time": 30,
+            "opt_baseline_type": "fixed",
         },
     ), "Test 36 failed!"
 
-    # TODO: Symmetric mode?
+    # TODO: Symmetric mode? -> make sure increase/decrease
+    # are not merged.
 
 
 # ----------------------

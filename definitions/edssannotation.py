@@ -33,9 +33,7 @@ class EDSSAnnotation:
     """
 
     # Options for annotation mode
-    annotation_mode: str = (
-        "accrual"  # or "experimental-inverted", "experimental-symmetric"
-    )
+    annotation_mode: str = "experimental-symmetric"  # or "accrual", "experimental-inverted", "experimental-symmetric"
     # Search mode options
     return_first_event_only: bool = False
     merge_continuous_events: bool = False
@@ -44,7 +42,7 @@ class EDSSAnnotation:
         np.inf
     )  # be more conservative for sparse follow-ups!
     # Baseline options
-    opt_baseline_type: str = "roving"  # or "fixed"
+    opt_baseline_type: str = "fixed"  # "roving"
     opt_roving_reference_require_confirmation: bool = True
     opt_roving_reference_confirmation_time: float = (
         30  # 0.5 would amount to next confirmed
