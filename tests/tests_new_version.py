@@ -407,7 +407,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=5,
         current_reference=4,
         confirmation_scores_dataframe=test_dataframe,
-        additional_lower_threshold=0,
     ) == (
         False,
         False,
@@ -423,7 +422,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=5,
         current_reference=3.5,
         confirmation_scores_dataframe=test_dataframe,
-        additional_lower_threshold=0,
     ) == (
         True,
         False,
@@ -439,7 +437,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=5,
         current_reference=3.5,
         confirmation_scores_dataframe=test_dataframe,
-        additional_lower_threshold=0,
     ) == (
         False,
         False,
@@ -456,7 +453,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=5,
         current_reference=4.0,
         confirmation_scores_dataframe=pd.DataFrame({EDSS_SCORE: [5]}),
-        additional_lower_threshold=0,
     ) == (
         True,
         False,
@@ -472,7 +468,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=5,
         current_reference=4.0,
         confirmation_scores_dataframe=pd.DataFrame({EDSS_SCORE: []}),
-        additional_lower_threshold=0,
     ) == (
         False,
         False,
@@ -491,7 +486,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=4,
         current_reference=5,
         confirmation_scores_dataframe=test_dataframe,
-        additional_lower_threshold=0,
     ) == (
         False,
         False,
@@ -507,7 +501,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=4,
         current_reference=5.5,
         confirmation_scores_dataframe=test_dataframe,
-        additional_lower_threshold=0,
     ) == (
         False,
         True,
@@ -523,7 +516,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=4,
         current_reference=5.5,
         confirmation_scores_dataframe=test_dataframe,
-        additional_lower_threshold=0,
     ) == (
         False,
         False,
@@ -540,7 +532,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=4,
         current_reference=5,
         confirmation_scores_dataframe=pd.DataFrame({EDSS_SCORE: [4]}),
-        additional_lower_threshold=0,
     ) == (
         False,
         True,
@@ -556,7 +547,6 @@ def test_check_confirmation_scores_and_get_confirmed_score():
         current_edss=5,
         current_reference=4.0,
         confirmation_scores_dataframe=pd.DataFrame({EDSS_SCORE: []}),
-        additional_lower_threshold=0,
     ) == (
         False,
         False,
@@ -773,7 +763,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=[True, True, False, False][i],
                 check_raw=[False, False, True, True][i],
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]
@@ -820,7 +809,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=[True, True, True, False][i],
                 check_raw=[False, False, False, True][i],
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]
@@ -849,7 +837,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=True,
                 check_raw=False,
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]
@@ -870,7 +857,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=False,
                 check_raw=True,
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]
@@ -900,7 +886,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=True,
                 check_raw=False,
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]
@@ -922,7 +907,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=False,
                 check_raw=True,
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]
@@ -952,7 +936,6 @@ def test_check_assessment_for_event():
                 current_assessment_index=i,
                 check_pira=[True, True, True, False][i],
                 check_raw=[False, False, False, True][i],
-                additional_lower_threshold=0,
             )
             for i in range(1, 4)
         ]

@@ -240,7 +240,6 @@ class EDSSAnnotation:
         self.baseline_score_column_name = "baseline_score"
         self.baseline_timestamp_column_name = "baseline_timestamp"
         self.baselines_df_name = "baselines_df"
-        # self.check_raw_pira_flag_name = "check_raw_pira"
         self.check_pira_flag_name = "check_pira"
         self.check_raw_flag_name = "check_raw"
 
@@ -476,7 +475,6 @@ class EDSSAnnotation:
         current_edss,
         current_reference,
         confirmation_scores_dataframe,
-        additional_lower_threshold=0,
     ):
         """Determines whether an event is confirmed and the
         confirmed event score.
@@ -490,11 +488,6 @@ class EDSSAnnotation:
         function is only used for confirming events, not for
         confirming baselines.
 
-        There is an optional argument additional_lower_threshold,
-        which can be used to set the confirmation threshold to a
-        given minimum value. This is used for undefined progression
-        with a score constraint w.r.t. the RAW/PIRA baseline.
-
         The function also returns flags for whether it is a confirmed
         increase or a confirmed decrease.
 
@@ -502,7 +495,6 @@ class EDSSAnnotation:
         - current_edss: the current EDSS score
         - current_reference: the current reference score
         - confirmation_scores_dataframe: the confirmation scores
-        - additional_lower_threshold: additional threshold
 
         Returns:
         - bool, bool, float: confirmed increase flag,
@@ -521,19 +513,17 @@ class EDSSAnnotation:
             )
             if self.opt_confirmation_type == "minimum":
                 # Increase: the lowest confirmation score must satisfy
-                # the minimal increase condition, and also meet the
-                # optional additional lower threshold condition.
-                if current_edss > current_reference:
-                    if self._is_large_enough_increase_or_decrease(
+                # the minimal increase condition.
+                if (current_edss > current_reference) and (
+                    self._is_large_enough_increase_or_decrease(
                         current_edss=min(confirmation_scores),
                         reference_edss=current_reference,
-                    )[0] and (min(confirmation_scores) >= additional_lower_threshold):
-                        is_confirmed_increase = True
-                        confirmed_edss = min(current_edss, min(confirmation_scores))
+                    )[0]
+                ):
+                    is_confirmed_increase = True
+                    confirmed_edss = min(current_edss, min(confirmation_scores))
                 # Decrease: the highest confirmation score must satisfy
-                # the minimal decrease condition. Additional threshold
-                # not yet implemented.
-                # TODO: additional threshold
+                # the minimal decrease condition.
                 elif (current_edss < current_reference) and (
                     self._is_large_enough_increase_or_decrease(
                         current_edss=max(confirmation_scores),
@@ -544,17 +534,14 @@ class EDSSAnnotation:
                     confirmed_edss = max(current_edss, max(confirmation_scores))
             elif self.opt_confirmation_type == "monotonic":
                 # Increase: the lowest confirmation score must be equal
-                # to or larger than the candidate, and also meet the
-                # optional additional lower threshold condition.
-                if current_edss > current_reference:
-                    if (min(confirmation_scores) >= current_edss) and (
-                        min(confirmation_scores) >= additional_lower_threshold
-                    ):
-                        is_confirmed_increase = True
-                        confirmed_edss = current_edss
+                # to or larger than the candidate.
+                if (current_edss > current_reference) and (
+                    min(confirmation_scores) >= current_edss
+                ):
+                    is_confirmed_increase = True
+                    confirmed_edss = current_edss
                 # Decrease: the highest confirmation score must be equal
                 # to or smaller than the candidate.
-                # TODO: additional threshold
                 elif (current_edss < current_reference) and (
                     max(confirmation_scores) <= current_edss
                 ):
@@ -841,10 +828,8 @@ class EDSSAnnotation:
         relapse_timestamps,
         baselines_df,
         current_assessment_index,
-        # check_raw_pira,
         check_pira,
         check_raw,
-        additional_lower_threshold=0,
     ):
         """Check if a score is an event.
 
@@ -867,7 +852,6 @@ class EDSSAnnotation:
                         time to next relapse
         - baselines_df: dataframe with baselines
         - current_assessment_index: the index of the current assessment
-        - additional_lower_threshold: additional threshold for progression
 
         Returns:
         - bool, bool, bool,
@@ -923,11 +907,8 @@ class EDSSAnnotation:
         ):
             check_decrease = True
 
-        # If the score is below our additional lower threshold, it is not an
-        # event candidate anyways. # TODO: additional upper threshold
-        if (
-            check_increase and (current_edss >= additional_lower_threshold)
-        ) or check_decrease:
+        # If we don't have to check increase or decrease, we're done.
+        if check_increase or check_decrease:
             # The minimal distance has to be checked first, since it
             # can change the reference score if we allow backtracking.
             minimal_distance_condition_satisfied = True
@@ -995,21 +976,6 @@ class EDSSAnnotation:
                         else:
                             event_type = self.label_undefined_progression
 
-                        # if check_raw_pira:
-                        #    # Assume it's PIRA, and switch to RAW once any PIRA
-                        #    # condition is violated.
-                        #    event_type = self.label_pira
-                        #    if (
-                        #        row[self.time_to_next_relapse_column_name]
-                        #        <= self.opt_raw_before_relapse_max_time
-                        #    ) or (
-                        #        row[self.time_since_last_relapse_column_name]
-                        #        <= self.opt_raw_after_relapse_max_time
-                        #    ):
-                        #        event_type = self.label_raw
-                        # else:
-                        #    event_type = self.label_undefined_progression
-
                     # For decrease, we have only one type.
                     elif is_decrease:
                         event_type = self.label_improvement
@@ -1064,7 +1030,6 @@ class EDSSAnnotation:
                                 current_edss=current_edss,
                                 current_reference=current_baseline_score,  # The UP vs. RAW/PIRA version choice happens at the start.
                                 confirmation_scores_dataframe=confirmation_scores_dataframe,
-                                additional_lower_threshold=additional_lower_threshold,
                             )
                             # If unconfirmed, nope, otherwise continue and check event type
                             # TODO: for accrual, check RAW/PIRA/Undefined
@@ -1166,7 +1131,6 @@ class EDSSAnnotation:
         iid_is_improvement,
         check_pira,
         check_raw,
-        additional_lower_threshold,
     ):
         """Find the indices of merged events, the event score, and
         the timestamp of the last event within series of merged events.
@@ -1199,7 +1163,6 @@ class EDSSAnnotation:
         - iid_event_type: the type of the first event
         - iid_is_accrual: Flag that is true if the IID is accrual
         - iid_is_improvement: Flag that is true if the IID is improvement
-        - additional_lower_threshold: additional threshold for progression
 
         Returns:
         - list, float, int: indices_of_merged_event, confirmed_event_score,
@@ -1259,10 +1222,8 @@ class EDSSAnnotation:
                     relapse_timestamps=relapse_timestamps,
                     baselines_df=baselines_df,
                     current_assessment_index=i,
-                    # check_raw_pira=True,
                     check_pira=check_pira,
                     check_raw=check_raw,
-                    additional_lower_threshold=additional_lower_threshold,
                 )
 
                 # If the new score is not a progression w.r.t. the IID
@@ -1424,13 +1385,6 @@ class EDSSAnnotation:
                 self.baseline_timestamp_column_name: [study_baseline_timestamp],
             }
         )
-        # PIRA baselines
-        # raw_pira_baselines = pd.DataFrame(
-        #    {
-        #        self.baseline_score_column_name: [study_baseline_score],
-        #        self.baseline_timestamp_column_name: [study_baseline_timestamp],
-        #    }
-        # )
         # PIRA baselines are ignored in inverted mode.
         if self.annotation_mode in ["accrual", "experimental-symmetric"]:
             pira_baselines = pd.DataFrame(
@@ -1481,10 +1435,6 @@ class EDSSAnnotation:
                 event_type = None
                 confirmed_event_score = np.nan
 
-                # Before we start, reset the additional_lower_threshold argument
-                # which is used for certain options for undefined progression.
-                # additional_lower_threshold_for_progression_and_confirmation = 0
-
                 # Now, check if the row is a post-relapse-rebaseline. Depending
                 # on the outcome, we check for undefined progression or RAW/PIRA.
                 # The idea here is to select the correct set of baselines.
@@ -1499,9 +1449,7 @@ class EDSSAnnotation:
                 if is_rebaseline_assessment and (
                     current_edss
                     > pira_baselines.iloc[-1][self.baseline_score_column_name]
-                    # > raw_pira_baselines.iloc[-1][self.baseline_score_column_name]
                 ):
-                    # if current_edss > raw_pira_baselines.iloc[-1]["baseline_score"]:
                     is_post_relapse_rebaselining_assessment_with_residual_disability = (
                         True
                     )
@@ -1511,11 +1459,11 @@ class EDSSAnnotation:
                 # the check_event function with RAW/PIRA, and if no event
                 # was found run it again to check for undefined.
                 # If it is a post-relapse re-baselining, it can only be undefined.
+                # TODO: Implement other undefined options.
                 if is_rebaseline_assessment:
                     baselines_to_check = [
                         {
                             self.baselines_df_name: general_baselines,
-                            # self.check_raw_pira_flag_name: False,
                             self.check_pira_flag_name: False,
                             self.check_raw_flag_name: False,
                         }
@@ -1529,8 +1477,7 @@ class EDSSAnnotation:
                         # if there are relapses.
                         baselines_to_check = [
                             {
-                                self.baselines_df_name: pira_baselines,  # raw_pira_baselines,
-                                # self.check_raw_pira_flag_name: True,
+                                self.baselines_df_name: pira_baselines,
                                 self.check_pira_flag_name: True,
                                 self.check_raw_flag_name: False,
                             }
@@ -1539,7 +1486,6 @@ class EDSSAnnotation:
                             baselines_to_check = baselines_to_check + [
                                 {
                                     self.baselines_df_name: general_baselines,
-                                    # self.check_raw_pira_flag_name: False,
                                     self.check_pira_flag_name: False,
                                     self.check_raw_flag_name: True,
                                 },
@@ -1548,25 +1494,21 @@ class EDSSAnnotation:
                         # Always check PIRA first.
                         baselines_to_check = [
                             {
-                                self.baselines_df_name: pira_baselines,  # raw_pira_baselines,
-                                # self.check_raw_pira_flag_name: True,
+                                self.baselines_df_name: pira_baselines,
                                 self.check_pira_flag_name: True,
                                 self.check_raw_flag_name: False,
                             },
                             {
                                 self.baselines_df_name: general_baselines,
-                                # self.check_raw_pira_flag_name: False,
                                 self.check_pira_flag_name: False,
                                 self.check_raw_flag_name: True,
                             },
                         ]
-                    # if self.annotation_mode in ["accrual", "experimental-symmetric"]:
                     elif self.annotation_mode == "experimental-inverted":
                         # Don't look for PIRA at all.
                         baselines_to_check = [
                             {
                                 self.baselines_df_name: general_baselines,
-                                # self.check_raw_pira_flag_name: False,
                                 self.check_pira_flag_name: False,
                                 self.check_raw_flag_name: True,
                             },
@@ -1597,10 +1539,8 @@ class EDSSAnnotation:
                         relapse_timestamps=relapse_timestamps,
                         baselines_df=baseline_option[self.baselines_df_name],
                         current_assessment_index=i,
-                        # check_raw_pira=baseline_option[self.check_raw_pira_flag_name],
                         check_pira=baseline_option[self.check_pira_flag_name],
                         check_raw=baseline_option[self.check_raw_flag_name],
-                        # additional_lower_threshold=additional_lower_threshold_for_progression_and_confirmation,
                     )
                     if is_accrual:
                         accrual_event_id = accrual_event_id + 1
@@ -1613,7 +1553,6 @@ class EDSSAnnotation:
                 # Step 2 - merge if required
                 # If we merge continuous RAW/PIRA/Improvement events: more to come?
                 if self.merge_continuous_events:
-                    # TODO: add RAW/PIRA in RAW once relapse support is implemented
                     if is_event and (
                         event_type
                         in [
@@ -1647,7 +1586,6 @@ class EDSSAnnotation:
                             iid_is_improvement=is_improvement,
                             check_pira=check_pira_in_merge,
                             check_raw=check_raw_in_merge,
-                            additional_lower_threshold=0,  # Can't fall below IID score anyway
                         )
                     elif is_event and (
                         event_type
@@ -1745,14 +1683,6 @@ class EDSSAnnotation:
                         pira_baseline_timestamp = current_timestamp
                         if self.merge_continuous_events:
                             pira_baseline_timestamp = last_confirmed_timestamp
-                        # raw_pira_baselines = pd.DataFrame(
-                        #   {
-                        #       self.baseline_score_column_name: [confirmed_event_score],
-                        #       self.baseline_timestamp_column_name: [
-                        #           raw_pira_baseline_timestamp
-                        #       ],
-                        #   }
-                        # )
                         pira_baselines = pd.DataFrame(
                             {
                                 self.baseline_score_column_name: [
@@ -1787,14 +1717,6 @@ class EDSSAnnotation:
                         annotated_df.at[
                             i, self.used_as_pira_reference_score_column_name
                         ] = current_edss
-                        # raw_pira_baselines = pd.DataFrame(
-                        #    {
-                        #        self.baseline_score_column_name: [current_edss],
-                        #        self.baseline_timestamp_column_name: [
-                        #            current_timestamp
-                        #        ],
-                        #    }
-                        # )
                         pira_baselines = pd.DataFrame(
                             {
                                 self.baseline_score_column_name: [current_edss],
@@ -1806,7 +1728,6 @@ class EDSSAnnotation:
                     # Remove the post-relapse re-baselining flag otherwise.
                     elif is_rebaseline_assessment and (
                         current_edss
-                        # <= raw_pira_baselines.iloc[-1][self.baseline_score_column_name]
                         <= pira_baselines.iloc[-1][self.baseline_score_column_name]
                     ):
                         annotated_df.at[
@@ -1845,13 +1766,6 @@ class EDSSAnnotation:
                             < pira_baselines.iloc[-1][self.baseline_score_column_name]
                         ):
                             check_for_new_lower_pira_reference = True
-                        # We don't check for PIRA in inverted mode, don't bother
-                        # with PIRA baselines.
-                        # elif (self.annotation_mode == "experimental-inverted") and (
-                        #    current_edss
-                        #    > pira_baselines.iloc[-1][self.baseline_score_column_name]
-                        # ):
-                        #    check_for_new_higher_pira_reference = True
 
                         # If roving reference requires confirmation, we need
                         # the confirmation scores.
