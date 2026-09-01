@@ -11,6 +11,11 @@ sns.set_theme(color_codes=True)
 sns.set_style("whitegrid", {"grid.color": "gainsboro"})
 
 
+ACCRUAL_MODE_NAME = "accrual"
+IMPROVEMENT_MODE_NAME = "improvement"
+SYMMETRIC_MODE_NAME = "symmetric"
+
+
 # Helper function - get the relapses from an annotated dataframe
 def get_relapse_timestamps_from_annotated_df(
     annotated_df,
@@ -46,6 +51,7 @@ def get_relapse_timestamps_from_annotated_df(
 def plot_annotated_follow_up(
     annotated_df,
     relapse_timestamps=None,
+    annotation_mode=SYMMETRIC_MODE_NAME,
     # RAW window - not shown if not provided
     opt_raw_before_relapse_max_time=np.nan,
     opt_raw_after_relapse_max_time=np.nan,
@@ -110,6 +116,8 @@ def plot_annotated_follow_up(
         annotated_df[is_pira_rebaseline_flag_column_name] = False
     if used_as_pira_reference_score_column_name not in annotated_df.columns:
         annotated_df[used_as_pira_reference_score_column_name] = np.nan
+    if is_post_relapse_rebaseline_flag_column_name not in annotated_df.columns:
+        annotated_df[is_post_relapse_rebaseline_flag_column_name] = False
 
     # Show RAW window?
     if (opt_raw_before_relapse_max_time >= 0) and (opt_raw_after_relapse_max_time >= 0):
@@ -215,7 +223,7 @@ def plot_annotated_follow_up(
                 "zorder": 4,
             },
         ]
-        if len(relapse_timestamps) > 0:
+        if (len(relapse_timestamps) > 0) and (annotation_mode != IMPROVEMENT_MODE_NAME):
             baseline_specs_dict_list = baseline_specs_dict_list + [
                 {
                     "flag": is_pira_rebaseline_flag_column_name,
@@ -506,7 +514,9 @@ def plot_annotated_follow_up(
                 "General reference",
             ]
 
-            if len(relapse_timestamps) > 0:
+            if (len(relapse_timestamps) > 0) and (
+                annotation_mode != IMPROVEMENT_MODE_NAME
+            ):
                 legend_handles = legend_handles + [
                     plt.Line2D(
                         [], [], color=pira_baseline_color, marker=None, linewidth=1
@@ -534,29 +544,39 @@ def plot_annotated_follow_up(
             ]
 
         if show_events:
-            legend_handles = legend_handles + [
-                plt.Line2D([], [], color=pira_color, marker="o", linewidth=0),
-                plt.Line2D(
-                    [], [], color=pira_color, marker="*", markersize=12, linewidth=0
-                ),
-                plt.Line2D([], [], color=improvement_color, marker="o", linewidth=0),
-                plt.Line2D(
-                    [],
-                    [],
-                    color=improvement_color,
-                    marker="*",
-                    markersize=12,
-                    linewidth=0,
-                ),
-            ]
-            legend_labels = legend_labels + [
-                "PIRA event assessment",
-                "PIRA event score",
-                "Improvement event assessment",
-                "Improvement event score",
-            ]
+            if annotation_mode in [IMPROVEMENT_MODE_NAME, SYMMETRIC_MODE_NAME]:
+                legend_handles = legend_handles + [
+                    plt.Line2D(
+                        [], [], color=improvement_color, marker="o", linewidth=0
+                    ),
+                    plt.Line2D(
+                        [],
+                        [],
+                        color=improvement_color,
+                        marker="*",
+                        markersize=12,
+                        linewidth=0,
+                    ),
+                ]
+                legend_labels = legend_labels + [
+                    "Improvement event assessment",
+                    "Improvement event score",
+                ]
+            if annotation_mode in [ACCRUAL_MODE_NAME, SYMMETRIC_MODE_NAME]:
+                legend_handles = legend_handles + [
+                    plt.Line2D([], [], color=pira_color, marker="o", linewidth=0),
+                    plt.Line2D(
+                        [], [], color=pira_color, marker="*", markersize=12, linewidth=0
+                    ),
+                ]
+                legend_labels = legend_labels + [
+                    "PIRA event assessment",
+                    "PIRA event score",
+                ]
 
-            if len(relapse_timestamps) > 0:
+            if (len(relapse_timestamps) > 0) and (
+                annotation_mode != IMPROVEMENT_MODE_NAME
+            ):
                 legend_handles = legend_handles + [
                     plt.Line2D(
                         [],
@@ -626,8 +646,9 @@ def annotate_plot_follow_up(
     follow_up_dataframe,
     relapse_timestamps=None,
     annotation_mode=(
-        "accrual"  # or "experimental-inverted", "experimental-symmetric"
+        ACCRUAL_MODE_NAME  # or IMPROVEMENT_MODE_NAME, SYMMETRIC_MODE_NAME
     ),
+    undefined_events_annotation_mode="all",
     return_first_event_only=False,
     merge_continuous_events=False,
     continuous_events_max_repetition_time=90,
@@ -719,6 +740,7 @@ def annotate_plot_follow_up(
     # Instantiate progression finder
     progression_finder = edssannotation.EDSSAnnotation(
         annotation_mode=annotation_mode,
+        undefined_events_annotation_mode=undefined_events_annotation_mode,
         return_first_event_only=return_first_event_only,
         merge_continuous_events=merge_continuous_events,
         continuous_events_max_repetition_time=continuous_events_max_repetition_time,
@@ -785,6 +807,7 @@ def annotate_plot_follow_up(
     return plot_annotated_follow_up(
         annotated_df=annotated_df,
         relapse_timestamps=relapse_timestamps,
+        annotation_mode=annotation_mode,
         # RAW window - not shown if not provided
         opt_raw_before_relapse_max_time=opt_raw_before_relapse_max_time,
         opt_raw_after_relapse_max_time=opt_raw_after_relapse_max_time,

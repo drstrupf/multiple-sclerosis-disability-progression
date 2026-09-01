@@ -1,13 +1,13 @@
 """This module contains a class with EDSS disability accrual
 or improvement annotation functionality.
 
+See the methods.ipynb notebook in the repo's main folder for
+an explanation of the available parameters.
+
+See the tutorial.ipynb notebook in the repo's main folder for
+usage examples.
+
 Notes for future features:
-
--   Warn if user selects roving reference confirmation but no
-    event confirmation
-
--   Warn if roving reference confirmation is longer than event
-    confirmation
 
 -   Warn if events are last confirmed with a confirmation time
     greater than the one for the roving reference
@@ -17,6 +17,8 @@ Notes for future features:
 -   General: reduce complexity of args and number of arg combos
     in new default symmetric mode. Don't allow weird stuff such
     as last confirmation.
+
+-   TODO: PIRA and RAW only, PIRA only mode
 
 """
 
@@ -30,17 +32,51 @@ import pandas as pd
 class EDSSAnnotation:
     """EDSS disability accrual or improvement event detection
     and classification.
+
+    This class provides the functionality to annotate EDSS
+    disability accrual or improvement in a follow-up containing
+    EDSS scores and a timestamp for each score.
+
+    Definition options are specified when instantiating the
+    class, with our recommendations as default options.
+
+    Default options: symmetric mode (annotates both accrual and
+    improvement events), 6 months (180 days) all-confirmed (minimum)
+    with respect to a 30-days all-confirmed roving reference, no
+    minimal distance requirement, no event merging, no left-hand
+    tolerance or right-hand constraints on confirmation time for
+    reference or event confirmation, minimum increase + 1.5 for
+    score = 0, + 1.0 for scores < 5.5, and + 1 for scores >= 5.5,
+    RAW window 30 days pre- and 90 days post-relapse, undefined
+    worsening possible at all assessments.
+
+    The effects of individual parameter choices and parameter
+    combinations are showcased in the methods.ipynb notebook
+    in the repo's main folder.
+
+    To annotate disability accrual or improvement events in a
+    follow-up, create an instance of EDSSProgression, then use
+    the add_progression_events_to_follow_up method that takes a
+    pandas dataframe with a follow-up (at least two columns,
+    one for the timestamps and one for the EDSS scores) and
+    a list of relapse timestamps to get the annotated dataframe.
+
+    See the tutorial.ipynb notebook in the repo's main folder
+    for some input data format and usage examples.
+
     """
 
     # Options for annotation mode
-    annotation_mode: str = "experimental-symmetric"  # or "accrual", "experimental-inverted", "experimental-symmetric"
+    annotation_mode: str = "symmetric"  # or "accrual", "improvement"
+    # Options for undefined events
+    undefined_events_annotation_mode: str = "all"  # or "re-baselining only", "never"
     # Search mode options
     return_first_event_only: bool = False
     merge_continuous_events: bool = False
     continuous_events_max_repetition_time: int = 30
     continuous_events_max_merge_distance: int = (
         np.inf
-    )  # be more conservative for sparse follow-ups!
+    )  # Be more conservative for sparse follow-ups!
     # Baseline options
     opt_baseline_type: str = "fixed"  # "roving"
     opt_roving_reference_require_confirmation: bool = True
@@ -112,22 +148,61 @@ class EDSSAnnotation:
     def __post_init__(self):
         """Non-boilerplate __init__ part."""
         # --------------------------------------------------------------------------
+        # String arguments to self
+        # --------------------------------------------------------------------------
+        self.accrual_mode_name = "accrual"
+        self.improvement_mode_name = "improvement"
+        self.symmetric_mode_name = "symmetric"
+        self.undefined_events_mode_all_name = "all"
+        self.undefined_events_mode_rebaselining_only_name = "re-baselining only"
+        self.undefined_events_mode_never_name = "never"
+        self.undefined_events_mode_all_name = "all"
+        self.fixed_baseline_name = "fixed"
+        self.roving_reference_name = "roving"
+        self.confirmation_all_included_name = "all"
+        self.confirmation_last_only_name = "last"
+        self.confirmation_condition_minimum_name = "minimum"
+        self.confirmation_condition_monotonic_name = "monotonic"
+        self.minimal_distance_type_reference_name = "reference"
+        self.minimal_distance_type_previous_name = "previous"
+        # --------------------------------------------------------------------------
         # Check argument values
         # --------------------------------------------------------------------------
-        # TODO: disable roving for experimental-symmetric
         if self.annotation_mode not in [
-            "accrual",
-            "experimental-inverted",
-            "experimental-symmetric",
+            self.accrual_mode_name,
+            self.improvement_mode_name,
+            self.symmetric_mode_name,
         ]:
             raise ValueError(
-                "Invalid annotation mode! Available options: 'accrual', 'experimental-inverted', 'experimental-symmetric'."
+                "Invalid annotation mode! Available options: '"
+                + self.accrual_mode_name
+                + "', '"
+                + self.improvement_mode_name
+                + "', '"
+                + self.symmetric_mode_name
+                + "'."
             )
-        if (self.annotation_mode == "experimental-symmetric") and (
-            self.opt_baseline_type == "roving"
+        if self.undefined_events_annotation_mode not in [
+            self.undefined_events_mode_all_name,
+            self.undefined_events_mode_rebaselining_only_name,
+            self.undefined_events_mode_never_name,
+        ]:
+            raise ValueError(
+                "Invalid undefined events annotation mode! Available options: '"
+                + self.undefined_events_mode_all_name
+                + "', '"
+                + self.undefined_events_mode_rebaselining_only_name
+                + "', '"
+                + self.undefined_events_mode_never_name
+                + "'."
+            )
+        if (self.annotation_mode == self.symmetric_mode_name) and (
+            self.opt_baseline_type == self.roving_reference_name
         ):
             raise ValueError(
-                "Roving reference is not available for 'experimental-symmetric' annotation mode."
+                "Roving reference is not available for '"
+                + self.symmetric_mode_name
+                + "' annotation mode."
             )
         if self.merge_continuous_events and (
             self.continuous_events_max_repetition_time < 0
@@ -135,30 +210,44 @@ class EDSSAnnotation:
             raise ValueError("Max. repetition time for merging events must be >= 0.")
         # Baseline arguments
         if self.opt_baseline_type not in [
-            "fixed",
-            "roving",
+            self.fixed_baseline_name,
+            self.roving_reference_name,
         ]:
             raise ValueError(
-                "Invalid baseline option! Available options: 'fixed', 'roving'."
+                "Invalid baseline option! Available options: '"
+                + self.fixed_baseline_name
+                + "', '"
+                + self.roving_reference_name
+                + "'."
             )
-        if (self.opt_roving_reference_require_confirmation) and (
-            self.opt_roving_reference_confirmation_time <= 0
+        if (
+            (self.opt_baseline_type == self.roving_reference_name)
+            and (self.opt_roving_reference_require_confirmation)
+            and (self.opt_roving_reference_confirmation_time <= 0)
         ):
             raise ValueError(
                 "Invalid input for confirmation interval. If confirmation of roving reference required, choose a duration > 0."
             )
         if self.opt_roving_reference_confirmation_included_values not in [
-            "last",
-            "all",
+            self.confirmation_all_included_name,
+            self.confirmation_last_only_name,
         ]:
             raise ValueError(
-                "Invalid option for roving reference confirmation values! Available options: 'all', 'last'."
+                "Invalid option for roving reference confirmation included values! Available options: '"
+                + self.confirmation_all_included_name
+                + "', '"
+                + self.confirmation_last_only_name
+                + "'."
             )
-        if self.opt_roving_reference_confirmation_time_right_side_max_tolerance < 0:
+        if (self.opt_baseline_type == self.roving_reference_name) and (
+            self.opt_roving_reference_confirmation_time_right_side_max_tolerance < 0
+        ):
             raise ValueError(
                 "Roving reference confirmation right tolerance must be >= 0."
             )
-        if self.opt_roving_reference_confirmation_time_left_side_max_tolerance < 0:
+        if (self.opt_baseline_type == self.roving_reference_name) and (
+            self.opt_roving_reference_confirmation_time_left_side_max_tolerance < 0
+        ):
             raise ValueError(
                 "Roving reference confirmation left tolerance must be >= 0."
             )
@@ -174,24 +263,33 @@ class EDSSAnnotation:
                     "Invalid input for confirmation interval. If confirmation required, choose -1 for sustained or a duration > 0."
                 )
             if (self.opt_confirmation_time == -1) and (
-                self.opt_confirmation_included_values == "last"
+                self.opt_confirmation_included_values
+                == self.confirmation_last_only_name
             ):
                 raise ValueError(
                     "Invalid confirmation requirements. For sustained progession, only the option 'all' is valid for included values."
                 )
         if self.opt_confirmation_type not in [
-            "minimum",
-            "monotonic",
+            self.confirmation_condition_minimum_name,
+            self.confirmation_condition_monotonic_name,
         ]:
             raise ValueError(
-                "Invalid confirmation criterion type. Options are 'minimum' or 'monotonic'."
+                "Invalid confirmation criterion type. Options are '"
+                + self.confirmation_condition_minimum_name
+                + "' or '"
+                + self.confirmation_condition_monotonic_name
+                + "'."
             )
         if self.opt_confirmation_included_values not in [
-            "all",
-            "last",
+            self.confirmation_all_included_name,
+            self.confirmation_last_only_name,
         ]:
             raise ValueError(
-                "Invalid confirmation scores type. Options are 'all' or 'last'."
+                "Invalid confirmation included scores type. Options are "
+                + self.confirmation_all_included_name
+                + "' or '"
+                + self.confirmation_last_only_name
+                + "'."
             )
         if self.opt_confirmation_sustained_minimal_distance < 0:
             raise ValueError("Minimal distance for sustained must be >= 0.")
@@ -201,7 +299,7 @@ class EDSSAnnotation:
             raise ValueError("Confirmation left hand side tolerance must be >= 0.")
         # Confirmation requirement combos
         if (
-            (self.opt_baseline_type == "roving")
+            (self.opt_baseline_type == self.roving_reference_name)
             and (self.opt_roving_reference_require_confirmation)
             and (not self.opt_require_confirmation)
         ):
@@ -209,7 +307,7 @@ class EDSSAnnotation:
                 "Invalid confirmation options. If confirmation for roving reference is required, it must also be required for events."
             )
         if (
-            (self.opt_baseline_type == "roving")
+            (self.opt_baseline_type == self.roving_reference_name)
             and (self.opt_roving_reference_require_confirmation)
             and (self.opt_require_confirmation)
             and (
@@ -225,11 +323,15 @@ class EDSSAnnotation:
             )
         # Minimal distance arguments
         if self.opt_minimal_distance_type not in [
-            "reference",
-            "previous",
+            self.minimal_distance_type_reference_name,
+            self.minimal_distance_type_previous_name,
         ]:
             raise ValueError(
-                "Invalid minimal distance type. Options are 'reference' or 'previous'."
+                "Invalid minimal distance type. Options are '"
+                + self.minimal_distance_type_reference_name
+                + "' or '"
+                + self.minimal_distance_type_reference_name
+                + "'."
             )
         if self.opt_minimal_distance_time < 0:
             raise ValueError("Invalid minimal distance time, must be >= 0.")
@@ -242,10 +344,7 @@ class EDSSAnnotation:
         self.baselines_df_name = "baselines_df"
         self.check_pira_flag_name = "check_pira"
         self.check_raw_flag_name = "check_raw"
-
-        self.accrual_mode_name = "accrual"
-        self.inverted_mode_name = "experimental-inverted"
-        self.symmetric_mode_name = "experimental-symmetric"
+        self.check_undefined_flag_name = "check_undefined"
 
     def _is_large_enough_increase_or_decrease(
         self,
@@ -259,7 +358,7 @@ class EDSSAnnotation:
         - self.opt_max_score_that_requires_plus_1
         - self.opt_larger_increment_from_0
 
-        The inverted and symmetric mode use these arguments
+        The improvement and symmetric mode use these arguments
         with a flipped sign, i.e. a decrease is large enough
         if it is at least -1.0 from any reference smaller or
         equal to opt_max_score_that_requires_plus_1 + 0.5,
@@ -467,7 +566,7 @@ class EDSSAnnotation:
                 ]
                 # If we only take the last score for confirmation, return
                 # it as a one-row dataframe (not a series!)
-                if opt_confirmation_included_values == "last":
+                if opt_confirmation_included_values == self.confirmation_last_only_name:
                     confirmation_scores_dataframe = confirmation_scores_dataframe.iloc[
                         [-1]
                     ]
@@ -515,7 +614,7 @@ class EDSSAnnotation:
             confirmation_scores = np.array(
                 confirmation_scores_dataframe[self.edss_score_column_name]
             )
-            if self.opt_confirmation_type == "minimum":
+            if self.opt_confirmation_type == self.confirmation_condition_minimum_name:
                 # Increase: the lowest confirmation score must satisfy
                 # the minimal increase condition.
                 if (current_edss > current_reference) and (
@@ -536,7 +635,9 @@ class EDSSAnnotation:
                 ):
                     is_confirmed_decrease = True
                     confirmed_edss = max(current_edss, max(confirmation_scores))
-            elif self.opt_confirmation_type == "monotonic":
+            elif (
+                self.opt_confirmation_type == self.confirmation_condition_monotonic_name
+            ):
                 # Increase: the lowest confirmation score must be equal
                 # to or larger than the candidate.
                 if (current_edss > current_reference) and (
@@ -604,9 +705,9 @@ class EDSSAnnotation:
         Args:
         - current_edss: the current EDSS
         - current_timestamp: the current timestamp
-        - check_increase: a flag whether to indicate that the candidate
+        - check_increase: a flag to indicate that the candidate
                           is an increase
-        - check_decrease: a flag whether to indicate that the candidate
+        - check_decrease: a flag to indicate that the candidate
                           is a decrease
         - baselines_df: dataframe with all eligible previous baselines
 
@@ -834,6 +935,7 @@ class EDSSAnnotation:
         current_assessment_index,
         check_pira,
         check_raw,
+        check_undefined,
     ):
         """Check if a score is an event.
 
@@ -844,18 +946,17 @@ class EDSSAnnotation:
         Returns acrual/improvement yes/no, type, event score,
         and the reference score for the event.
 
-        TODO: RAW/PIRA support
-
-        TODO: Check for annotation mode!
-        annotation_mode: str = (
-            "accrual"  # or "experimental-inverted", "experimental-symmetric"
-        )
+        TODO: PIRA/RAW, and PIRA only mode
 
         Args:
         - annotated_df: follow-up dataframe with time from last and
                         time to next relapse
+        - relapse_timestamps: a list with relapse timestamps
         - baselines_df: dataframe with baselines
         - current_assessment_index: the index of the current assessment
+        - check_pira: flag, check PIRA
+        - check_raw: flag, check RAW
+        - check_undefined: flag, check undefined
 
         Returns:
         - bool, bool, bool,
@@ -902,11 +1003,11 @@ class EDSSAnnotation:
             else:
                 check_increase = True
         elif (
-            (not check_pira)
+            (not check_pira)  # We don't check for improvement w.r.t. PIRA baseline
             and (current_edss < current_baseline_score)
             and (
                 self.annotation_mode
-                in [self.inverted_mode_name, self.symmetric_mode_name]
+                in [self.improvement_mode_name, self.symmetric_mode_name]
             )
         ):
             check_decrease = True
@@ -917,12 +1018,18 @@ class EDSSAnnotation:
             # can change the reference score if we allow backtracking.
             minimal_distance_condition_satisfied = True
             if self.opt_minimal_distance_time > 0:
-                if self.opt_minimal_distance_type == "previous":
+                if (
+                    self.opt_minimal_distance_type
+                    == self.minimal_distance_type_previous_name
+                ):
                     previous_timestamp = annotated_df.loc[current_assessment_index - 1][
                         self.time_column_name
                     ]
                     distance = current_timestamp - previous_timestamp
-                elif self.opt_minimal_distance_type == "reference":
+                elif (
+                    self.opt_minimal_distance_type
+                    == self.minimal_distance_type_reference_name
+                ):
                     distance = (
                         current_timestamp
                         - baselines_df.iloc[-1][self.baseline_timestamp_column_name]
@@ -959,7 +1066,9 @@ class EDSSAnnotation:
                     if is_increase:
                         # If we are checking for PIRA, we already know that the
                         # candidate is not in a RAW window, so we can set the
-                        # event type to PIRA
+                        # event type to PIRA. It can later be changed to PIRA
+                        # with relapse during confirmation when we check the
+                        # confirmation condition.
                         if check_pira:
                             event_type = self.label_pira
                         # If we check for RAW, we have to check whether the
@@ -984,8 +1093,14 @@ class EDSSAnnotation:
                     elif is_decrease:
                         event_type = self.label_improvement
 
+                    # Now check confirmation.
+                    # If we don't annotate undefined events, we have to exit.
+                    if (not check_undefined) and (
+                        event_type == self.label_undefined_progression
+                    ):
+                        event_type = None
                     # If we don't require confirmation, we're done.
-                    if not self.opt_require_confirmation:
+                    elif not self.opt_require_confirmation:
                         # Just set the flags and the event score.
                         is_event = True
                         is_accrual = is_increase
@@ -1035,8 +1150,7 @@ class EDSSAnnotation:
                                 current_reference=current_baseline_score,  # The UP vs. RAW/PIRA version choice happens at the start.
                                 confirmation_scores_dataframe=confirmation_scores_dataframe,
                             )
-                            # If unconfirmed, nope, otherwise continue and check event type
-                            # TODO: for accrual, check RAW/PIRA/Undefined
+                            # If unconfirmed, nope, otherwise continue and check event type.
                             if is_accrual or is_improvement:
                                 is_event = True
                                 # If we already know that it's RAW, undefined, or improvement,
@@ -1044,10 +1158,9 @@ class EDSSAnnotation:
                                 # confirmation, unless there are no relapses, of course...
                                 # We also introduce a new type 'PIRA with relapse during confirmation'
                                 # to mark events that are outside the RAW window, but confirmed
-                                # by assessments during relapses. Treated like PIRA and RAW for
-                                # baselines etc.
+                                # by assessments during relapses. Treated like PIRA for baselines etc.
                                 if (
-                                    is_increase
+                                    is_accrual
                                     and (event_type == self.label_pira)
                                     and (len(relapse_timestamps) > 0)
                                 ):
@@ -1062,7 +1175,8 @@ class EDSSAnnotation:
                                     if (
                                         not self.opt_pira_allow_relapses_between_event_and_confirmation
                                     ) or (
-                                        self.opt_confirmation_included_values == "all"
+                                        self.opt_confirmation_included_values
+                                        == self.confirmation_all_included_name
                                     ):
                                         last_confirmation_score_timestamp = (
                                             confirmation_scores_dataframe[
@@ -1111,9 +1225,6 @@ class EDSSAnnotation:
                                             self.label_pira_confirmed_in_raw_window
                                         )
 
-                                # elif is_decrease:
-                                #    event_type = self.label_improvement
-
         return (
             is_event,
             is_accrual,
@@ -1128,6 +1239,7 @@ class EDSSAnnotation:
         annotated_df,
         relapse_timestamps,
         baselines_df,
+        rebaselines_list,
         iid_index,
         iid_confirmed_event_score,
         iid_event_type,
@@ -1135,38 +1247,46 @@ class EDSSAnnotation:
         iid_is_improvement,
         check_pira,
         check_raw,
+        check_undefined,
     ):
         """Find the indices of merged events, the event score, and
         the timestamp of the last event within series of merged events.
 
         This is to identify connected events; we only look at strictly
         monotonically increasing or decreasing scores, with an optional
-        tolerance for identical scores recorded in close temporal proximity.
+        tolerance for identical scores recorded in close temporal proximity,
+        which are called repetition measurement; the maximal distance a
+        repetition assessment can have from the event assessment can be
+        specified via the continuous_events_max_repetition_time argument.
 
         Notes:
         *   Just a little fluke improvement or accrual already stops this
             process... Show this quirk in the documentation!
         *   Assessments considered as repetition measurements (i.e.
             within continuous_events_max_repetition_time) are also flagged
-            as members of the merged event, but not if they are at the end.
-        *   This is meant to be used for PIRA/RAW; undefined events are
-            always considered singular.
+            as members of the merged event, but NOT if they are at the end.
+        *   This is meant to be used for PIRA/RAW or improvement; undefined
+            events are always considered singular.
         *   Events included into a merged event series don't get their own
             'is event' flag or a progression type/score/reference. This is
             by design in order to make analysis easier (e.g. event counts
             based on rows with 'is_progression == True'). They can be
-            identified via the event ID.
+            identified via the event ID, which all included assessments get.
 
         Args:
         - annotated_df: follow-up dataframe with time from last and
                         time to next relapse
-        - baselines_df: dataframe with RAW/PIRA and general baselines
         - relapse_timestamps: list of relapse timestamps
+        - baselines_df: dataframe with RAW/PIRA and general baselines
+        - rebaselines_list: list with all post-relapse re-baselining assessments
         - iid_index: the index of the first progression event
         - iid_confirmed_event_score: the confirmed score of the first event
         - iid_event_type: the type of the first event
         - iid_is_accrual: Flag that is true if the IID is accrual
         - iid_is_improvement: Flag that is true if the IID is improvement
+        - check_pira: flag, check PIRA
+        - check_raw: flag, check RAW
+        - check_undefined: flag, check undefined
 
         Returns:
         - list, float, int: indices_of_merged_event, confirmed_event_score,
@@ -1197,10 +1317,47 @@ class EDSSAnnotation:
                 + self.continuous_events_max_merge_distance
             ):
                 break
+
+            # If we are merging PIRA and there is a relapse between
+            # events, we stop.
+            if (iid_event_type == self.label_pira) and (
+                len(
+                    [
+                        relapse_timestamp
+                        for relapse_timestamp in relapse_timestamps
+                        if (relapse_timestamp >= last_confirmed_progression_timestamp)
+                        and (relapse_timestamp <= row[self.time_column_name])
+                    ]
+                )
+                > 0
+            ):
+                break
+
+            # If we are merging RAW and there is a relapse free period
+            # between events, we stop. Previous plus window or next minus
+            # window smaller than same for next event.
+            if (iid_event_type == self.label_raw) and (
+                len(
+                    [
+                        rebaseline_timestamp
+                        for rebaseline_timestamp in rebaselines_list
+                        if (
+                            rebaseline_timestamp >= last_confirmed_progression_timestamp
+                        )
+                        and (rebaseline_timestamp <= row[self.time_column_name])
+                    ]
+                )
+                > 0
+            ):
+                break
+
             # If the score is lower (when merging accrual events) or
             # higher (when merging improvement events) than the current
             # confirmed event score, we stop. In this case, any confirmed
             # score would be lower/higher than the previous one anyways.
+            # Else we need to test whether the next score from the
+            # next assessment would be an event itself. We use the
+            # same baseline as we used for the IID.
             if (
                 iid_is_accrual
                 and (row[self.edss_score_column_name] < confirmed_event_score)
@@ -1209,10 +1366,6 @@ class EDSSAnnotation:
                 and (row[self.edss_score_column_name] > confirmed_event_score)
             ):
                 break
-
-            # Else we need to test whether the next score from the
-            # next assessment would be an event itself. We use the
-            # same baseline as we used for the IID.
             else:
                 (
                     new_is_event,
@@ -1228,6 +1381,7 @@ class EDSSAnnotation:
                     current_assessment_index=i,
                     check_pira=check_pira,
                     check_raw=check_raw,
+                    check_undefined=check_undefined,
                 )
 
                 # If the new score is not a progression w.r.t. the IID
@@ -1322,7 +1476,23 @@ class EDSSAnnotation:
         follow_up_dataframe,
         relapse_timestamps,
     ):
-        """..."""
+        """Annotates EDSS disability accrual or improvement events
+        in a follow-up. This function contains most of the actual
+        annotation magic. Called by 'add_event_annotation_to_follow_up'.
+        This is a separate function because we might re-implement
+        special undefined event modes (like the 'end' mode from earlier
+        versiona of the algorithm) later on, which require two calls
+        of '_annotate_events'.
+
+        Args:
+        - follow_up_dataframe: a dataframe with at least the scores
+                               and the corresponding timestamps
+        - relapse_timestamps: list with relapse timestamps
+
+        Returns:
+        - dataframe: the follow-up dataframe with additional columns
+                     for event annotation
+        """
 
         # Prepare the return dataframe
         annotated_df = follow_up_dataframe.copy()
@@ -1343,8 +1513,8 @@ class EDSSAnnotation:
         # this also flags all assessment where a new roving reference
         # is set.
         annotated_df[self.is_general_rebaseline_flag_column_name] = False
-        # If in accrual or symmetric mode, also set a flag for the
-        # PIRA baseline.
+        # If in accrual or symmetric mode, also set a flag for the PIRA
+        # baseline. We don't need a PIRA baseline in improvement mode.
         if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
             annotated_df[self.is_pira_rebaseline_flag_column_name] = False
         # Let's also keep track of the scores that are actually
@@ -1354,9 +1524,8 @@ class EDSSAnnotation:
         annotated_df[self.used_as_general_reference_score_column_name] = np.nan
         if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
             annotated_df[self.used_as_pira_reference_score_column_name] = np.nan
-        # Also initialize columns for progression annotation. We keep
-        # track of the event, event type, event score, event reference
-        # score, and event ID.
+        # Also initialize columns for event annotation. We keep track of the
+        # event, event type, event score, event reference score, and event ID.
         annotated_df[self.is_event_flag_column_name] = False
         annotated_df[self.is_accrual_flag_column_name] = False
         annotated_df[self.is_improvement_flag_column_name] = False
@@ -1389,14 +1558,15 @@ class EDSSAnnotation:
                 self.baseline_timestamp_column_name: [study_baseline_timestamp],
             }
         )
-        # PIRA baselines are ignored in inverted mode.
-        if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
-            pira_baselines = pd.DataFrame(
-                {
-                    self.baseline_score_column_name: [study_baseline_score],
-                    self.baseline_timestamp_column_name: [study_baseline_timestamp],
-                }
-            )
+        # PIRA baselines are ignored in improvement mode, but we still create it
+        # for all modes so that we can use pira_baselines later in if/else blocks.
+        # if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
+        pira_baselines = pd.DataFrame(
+            {
+                self.baseline_score_column_name: [study_baseline_score],
+                self.baseline_timestamp_column_name: [study_baseline_timestamp],
+            }
+        )
 
         # Flag all post-relapse re-baselining assessments. We will
         # later use these flags to identify assessments where we have
@@ -1405,17 +1575,20 @@ class EDSSAnnotation:
         # assessments with residual post-relapse disability that set
         # a new baseline for PIRA.
         # Initialize the column and just set relapse assessments to True
-        # via a list of relapse timestamps if there are relapses.
-        annotated_df[self.is_post_relapse_rebaseline_flag_column_name] = False
-        if len(relapse_timestamps) > 0:
-            rebaselines_list = self._get_post_relapse_rebaseline_timestamps(
-                follow_up_df=annotated_df,
-                relapse_timestamps=relapse_timestamps,
-            )
-            annotated_df.loc[
-                annotated_df[self.time_column_name].isin(rebaselines_list),
-                self.is_post_relapse_rebaseline_flag_column_name,
-            ] = True
+        # via a list of relapse timestamps if there are relapses. This
+        # is not required for improvement mode.
+        rebaselines_list = []
+        if self.annotation_mode in [self.accrual_mode_name, self.symmetric_mode_name]:
+            annotated_df[self.is_post_relapse_rebaseline_flag_column_name] = False
+            if len(relapse_timestamps) > 0:
+                rebaselines_list = self._get_post_relapse_rebaseline_timestamps(
+                    follow_up_df=annotated_df,
+                    relapse_timestamps=relapse_timestamps,
+                )
+                annotated_df.loc[
+                    annotated_df[self.time_column_name].isin(rebaselines_list),
+                    self.is_post_relapse_rebaseline_flag_column_name,
+                ] = True
 
         # If we merge events, we keep track of indices we want to skip. This
         # is because the event merging happens inside the loop that checks
@@ -1441,37 +1614,58 @@ class EDSSAnnotation:
 
                 # Now, check if the row is a post-relapse-rebaseline. Depending
                 # on the outcome, we check for undefined progression or RAW/PIRA.
-                # The idea here is to select the correct set of baselines.
-                is_rebaseline_assessment = row[
-                    self.is_post_relapse_rebaseline_flag_column_name
-                ]
+                # The idea here is to select the correct set of baselines. For
+                # improvement mode, we ignore post-relapse re-baselining.
+                if self.annotation_mode in [
+                    self.accrual_mode_name,
+                    self.symmetric_mode_name,
+                ]:
+                    is_rebaseline_assessment = row[
+                        self.is_post_relapse_rebaseline_flag_column_name
+                    ]
+                else:
+                    is_rebaseline_assessment = False
 
                 # We also check for residual disability here. If the score after the
                 # relapse is higher than the PIRA baseline, it is considered residual
                 # disability and will lead to an adjustment of the PIRA baseline.
                 is_post_relapse_rebaselining_assessment_with_residual_disability = False
-                if is_rebaseline_assessment and (
-                    current_edss
-                    > pira_baselines.iloc[-1][self.baseline_score_column_name]
+                if (
+                    is_rebaseline_assessment
+                    and self.annotation_mode
+                    in [
+                        self.accrual_mode_name,
+                        self.symmetric_mode_name,
+                    ]
+                    and (
+                        current_edss
+                        > pira_baselines.iloc[-1][self.baseline_score_column_name]
+                    )
                 ):
                     is_post_relapse_rebaselining_assessment_with_residual_disability = (
                         True
                     )
 
                 # Select the baselines to check
-                # If the candidate is not a post-relapse re-baselining, first run
-                # the check_event function with RAW/PIRA, and if no event
-                # was found run it again to check for undefined.
-                # If it is a post-relapse re-baselining, it can only be undefined.
-                # TODO: Implement other undefined options.
+                # Depending on whether the assessment is a post-relapse re-baselining
+                # assessment or not, and depending on the chosen annotation mode and
+                # the mode for undefined progression, we check for different event
+                # types.
                 if is_rebaseline_assessment:
-                    baselines_to_check = [
-                        {
-                            self.baselines_df_name: general_baselines,
-                            self.check_pira_flag_name: False,
-                            self.check_raw_flag_name: False,
-                        }
-                    ]
+                    if (
+                        self.undefined_events_annotation_mode
+                        == self.undefined_events_mode_never_name
+                    ):
+                        baselines_to_check = []
+                    else:
+                        baselines_to_check = [
+                            {
+                                self.baselines_df_name: general_baselines,
+                                self.check_pira_flag_name: False,
+                                self.check_raw_flag_name: False,
+                                self.check_undefined_flag_name: True,
+                            }
+                        ]
                 else:
                     # In improvement only mode, we don't check PIRA. In accrual,
                     # we test all types if there are relapses, and PIRA only if
@@ -1484,16 +1678,33 @@ class EDSSAnnotation:
                                 self.baselines_df_name: pira_baselines,
                                 self.check_pira_flag_name: True,
                                 self.check_raw_flag_name: False,
+                                self.check_undefined_flag_name: False,
                             }
                         ]
+                        # We only have to check for the other types if there
+                        # are relapses.
                         if len(relapse_timestamps) > 0:
-                            baselines_to_check = baselines_to_check + [
-                                {
-                                    self.baselines_df_name: general_baselines,
-                                    self.check_pira_flag_name: False,
-                                    self.check_raw_flag_name: True,
-                                },
-                            ]
+                            if (
+                                self.undefined_events_annotation_mode
+                                == self.undefined_events_mode_all_name
+                            ):
+                                baselines_to_check = baselines_to_check + [
+                                    {
+                                        self.baselines_df_name: general_baselines,
+                                        self.check_pira_flag_name: False,
+                                        self.check_raw_flag_name: True,
+                                        self.check_undefined_flag_name: True,
+                                    },
+                                ]
+                            else:
+                                baselines_to_check = baselines_to_check + [
+                                    {
+                                        self.baselines_df_name: general_baselines,
+                                        self.check_pira_flag_name: False,
+                                        self.check_raw_flag_name: True,
+                                        self.check_undefined_flag_name: False,
+                                    },
+                                ]
                     elif self.annotation_mode == self.symmetric_mode_name:
                         # Always check PIRA first.
                         baselines_to_check = [
@@ -1501,35 +1712,50 @@ class EDSSAnnotation:
                                 self.baselines_df_name: pira_baselines,
                                 self.check_pira_flag_name: True,
                                 self.check_raw_flag_name: False,
-                            },
-                            {
-                                self.baselines_df_name: general_baselines,
-                                self.check_pira_flag_name: False,
-                                self.check_raw_flag_name: True,
-                            },
+                                self.check_undefined_flag_name: False,
+                            }
                         ]
-                    elif self.annotation_mode == self.inverted_mode_name:
+                        # We also have to check the general baseline in
+                        # order to find improvements. But maybe not for
+                        # undefined events.
+                        if (
+                            self.undefined_events_annotation_mode
+                            == self.undefined_events_mode_all_name
+                        ):
+                            baselines_to_check = baselines_to_check + [
+                                {
+                                    self.baselines_df_name: general_baselines,
+                                    self.check_pira_flag_name: False,
+                                    self.check_raw_flag_name: True,
+                                    self.check_undefined_flag_name: True,
+                                },
+                            ]
+                        else:
+                            baselines_to_check = baselines_to_check + [
+                                {
+                                    self.baselines_df_name: general_baselines,
+                                    self.check_pira_flag_name: False,
+                                    self.check_raw_flag_name: True,
+                                    self.check_undefined_flag_name: False,
+                                },
+                            ]
+                    elif self.annotation_mode == self.improvement_mode_name:
                         # Don't look for PIRA at all.
                         baselines_to_check = [
                             {
                                 self.baselines_df_name: general_baselines,
                                 self.check_pira_flag_name: False,
-                                self.check_raw_flag_name: True,
+                                self.check_raw_flag_name: False,
+                                self.check_undefined_flag_name: False,
                             },
                         ]
 
                 # Step 1 - is it an event?
-                # NOTE: _check_assessment_for_event also checks for
-                # the annotation mode.
-
-                # If we want to check for progression, we now run the corresponding function.
-                # We loop over all options (to enable the 'all' option or undefined progression),
-                # but break the loop once a progression is found. Thus, if we use the 'all'
-                # option, we don't overwrite RAW/PIRA events.
-                # NOTE: if we have a score condition for undefined events (e.g. they must be >=
-                # the current RAW/PIRA baseline), this condition must also hold for the confiration
-                # scores. The threshold is 0 or the last RAW/PIRA baseline, so it has no effect
-                # on RAW/PIRA assessment, but potentially on undefined progression.
+                # NOTE: _check_assessment_for_event also checks for the annotation mode.
+                # If we want to check for events, we now run the corresponding function.
+                # We loop over all options (to enable the 'all' option for undefined worsening),
+                # but break the loop once an event is found. Thus, if we use the 'all' option,
+                # we don't overwrite RAW/PIRA events.
                 for baseline_option in baselines_to_check:
                     (
                         is_event,
@@ -1545,6 +1771,7 @@ class EDSSAnnotation:
                         current_assessment_index=i,
                         check_pira=baseline_option[self.check_pira_flag_name],
                         check_raw=baseline_option[self.check_raw_flag_name],
+                        check_undefined=baseline_option[self.check_undefined_flag_name],
                     )
                     if is_accrual:
                         accrual_event_id = accrual_event_id + 1
@@ -1583,6 +1810,7 @@ class EDSSAnnotation:
                             annotated_df=annotated_df,
                             relapse_timestamps=relapse_timestamps,
                             baselines_df=baseline_option[self.baselines_df_name],
+                            rebaselines_list=rebaselines_list,
                             iid_index=i,
                             iid_confirmed_event_score=confirmed_event_score,
                             iid_event_type=event_type,
@@ -1590,22 +1818,17 @@ class EDSSAnnotation:
                             iid_is_improvement=is_improvement,
                             check_pira=check_pira_in_merge,
                             check_raw=check_raw_in_merge,
+                            check_undefined=False,
                         )
-                    elif is_event and (
-                        event_type
-                        not in [
-                            self.label_pira,
-                            self.label_improvement,
-                        ]
-                    ):
+                    elif is_event and (event_type == self.label_undefined_progression):
                         indices_of_merged_event = [i]
                         last_confirmed_timestamp = current_timestamp
 
                 # Step 3 - adjust baselines
                 # New baseline? It depends on whether we have found a confirmed event
                 # and on whether we are using a roving reference.
-                # If there's a progression, we discard all our previous references
-                # and continue with the confirmed event score. This will e.g. make
+                # If there's an event, we discard all our previous references and
+                # continue with the confirmed event score. This will e.g. make
                 # checking for the minimal distance with backtracking easier.
                 if is_event:
                     # Annotate results...
@@ -1646,6 +1869,21 @@ class EDSSAnnotation:
                                     event_index, self.improvement_event_id_column_name
                                 ] = improvement_event_id
 
+                        # We have to remove the post-relapse re-baselining flag if there
+                        # are assessments initially flagged as post-relapse re-baselining
+                        # that are now within a merged improvement event. This problem
+                        # does no occur in improvement mode (no post-relapse re-baselining)
+                        # or for accrual types (post-relapse re-baselining stops event
+                        # merging).
+                        if (event_type == self.label_improvement) and (
+                            self.annotation_mode == self.symmetric_mode_name
+                        ):
+                            for event_index in indices_of_merged_event:
+                                annotated_df.at[
+                                    event_index,
+                                    self.is_post_relapse_rebaseline_flag_column_name,
+                                ] = False
+
                     # If we only want the first event, we can stop here and we do
                     # not have to bother anymore about baselines...
                     if self.return_first_event_only:
@@ -1665,6 +1903,9 @@ class EDSSAnnotation:
                         i, self.used_as_general_reference_score_column_name
                     ] = confirmed_event_score
                     general_baseline_timestamp = current_timestamp
+                    # If we merge events, we keep the timestamp of the last
+                    # event within the merge as our baseline timestamp. This
+                    # is the timestamp used to check for minimal distance.
                     if self.merge_continuous_events:
                         general_baseline_timestamp = last_confirmed_timestamp
                     general_baselines = pd.DataFrame(
@@ -1688,6 +1929,9 @@ class EDSSAnnotation:
                             i, self.used_as_pira_reference_score_column_name
                         ] = confirmed_event_score
                         pira_baseline_timestamp = current_timestamp
+                        # If we merge events, we keep the timestamp of the last
+                        # event within the merge as our baseline timestamp. This
+                        # is the timestamp used to check for minimal distance.
                         if self.merge_continuous_events:
                             pira_baseline_timestamp = last_confirmed_timestamp
                         pira_baselines = pd.DataFrame(
@@ -1743,7 +1987,7 @@ class EDSSAnnotation:
 
                     # If we have a roving baseline, the baselines could improve.
                     # TODO: Write a function for this to avoid all the copying...
-                    if self.opt_baseline_type == "roving":
+                    if self.opt_baseline_type == self.roving_reference_name:
                         general_roving_confirmed = False
                         pira_roving_confirmed = False
                         # Flags for annotation mode
@@ -1760,7 +2004,7 @@ class EDSSAnnotation:
                             ]
                         ):
                             check_for_new_lower_general_reference = True
-                        elif (self.annotation_mode == self.inverted_mode_name) and (
+                        elif (self.annotation_mode == self.improvement_mode_name) and (
                             current_edss
                             > general_baselines.iloc[-1][
                                 self.baseline_score_column_name
