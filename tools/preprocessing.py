@@ -39,7 +39,7 @@ def check_input_date_data(input_dataframe, date_column_name, verbose=False):
     ).all():
         if verbose:
             print("Date only, proceed.")
-        pass
+        # pass
     else:
         if verbose:
             print("Date contains time part.")
@@ -53,7 +53,7 @@ def check_input_date_data(input_dataframe, date_column_name, verbose=False):
     ):
         if verbose:
             print("Unique and well ordered.")
-        pass
+        # pass
     elif input_dataframe[date_column_name].is_monotonic_increasing and (
         not input_dataframe[date_column_name].is_unique
     ):
@@ -122,10 +122,12 @@ def find_connected_blocks(
     return_df["previous"] = return_df[date_column_name].shift(1)
     return_df["previous_in_time"] = return_df.apply(
         lambda row: (
-            True
-            if row[date_column_name] - row["previous"]
+            row[date_column_name] - row["previous"]
             <= pd.Timedelta(max_days_between_timestamps, unit="days")
-            else False
+            # True
+            # if row[date_column_name] - row["previous"]
+            # <= pd.Timedelta(max_days_between_timestamps, unit="days")
+            # else False
         ),
         axis=1,
     )
@@ -133,18 +135,18 @@ def find_connected_blocks(
     return_df["next"] = return_df[date_column_name].shift(-1)
     return_df["next_in_time"] = return_df.apply(
         lambda row: (
-            True
-            if row["next"] - row[date_column_name]
+            row["next"] - row[date_column_name]
             <= pd.Timedelta(max_days_between_timestamps, unit="days")
-            else False
+            # True
+            # if row["next"] - row[date_column_name]
+            # <= pd.Timedelta(max_days_between_timestamps, unit="days")
+            # else False
         ),
         axis=1,
     )
     # Flag potential block starts
     return_df["is_potential_block_start"] = return_df.apply(
-        lambda row: (
-            True if (not row["previous_in_time"]) and (row["next_in_time"]) else False
-        ),
+        lambda row: bool((not row["previous_in_time"]) and (row["next_in_time"])),
         axis=1,
     )
     # Get the indices of the blocks
@@ -173,13 +175,17 @@ def find_connected_blocks(
     def _coverage_conditions_satisfied(block_df):
         block_start_date = block_df.iloc[0][date_column_name]
         block_end_date = block_df.iloc[-1][date_column_name]
-        if (
+        return (
             block_end_date - block_start_date
             >= pd.Timedelta(min_days_overall, unit="days")
-        ) and len(block_df) >= min_n_timestamps:
-            return True
-        else:
-            return False
+        ) and (len(block_df) >= min_n_timestamps)
+        # if (
+        #    block_end_date - block_start_date
+        #    >= pd.Timedelta(min_days_overall, unit="days")
+        # ) and len(block_df) >= min_n_timestamps:
+        #    return True
+        # else:
+        #    return False
 
     # Check each block
     block_flags = [
