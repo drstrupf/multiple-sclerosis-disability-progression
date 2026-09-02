@@ -79,7 +79,7 @@ def plot_annotated_follow_up(
     label_pira="PIRA",
     label_pira_confirmed_in_raw_window="PIRA with relapse during confirmation",
     label_raw="RAW",
-    label_undefined_progression="Undefined",
+    label_undefined_worsening="Undefined",
     label_improvement="Improvement",
     # Plot settings
     edss_color="black",
@@ -425,7 +425,7 @@ def plot_annotated_follow_up(
         sns.lineplot(
             data=annotated_df[
                 (annotated_df[is_event_flag_column_name])
-                & (annotated_df[event_type_column_name] == label_undefined_progression)
+                & (annotated_df[event_type_column_name] == label_undefined_worsening)
             ],
             x=time_column_name,
             y=event_score_column_name,
@@ -438,7 +438,7 @@ def plot_annotated_follow_up(
         )
         undefined_progression_ids = annotated_df[
             (annotated_df[is_event_flag_column_name])
-            & (annotated_df[event_type_column_name] == label_undefined_progression)
+            & (annotated_df[event_type_column_name] == label_undefined_worsening)
         ][event_id_column_name]
         sns.lineplot(
             data=annotated_df[
@@ -705,7 +705,7 @@ def annotate_plot_follow_up(
     label_pira="PIRA",
     label_pira_confirmed_in_raw_window="PIRA with relapse during confirmation",
     label_raw="RAW",
-    label_undefined_progression="Undefined",
+    label_undefined_worsening="Undefined",
     label_improvement="Improvement",
     # Plot settings
     edss_color="black",
@@ -794,7 +794,7 @@ def annotate_plot_follow_up(
         label_pira=label_pira,
         label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
         label_raw=label_raw,
-        label_undefined_progression=label_undefined_progression,
+        label_undefined_worsening=label_undefined_worsening,
         label_improvement=label_improvement,
     )
 
@@ -830,7 +830,7 @@ def annotate_plot_follow_up(
         label_pira=label_pira,  # Only one type for now
         label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
         label_raw=label_raw,
-        label_undefined_progression=label_undefined_progression,
+        label_undefined_worsening=label_undefined_worsening,
         label_improvement=label_improvement,  # Only one type for now
         # Plot settings
         edss_color=edss_color,

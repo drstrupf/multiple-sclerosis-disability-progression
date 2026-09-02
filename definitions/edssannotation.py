@@ -142,7 +142,7 @@ class EDSSAnnotation:
     label_pira: str = "PIRA"  # Only one type for now
     label_pira_confirmed_in_raw_window: str = "PIRA with relapse during confirmation"
     label_raw: str = "RAW"
-    label_undefined_progression: str = "Undefined"
+    label_undefined_worsening: str = "Undefined"
     label_improvement: str = "Improvement"  # Only one type for now
 
     def __post_init__(self):
@@ -1087,7 +1087,7 @@ class EDSSAnnotation:
                             event_type = self.label_raw
                         # If not RAW, it's undefined.
                         else:
-                            event_type = self.label_undefined_progression
+                            event_type = self.label_undefined_worsening
 
                     # For decrease, we have only one type.
                     elif is_decrease:
@@ -1096,7 +1096,7 @@ class EDSSAnnotation:
                     # Now check confirmation.
                     # If we don't annotate undefined events, we have to exit.
                     if (not check_undefined) and (
-                        event_type == self.label_undefined_progression
+                        event_type == self.label_undefined_worsening
                     ):
                         event_type = None
                     # If we don't require confirmation, we're done.
@@ -1820,7 +1820,7 @@ class EDSSAnnotation:
                             check_raw=check_raw_in_merge,
                             check_undefined=False,
                         )
-                    elif is_event and (event_type == self.label_undefined_progression):
+                    elif is_event and (event_type == self.label_undefined_worsening):
                         indices_of_merged_event = [i]
                         last_confirmed_timestamp = current_timestamp
 
