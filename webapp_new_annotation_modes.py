@@ -18,6 +18,7 @@ from definitions import edssannotation
 from matplotlib import figure
 from tools import evaluation_new_annotation_modes as evaluation
 from tools import visualization_new_annotation_modes as visualization
+from webapp_toolbox import cached_functions
 from webapp_toolbox import frontend_new_annotation_modes as frontend
 
 matplotlib.use("Agg")
@@ -116,6 +117,12 @@ def cached_annotated_df(annotator_instance, follow_up_dataframe, relapse_timesta
     return annotator_instance.add_event_annotation_to_follow_up(
         follow_up_dataframe=follow_up_dataframe, relapse_timestamps=relapse_timestamps
     )
+
+
+# Cached uploaded file
+@st.cache_data(ttl=60)
+def load_excel_table(uploaded_file):
+    return cached_functions.load_excel_table(uploaded_file=uploaded_file)
 
 
 # Example follow-up and relapse timestamps
@@ -241,7 +248,7 @@ if __name__ == "__main__":
     )
 
     with st.expander(
-        "Plot follow-up and annotate progression events for example data",
+        "Plot follow-up and annotate events for example data",
         expanded=True,
     ):
         data_edit_column, option_selection_column, plot_column = st.columns(
@@ -427,3 +434,260 @@ if __name__ == "__main__":
             )
             st.write("Results by type, scroll to the right for more columns")
             st.dataframe(cohort_stats_df_display)
+
+    # Expander for upload, annotation, and visualization of a single follow-up
+    st.write("## Upload, annotate, and visualize your own example data")
+    st.markdown(
+        "**Experimental**: Upload your own example data and check the annotation results."
+    )
+    with st.expander(
+        "Plot follow-up and annotate events for uploaded example data",
+        expanded=False,
+    ):
+        st.write(
+            "**Under development**. For now, it only works for a **single follow-up** and dataframes with columns ``edss_score`` and"
+            + " ``days_after_baseline``, where days after baseline must be integers. Relapses can be provided by a second .xlsx file"
+            + " with relapse timestamps as integers and column name ``days_after_baseline``. You can download the example data from"
+            + " the playground section above in .xlsx format as reference/template (one sheet with the EDSS follow-ups, one with the"
+            + " relapse timestamps)."
+        )
+
+        st.warning(
+            "**Warning**: No sanity check upon upload; the app will crash if data are not well formatted!"
+            " Removing the uploaded files will fix it."
+        )
+
+        st.write("**Download example data**")
+        dl_file_buffer = BytesIO()
+        with pd.ExcelWriter(dl_file_buffer, engine="xlsxwriter") as writer:
+            edited_example_follow_up_df.to_excel(
+                writer, sheet_name="edss_scores", index=False
+            )
+            pd.DataFrame(
+                {
+                    "days_after_baseline": relapse_timestamps,
+                }
+            ).to_excel(writer, sheet_name="relapse_timestamps", index=False)
+            # Close the Pandas Excel writer and output the Excel file to the buffer
+            writer.close()
+            st.download_button(
+                key="download_single_follow_up_example",
+                label="Download example follow-up and relapse data in .xlsx format",
+                data=dl_file_buffer,
+                file_name="example_follow_up_data.xlsx",
+            )
+
+        st.write("**Upload your own data and select parameters**")
+        data_upload_column, option_selection_column, plot_column = st.columns(
+            [15, 30, 55]
+        )
+
+        with data_upload_column:
+            st.write("Upload a follow-up")
+            uploaded_single_follow_up = st.file_uploader(
+                "Upload your follow-up data as .xlsx", type=["xlsx"]
+            )
+            if uploaded_single_follow_up is not None:
+                raw_follow_up_data = load_excel_table(
+                    uploaded_file=uploaded_single_follow_up
+                )
+                uploaded_single_follow_up_df = pd.read_excel(raw_follow_up_data)
+
+            st.write("Upload relapses (optional)")
+            uploaded_single_follow_up_relapses = st.file_uploader(
+                "Upload your relapse data as .xlsx", type=["xlsx"]
+            )
+            if uploaded_single_follow_up_relapses is not None:
+                raw_relapses_data = load_excel_table(
+                    uploaded_file=uploaded_single_follow_up_relapses
+                )
+                uploaded_single_follow_up_relapses_df = pd.read_excel(raw_relapses_data)
+                uploaded_single_follow_up_relapses_list = list(
+                    uploaded_single_follow_up_relapses_df["days_after_baseline"]
+                )
+
+            if uploaded_single_follow_up is not None:
+                st.write("Preview of uploaded follow-up")
+                st.dataframe(uploaded_single_follow_up_df.head())
+
+            if uploaded_single_follow_up_relapses is not None:
+                st.write("Preview of uploaded relapses")
+                st.dataframe(uploaded_single_follow_up_relapses_df.head())
+
+            if uploaded_single_follow_up_relapses is None:
+                uploaded_single_follow_up_relapses_list = []
+
+        with option_selection_column:
+            st.write("Select definition options")
+            options_for_single_uploaded_example = (
+                frontend.dynamic_progression_option_input_element(
+                    element_base_key="options_for_single_uploaded_example",
+                    default_annotation_mode="symmetric",
+                    default_undefined_events_annotation_mode="all",
+                    default_baseline="roving",
+                    default_confirmation_requirement=True,
+                    default_confirmation_duration=30,
+                    display_rms_options=True,
+                    display_allow_relapses_in_pira_conf=False,
+                )
+            )
+
+        with plot_column:
+            # Instantiate an annotator
+            annotator_instance_for_single_uploaded_example = instantiate_annotator(
+                # Options
+                annotation_mode=options_for_single_uploaded_example["annotation_mode"],
+                undefined_events_annotation_mode=options_for_single_uploaded_example[
+                    "undefined_events_annotation_mode"
+                ],
+                opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
+                    "opt_raw_before_relapse_max_time"
+                ],
+                opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
+                    "opt_raw_after_relapse_max_time"
+                ],
+                opt_pira_allow_relapses_between_event_and_confirmation=options_for_single_uploaded_example.get(
+                    "opt_pira_allow_relapses_between_event_and_confirmation", False
+                ),
+                opt_baseline_type=options_for_single_uploaded_example[
+                    "opt_baseline_type"
+                ],
+                opt_roving_reference_require_confirmation=options_for_single_uploaded_example[
+                    "opt_roving_reference_require_confirmation"
+                ],
+                opt_roving_reference_confirmation_time=options_for_single_uploaded_example[
+                    "opt_roving_reference_confirmation_time"
+                ],
+                opt_max_score_that_requires_plus_1=options_for_single_uploaded_example[
+                    "opt_increase_threshold"
+                ],
+                opt_larger_increment_from_0=options_for_single_uploaded_example[
+                    "opt_larger_minimal_increase_from_0"
+                ],
+                opt_minimal_distance_time=options_for_single_uploaded_example[
+                    "opt_minimal_distance_time"
+                ],
+                opt_minimal_distance_type=options_for_single_uploaded_example[
+                    "opt_minimal_distance_type"
+                ],
+                opt_minimal_distance_backtrack_decrease=options_for_single_uploaded_example[
+                    "opt_minimal_distance_backtrack_decrease"
+                ],
+                opt_require_confirmation=options_for_single_uploaded_example[
+                    "opt_require_confirmation"
+                ],
+                opt_confirmation_time=options_for_single_uploaded_example[
+                    "opt_confirmation_time"
+                ],
+                opt_confirmation_type=options_for_single_uploaded_example[
+                    "opt_confirmation_type"
+                ],
+                opt_confirmation_included_values=options_for_single_uploaded_example[
+                    "opt_confirmation_included_values"
+                ],
+                opt_confirmation_sustained_minimal_distance=options_for_single_uploaded_example[
+                    "opt_confirmation_sustained_minimal_distance"
+                ],
+            )
+
+            # Annotate the dataframe
+            if uploaded_single_follow_up is not None:
+                annotated_uploaded_single_follow_up_df = cached_annotated_df(
+                    annotator_instance=annotator_instance_for_single_uploaded_example,
+                    follow_up_dataframe=uploaded_single_follow_up_df,
+                    relapse_timestamps=uploaded_single_follow_up_relapses_list,
+                )
+
+                # Plot it
+                fig = figure.Figure(figsize=(16, 6))
+                ax = fig.subplots(1)
+                visualization.plot_annotated_follow_up(
+                    annotated_uploaded_single_follow_up_df,
+                    annotation_mode=options_for_single_uploaded_example[
+                        "annotation_mode"
+                    ],
+                    opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
+                        "opt_raw_before_relapse_max_time"
+                    ],
+                    opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
+                        "opt_raw_after_relapse_max_time"
+                    ],
+                    xlabel="Days after baseline",
+                    ax=ax,
+                )
+                fig.tight_layout()
+                sns.despine(bottom=True, left=True, right=True, top=True, ax=ax)
+                st.pyplot(fig, clear_figure=True)
+
+                # Display overall stats
+                cohort_stats_overall_uploaded_single_follow_up_df = (
+                    Eval.get_cohort_stats(
+                        stats_by_follow_up=Eval.get_follow_up_stats(
+                            annotated_follow_ups=annotated_uploaded_single_follow_up_df,
+                            get_stats_by_type=False,
+                            id_columns=None,
+                        ),
+                        get_stats_by_type=False,
+                        follow_up_id_column=None,
+                        groupby_columns=None,
+                    )
+                )
+                cohort_stats_overall_uploaded_single_follow_up_df_display = cohort_stats_overall_uploaded_single_follow_up_df[
+                    [
+                        "total_events",
+                        "total_accrual_events",
+                        "total_improvement_events",
+                        "total_event_score_delta",
+                        "total_accrual_event_score_delta",
+                        "total_improvement_event_score_delta",
+                        "contribution_of_accrual_to_total_events",
+                        "contribution_of_improvement_to_total_events",
+                    ]
+                ].rename(
+                    columns={
+                        "total_events": "Total events",
+                        "total_accrual_events": "Accrual events",
+                        "total_improvement_events": "Improvement events",
+                        "total_event_score_delta": "EDSS delta",
+                        "total_accrual_event_score_delta": "Accrual EDSS delta",
+                        "total_improvement_event_score_delta": "Improvement EDSS delta",
+                        "contribution_of_accrual_to_total_events": "Contribution of accrual to total events",
+                        "contribution_of_improvement_to_total_events": "Contribution of improvement to total events",
+                    }
+                )
+                st.write("Overall results, scroll to the right for more columns")
+                st.dataframe(cohort_stats_overall_uploaded_single_follow_up_df_display)
+
+                # Display stats by event type
+                follow_up_stats_uploaded_single_follow_up_df = Eval.get_follow_up_stats(
+                    annotated_follow_ups=annotated_uploaded_single_follow_up_df,
+                    get_stats_by_type=True,
+                    id_columns=None,
+                )
+                cohort_stats_uploaded_single_follow_up_df = Eval.get_cohort_stats(
+                    stats_by_follow_up=follow_up_stats_uploaded_single_follow_up_df,
+                    get_stats_by_type=True,
+                    follow_up_id_column=None,
+                    groupby_columns=None,
+                )
+                cohort_stats_uploaded_single_follow_up_df_display = cohort_stats_uploaded_single_follow_up_df[
+                    [
+                        "event_type",
+                        "total_events",
+                        "total_event_score_delta",
+                        "contribution_to_total_events",
+                        "contribution_to_total_accrual_events",
+                        "contribution_to_total_accrual_delta",
+                    ]
+                ].rename(
+                    columns={
+                        "event_type": "Event type",
+                        "total_events": "Total events",
+                        "total_event_score_delta": "Total EDSS delta",
+                        "contribution_to_total_events": "Contribution to total events",
+                        "contribution_to_total_accrual_events": "Contribution to accrual events",
+                        "contribution_to_total_accrual_delta": "Contribution to accrual delta",
+                    }
+                )
+                st.write("Results by type, scroll to the right for more columns")
+                st.dataframe(cohort_stats_uploaded_single_follow_up_df_display)
