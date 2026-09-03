@@ -715,7 +715,7 @@ class EDSSAnnotationEvaluation:
                 lambda row: (
                     row[self.total_score_delta_column_name] / row["imp_delta_norm"]
                     if (row[self.event_type_column_name] == self.label_improvement)
-                    & (row["imp_delta_norm"] > 0)
+                    and (row["imp_delta_norm"] < 0)
                     else np.nan
                 ),
                 axis=1,
