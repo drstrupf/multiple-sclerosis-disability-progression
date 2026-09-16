@@ -18,7 +18,7 @@ Notes for future features:
     in new default symmetric mode. Don't allow weird stuff such
     as last confirmation.
 
--   TODO: PIRA and RAW only, PIRA only mode
+-   TODO: PIRA and RAW only, PIRA only mode.
 
 """
 
@@ -42,11 +42,11 @@ class EDSSAnnotation:
 
     Default options: symmetric mode (annotates both accrual and
     improvement events), 6 months (180 days) all-confirmed (minimum)
-    with respect to a 30-days all-confirmed roving reference, no
-    minimal distance requirement, no event merging, no left-hand
-    tolerance or right-hand constraints on confirmation time for
-    reference or event confirmation, minimum increase + 1.5 for
-    score = 0, + 1.0 for scores < 5.5, and + 1 for scores >= 5.5,
+    with respect to a fixed reference that is only reset in case of
+    a confirmed event, no minimal distance requirement, no event
+    merging, no left-hand tolerance or right-hand constraints on
+    confirmation time for event confirmation, minimum increase + 1.5
+    for score = 0, + 1.0 for scores < 5.5, and + 1 for scores >= 5.5,
     RAW window 30 days pre- and 90 days post-relapse, undefined
     worsening possible at all assessments.
 
@@ -78,7 +78,9 @@ class EDSSAnnotation:
         np.inf
     )  # Be more conservative for sparse follow-ups!
     # Baseline options
-    opt_baseline_type: str = "fixed"  # "roving"
+    opt_baseline_type: str = (
+        "fixed"  # "roving", "roving" not available in symmetric mode
+    )
     opt_roving_reference_require_confirmation: bool = True
     opt_roving_reference_confirmation_time: float = (
         30  # 0.5 would amount to next confirmed
@@ -102,9 +104,13 @@ class EDSSAnnotation:
     opt_confirmation_time: float = 6 * 30  # > 0, or -1 for sustained over follow-up
     opt_confirmation_type: str = "minimum"  # "minimum" or "monotonic"
     opt_confirmation_included_values: str = "all"  # "last" or "all"
-    opt_confirmation_sustained_minimal_distance: int = 0  # only if "sustained"
-    opt_confirmation_time_right_side_max_tolerance: int = np.inf  # not for "sustained"
-    opt_confirmation_time_left_side_max_tolerance: int = 0  # not for "sustained"
+    opt_confirmation_sustained_minimal_distance: int = (
+        0  # only for sustained confirmation, else ignored
+    )
+    opt_confirmation_time_right_side_max_tolerance: int = (
+        np.inf
+    )  # ignored for "sustained"
+    opt_confirmation_time_left_side_max_tolerance: int = 0  # ignored for "sustained"
     opt_confirmation_require_confirmation_for_last_visit: bool = (
         True  # If False, the last assessment doesn't need confirmation
     )
@@ -112,7 +118,7 @@ class EDSSAnnotation:
     opt_minimal_distance_time: int = 0
     opt_minimal_distance_type: str = "reference"  # "reference" or "previous"
     opt_minimal_distance_backtrack_decrease: bool = (
-        True  # go back to last low enough reference
+        True  # go back to last low enough/high enough reference
     )
     # Input specifications
     edss_score_column_name: str = "edss_score"
@@ -359,9 +365,9 @@ class EDSSAnnotation:
         - self.opt_larger_increment_from_0
 
         The improvement and symmetric mode use these arguments
-        with a flipped sign, i.e. a decrease is large enough
-        if it is at least -1.0 from any reference smaller or
-        equal to opt_max_score_that_requires_plus_1 + 0.5,
+        with a flipped sign for decrease, i.e. a decrease is
+        large enough if it is at least -1.0 from any reference
+        smaller or equal to opt_max_score_that_requires_plus_1 + 0.5,
         and at least -0.5 for references above that. With the
         opt_larger_increment_from_0 set to True, a reference
         score of 1.5 requires a minimal decrease of 1.5 (i.e.
@@ -457,9 +463,9 @@ class EDSSAnnotation:
 
         We will use the same function to get the confirmation scores
         for the roving reference. We could use it for post-relapse
-        re-baselining, too, but this is not yet implemented. This is
-        also the reason why we pass the confirmation options as args
-        and not via 'self'.
+        re-baselining confirmation, too, but this is not yet implemented.
+        This is also the reason why we pass the confirmation options as
+        args and not via 'self'.
 
         Implementation notes
         -   By default, the confirmation interval is unbounded to the
@@ -469,10 +475,10 @@ class EDSSAnnotation:
             This can be restricted using the right side max tolerance
             argument (default is infinite) such that events that are
             after confirmation time plus this tolerance will not be
-            considered confirmation assessments.
+            considered as confirmation assessments.
         -   If no right-hand constraint is given, the argument for left
             hand tolerance amounts to setting the confirmation time
-            to confirmation time - tolerance. With a right-hand constraint
+            to confirmation time - tolerance. With a right-hand constraint,
             using a left-hand tolerance and reducing the confirmation
             time are NOT equivalent.
         -   By default, there is no minimum duration of post-event
@@ -663,7 +669,7 @@ class EDSSAnnotation:
         check_decrease,
         baselines_df,
     ):
-        """Searches previous reference for references that are low
+        """Searches previous references for references that are low
         enough for the current EDSS to be an accrual candidate with
         respect to them, or high enough for the current EDSS to be an
         improvement candidate with respect to them, and that satisfy
@@ -1334,8 +1340,9 @@ class EDSSAnnotation:
                 break
 
             # If we are merging RAW and there is a relapse free period
-            # between events, we stop. Previous plus window or next minus
-            # window smaller than same for next event.
+            # between events, we stop. We can ensure this by checking
+            # that there is no assessment flagged as post-relapse
+            # assessment between the last merged assessment and the next.
             if (iid_event_type == self.label_raw) and (
                 len(
                     [
@@ -2228,7 +2235,13 @@ class EDSSAnnotation:
         """Add EDSS disability worsening event annotation to
         an EDSS follow-up dataframe.
 
-        ...
+        Args:
+            - follow_up_dataframe: a dataframe with at least the scores
+                                    and the corresponding timestamps
+            - relapse_timestamps: list with relapse timestamps
+
+            Returns:
+            - dataframe: dataframe with annotated events
 
         """
         # --------------------------------------------------------------------------------
