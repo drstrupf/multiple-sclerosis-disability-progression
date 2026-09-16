@@ -1,15 +1,16 @@
-"""TBD"""
+"""Functions to visualize annotated EDSS follow-ups."""
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from definitions import edssannotation
 from matplotlib.patches import Patch
+
+from definitions import edssannotation
 
 sns.set_theme(color_codes=True)
 sns.set_style("whitegrid", {"grid.color": "gainsboro"})
 
-
+# Set some globals
 ACCRUAL_MODE_NAME = "accrual"
 IMPROVEMENT_MODE_NAME = "improvement"
 SYMMETRIC_MODE_NAME = "symmetric"
@@ -22,7 +23,7 @@ def get_relapse_timestamps_from_annotated_df(
     time_since_last_relapse_column_name="days_since_previous_relapse",
     time_to_next_relapse_column_name="days_to_next_relapse",
 ):
-    """TBD"""
+    """Get a list of relapse timestamps from an annotated follow-up."""
     # From previous
     since_previous = annotated_df[
         [time_column_name, time_since_last_relapse_column_name]
@@ -62,20 +63,14 @@ def plot_annotated_follow_up(
     is_general_rebaseline_flag_column_name="is_general_rebaseline",
     is_pira_rebaseline_flag_column_name="is_pira_rebaseline",
     is_post_relapse_rebaseline_flag_column_name="is_post_relapse_rebaseline",
-    # is_post_event_rebaseline_flag_column_name="is_post_event_rebaseline",
     used_as_general_reference_score_column_name=(
         "edss_score_used_as_new_general_reference"
     ),
     used_as_pira_reference_score_column_name=("edss_score_used_as_new_pira_reference"),
     is_event_flag_column_name="is_event",
-    # is_accrual_flag_column_name="is_accrual_event",
-    # is_improvement_flag_column_name="is_improvement_event",
     event_type_column_name="event_type",
     event_score_column_name="event_score",
-    # event_reference_score_column_name="event_reference_score",
     event_id_column_name="event_id",
-    # accrual_event_id_column_name="accrual_event_id",
-    # improvement_event_id_column_name="improvement_event_id",
     label_pira="PIRA",
     label_pira_confirmed_in_raw_window="PIRA with relapse during confirmation",
     label_raw="RAW",
@@ -688,20 +683,14 @@ def annotate_plot_follow_up(
     is_general_rebaseline_flag_column_name="is_general_rebaseline",
     is_pira_rebaseline_flag_column_name="is_pira_rebaseline",
     is_post_relapse_rebaseline_flag_column_name="is_post_relapse_rebaseline",
-    # is_post_event_rebaseline_flag_column_name="is_post_event_rebaseline",
     used_as_general_reference_score_column_name=(
         "edss_score_used_as_new_general_reference"
     ),
     used_as_pira_reference_score_column_name=("edss_score_used_as_new_pira_reference"),
     is_event_flag_column_name="is_event",
-    # is_accrual_flag_column_name="is_accrual",
-    # is_improvement_flag_column_name="is_improvement",
     event_type_column_name="event_type",
     event_score_column_name="event_score",
-    # event_reference_score_column_name="event_reference_score",
     event_id_column_name="event_id",
-    # accrual_event_id_column_name="accrual_event_id",
-    # improvement_event_id_column_name="improvement_event_id",
     label_pira="PIRA",
     label_pira_confirmed_in_raw_window="PIRA with relapse during confirmation",
     label_raw="RAW",
@@ -779,18 +768,12 @@ def annotate_plot_follow_up(
         is_general_rebaseline_flag_column_name=is_general_rebaseline_flag_column_name,
         is_pira_rebaseline_flag_column_name=is_pira_rebaseline_flag_column_name,
         is_post_relapse_rebaseline_flag_column_name=is_post_relapse_rebaseline_flag_column_name,
-        # is_post_event_rebaseline_flag_column_name=is_post_event_rebaseline_flag_column_name,
         used_as_general_reference_score_column_name=used_as_general_reference_score_column_name,
         used_as_pira_reference_score_column_name=used_as_pira_reference_score_column_name,
         is_event_flag_column_name=is_event_flag_column_name,
-        # is_accrual_flag_column_name=is_accrual_flag_column_name,
-        # is_improvement_flag_column_name=is_improvement_flag_column_name,
         event_type_column_name=event_type_column_name,
         event_score_column_name=event_score_column_name,
-        # event_reference_score_column_name=event_reference_score_column_name,
         event_id_column_name=event_id_column_name,
-        # accrual_event_id_column_name=accrual_event_id_column_name,
-        # improvement_event_id_column_name=improvement_event_id_column_name,
         label_pira=label_pira,
         label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
         label_raw=label_raw,
@@ -819,14 +802,9 @@ def annotate_plot_follow_up(
         used_as_general_reference_score_column_name=used_as_general_reference_score_column_name,
         used_as_pira_reference_score_column_name=used_as_pira_reference_score_column_name,
         is_event_flag_column_name=is_event_flag_column_name,
-        # is_accrual_flag_column_name=is_accrual_flag_column_name,
-        # is_improvement_flag_column_name=is_improvement_flag_column_name,
         event_type_column_name=event_type_column_name,
         event_score_column_name=event_score_column_name,
-        # event_reference_score_column_name=event_reference_score_column_name,
         event_id_column_name=event_id_column_name,
-        # accrual_event_id_column_name=accrual_event_id_column_name,
-        # improvement_event_id_column_name=improvement_event_id_column_name,
         label_pira=label_pira,  # Only one type for now
         label_pira_confirmed_in_raw_window=label_pira_confirmed_in_raw_window,
         label_raw=label_raw,
