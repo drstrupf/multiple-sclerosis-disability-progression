@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import streamlit as st
-import xlsxwriter
 from matplotlib import figure
 
 from definitions import edssannotation
@@ -187,9 +186,9 @@ if __name__ == "__main__":
         )
         st.markdown(
             r"""<sup>1</sup>Department of Neurology, Medical University of Vienna, Vienna, Austria  
-        <sup>2</sup>Comprehensive Center for Clinical Neurosciences and Mental Health, Medical University of Vienna, Vienna, Austria  
-        <sup>3</sup>Department of Neurology, Inselspital, Bern University Hospital and University of Bern, Switzerland  
-        <sup>4</sup>Insel Data Science Center, Inselspital, Bern University Hospital and University of Bern, Switzerland""",
+            <sup>2</sup>Comprehensive Center for Clinical Neurosciences and Mental Health, Medical University of Vienna, Vienna, Austria  
+            <sup>3</sup>Department of Neurology, Inselspital, Bern University Hospital and University of Bern, Switzerland  
+            <sup>4</sup>Insel Data Science Center, Inselspital, Bern University Hospital and University of Bern, Switzerland""",
             unsafe_allow_html=True,
         )
         st.markdown("### Contact information")
@@ -214,12 +213,12 @@ if __name__ == "__main__":
             "**Background**: Distinguishing relapse-associated worsening (RAW) and progression independent of relapse activity (PIRA) has reshaped understanding  "
             + "of disability accumulation in relapsing multiple sclerosis (RMS). The influence of differing definitions of disability accrual on event rates and RAW/PIRA  "
             + "proportions remains uncertain.  "
-            + "\n\n**Methods**: This observational cohort study used Austrian MS Treatment Registry data (2010–2024). A custom algorithm evaluated 1440 definitional  "
+            + "\n\n**Methods**: This observational cohort study used Austrian MS Treatment Registry data (2010-2024). A custom algorithm evaluated 1440 definitional  "
             + "variants of disability accrual with varying confirmation duration, baseline modeling, and RAW/PIRA classification, including recently proposed  "
             + "“standardized” criteria.  "
-            + "\n\n**Results**: We included 3273 RMS patients (mean age 37.5 years; 67.8% female) with ⩾24 months follow-up, ⩾3 Expanded Disability Status Scale (EDSS)  "
+            + "\n\n**Results**: We included 3273 RMS patients (mean age 37.5 years; 67.8% female) with ⩾24 months follow-up, ⩾3 Expanded Disability Status Scale (EDSS)  "
             + "scores, and ⩾1 EDSS score per year, contributing 3525 follow-up periods. Depending on definition, disability accrual varied between 15.7% and 41.6% of  "
-            + "follow-ups. PIRA accounted for 56.1%–86.3% of events across definitions, while up to 8.4% were ambiguously classified, mainly due to post-relapse  "
+            + "follow-ups. PIRA accounted for 56.1%-86.3% of events across definitions, while up to 8.4% were ambiguously classified, mainly due to post-relapse  "
             + "re-baselining or relapses during the confirmation period. Even under “standardized” criteria, 144 definitional combinations remained, with event rates  "
             + "ranging from 19.1% to 21.7% and PIRA contribution varying widely from 59.8% to 85.8%."
             + "\n\n**Conclusions**: PIRA predominantly drives disability accrual, yet definitional variation substantially influenced event rates and RAW/PIRA proportions.  "
