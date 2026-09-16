@@ -5,11 +5,10 @@ restricted choice of options to make sure that only
 valid parameter combinations enter the annotation
 algorithm.
 
-TODO: options for event merging, tolerance options
+TODO: Tolerance options
 
 """
 
-import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -45,6 +44,38 @@ def annotation_mode_dropdown(key, default_mode="symmetric"):
     )
     option_annotation_mode = option_annotation_mode.lower().replace(" only", "")
     return option_annotation_mode
+
+
+# Dropdown menu for event merging
+def event_merging_dropdown(key):
+    continuous_events_max_repetition_time = 30
+    continuous_events_max_merge_distance = 366
+    merge_continuous_events = st.selectbox(
+        label="Merge events?", options=["No", "Yes"], key=key
+    )
+    if merge_continuous_events == "No":
+        merge_continuous_events = False
+    elif merge_continuous_events == "Yes":
+        merge_continuous_events = True
+        continuous_events_max_repetition_time = st.number_input(
+            label="Maximal repetition time for merging",
+            min_value=0,
+            max_value=None,
+            value=30,
+            key=key + "_rep_time",
+        )
+        continuous_events_max_merge_distance = st.number_input(
+            label="Maximal distance between events for merging",
+            min_value=0,
+            max_value=None,
+            value=366,
+            key=key + "_max_dist",
+        )
+    return (
+        merge_continuous_events,
+        continuous_events_max_repetition_time,
+        continuous_events_max_merge_distance,
+    )
 
 
 # Dropdown menu for the baseline selection
@@ -307,6 +338,7 @@ def confirmation_requirement_dropdown(
         options=confirmation_options,
         key=key + "_require_confirmation",
     )
+    opt_pira_allow_relapses_between_event_and_confirmation = False
     if option_require_confirmation == "Yes, for a specific confirmation time":
         option_require_confirmation = True
         option_confirmation_sustained_minimal_distance = 0
@@ -316,7 +348,7 @@ def confirmation_requirement_dropdown(
         option_confirmation_time = st.number_input(
             label="Confirmation time",
             min_value=min_confirmation_time,
-            value=default_confirmation_duration,
+            value=max(min_confirmation_time, default_confirmation_duration),
             key=key + "_confirmation_time",
         )
         option_confirmation_included_values = st.selectbox(
@@ -337,6 +369,17 @@ def confirmation_requirement_dropdown(
             == "Only the last value in confirmation interval"
         ):
             option_confirmation_included_values = "last"
+
+        if option_confirmation_included_values == "last":
+            option_allow_relapses_during_confirmation = st.selectbox(
+                label="Allow relapses in confirmation period?",
+                options=["No", "Yes"],
+                key=key + "_allow_relapses_during_confirmation",
+            )
+            if option_allow_relapses_during_confirmation == "No":
+                opt_pira_allow_relapses_between_event_and_confirmation = False
+            elif option_allow_relapses_during_confirmation == "Yes":
+                opt_pira_allow_relapses_between_event_and_confirmation = True
 
     elif option_require_confirmation == "Yes, sustained over the entire follow-up":
         option_require_confirmation = True
@@ -376,6 +419,7 @@ def confirmation_requirement_dropdown(
         option_confirmation_included_values,
         option_confirmation_type,
         option_confirmation_sustained_minimal_distance,
+        opt_pira_allow_relapses_between_event_and_confirmation,
     )
 
 
@@ -456,6 +500,12 @@ def dynamic_progression_option_input_element(
     annotation_mode = annotation_mode_dropdown(
         key=element_base_key + "_annotation_mode", default_mode=default_annotation_mode
     )
+    # Event merging
+    (
+        merge_continuous_events,
+        continuous_events_max_repetition_time,
+        continuous_events_max_merge_distance,
+    ) = event_merging_dropdown(key=element_base_key + "_merging_flag")
     if display_rms_options:
         # Undefined worsening
         undefined_events_annotation_mode = undefined_worsening_dropdown(
@@ -493,6 +543,7 @@ def dynamic_progression_option_input_element(
         option_confirmation_included_values,
         option_confirmation_type,
         option_confirmation_sustained_minimal_distance,
+        opt_pira_allow_relapses_between_event_and_confirmation,
     ) = confirmation_requirement_dropdown(
         default_confirmation_requirement=default_confirmation_requirement,
         default_confirmation_duration=default_confirmation_duration,
@@ -525,11 +576,14 @@ def dynamic_progression_option_input_element(
     )
     return {
         "annotation_mode": annotation_mode,
+        "merge_continuous_events": merge_continuous_events,
+        "continuous_events_max_repetition_time": continuous_events_max_repetition_time,
+        "continuous_events_max_merge_distance": continuous_events_max_merge_distance,
         "opt_baseline_type": option_baseline_type,
         "opt_roving_reference_require_confirmation": baseline_confirmation,
         "opt_roving_reference_confirmation_time": baseline_confirmation_distance,
-        "opt_increase_threshold": option_minimal_increase_threshold,
-        "opt_larger_minimal_increase_from_0": option_larger_increase_from_0,
+        "opt_max_score_that_requires_plus_1": option_minimal_increase_threshold,
+        "opt_larger_increment_from_0": option_larger_increase_from_0,
         "opt_minimal_distance_time": option_minimal_distance_time,
         "opt_minimal_distance_type": option_minimal_distance_type,
         "opt_minimal_distance_backtrack_decrease": option_minimal_distance_backtrack_monotonic_decrease,
@@ -538,6 +592,7 @@ def dynamic_progression_option_input_element(
         "opt_confirmation_type": option_confirmation_type,
         "opt_confirmation_included_values": option_confirmation_included_values,
         "opt_confirmation_sustained_minimal_distance": option_confirmation_sustained_minimal_distance,
+        "opt_pira_allow_relapses_between_event_and_confirmation": opt_pira_allow_relapses_between_event_and_confirmation,
         **rms_options,
     }
 

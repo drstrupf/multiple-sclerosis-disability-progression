@@ -5,7 +5,7 @@ https://multiple-sclerosis-disability-progression.streamlit.app/
 
 """
 
-from datetime import date, datetime, timezone
+import datetime
 from io import BytesIO
 
 import matplotlib
@@ -14,8 +14,9 @@ import pandas as pd
 import seaborn as sns
 import streamlit as st
 import xlsxwriter
-from definitions import edssannotation
 from matplotlib import figure
+
+from definitions import edssannotation
 from tools import evaluation_new_annotation_modes as evaluation
 from tools import visualization_new_annotation_modes as visualization
 from webapp_toolbox import cached_functions
@@ -33,9 +34,9 @@ st.set_page_config(layout="wide")
 # Cached clock to help keeping track of cache misses
 @st.cache_data()
 def show_clock_last_cache_refresh():
-    local_timezone = datetime.now(timezone.utc).astimezone().tzinfo
+    local_timezone = datetime.datetime.now(datetime.UTC).astimezone().tzinfo
     return (
-        datetime.now(tz=local_timezone).strftime("%d.%m.%Y, %H:%M:%S")
+        datetime.datetime.now(tz=local_timezone).strftime("%d.%m.%Y, %H:%M:%S")
         + " "
         + str(local_timezone)
     )
@@ -125,6 +126,23 @@ def load_excel_table(uploaded_file):
     return cached_functions.load_excel_table(uploaded_file=uploaded_file)
 
 
+# Cached preprocessed uploaded follow-ups
+@st.cache_data(ttl=60)
+def preprocess_edss_follow_up(uploaded_follow_up_file):
+    return cached_functions.preprocess_edss_follow_up(
+        uploaded_follow_up_file=uploaded_follow_up_file
+    )
+
+
+# Cached preprocessed uploaded relapses
+@st.cache_data(ttl=60)
+def preprocess_sync_relapse_timestamps(uploaded_relapses_file, processed_follow_ups):
+    return cached_functions.preprocess_sync_relapse_timestamps(
+        uploaded_relapses_file=uploaded_relapses_file,
+        processed_follow_ups=processed_follow_ups,
+    )
+
+
 # Example follow-up and relapse timestamps
 example_follow_up_df = pd.DataFrame(
     [
@@ -164,7 +182,7 @@ if __name__ == "__main__":
     with st.expander("Author information and contact", expanded=False):
         st.markdown("### Authors")
         st.markdown(
-            r"**Gabriel Bsteh**<sup>1, 2</sup>, **Stefanie Marti**<sup>3</sup>, **Robert Hoepner**<sup>3, 4</sup>",
+            r"**Gabriel Bsteh**<sup>1, 2</sup>, **Stefanie Marti**<sup>3, 4</sup>, **Robert Hoepner**<sup>3</sup>",
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -240,6 +258,10 @@ if __name__ == "__main__":
 
     st.write("Last cache refresh: " + show_clock_last_cache_refresh())
 
+    # --------------------------------------------------------------------------------
+    # Part 1 - Explore definitions using an example follow-up
+    # --------------------------------------------------------------------------------
+
     # Expander with the example for playing around
     st.write("## Explore accrual, improvement, PIRA, and RAW definition options")
     st.markdown(
@@ -293,49 +315,7 @@ if __name__ == "__main__":
                 label_visibility="visible",
             )
             # Instantiate an annotator
-            annotator_instance = instantiate_annotator(
-                # Options
-                annotation_mode=options_example["annotation_mode"],
-                undefined_events_annotation_mode=options_example[
-                    "undefined_events_annotation_mode"
-                ],
-                opt_raw_before_relapse_max_time=options_example[
-                    "opt_raw_before_relapse_max_time"
-                ],
-                opt_raw_after_relapse_max_time=options_example[
-                    "opt_raw_after_relapse_max_time"
-                ],
-                opt_pira_allow_relapses_between_event_and_confirmation=options_example.get(
-                    "opt_pira_allow_relapses_between_event_and_confirmation", False
-                ),
-                opt_baseline_type=options_example["opt_baseline_type"],
-                opt_roving_reference_require_confirmation=options_example[
-                    "opt_roving_reference_require_confirmation"
-                ],
-                opt_roving_reference_confirmation_time=options_example[
-                    "opt_roving_reference_confirmation_time"
-                ],
-                opt_max_score_that_requires_plus_1=options_example[
-                    "opt_increase_threshold"
-                ],
-                opt_larger_increment_from_0=options_example[
-                    "opt_larger_minimal_increase_from_0"
-                ],
-                opt_minimal_distance_time=options_example["opt_minimal_distance_time"],
-                opt_minimal_distance_type=options_example["opt_minimal_distance_type"],
-                opt_minimal_distance_backtrack_decrease=options_example[
-                    "opt_minimal_distance_backtrack_decrease"
-                ],
-                opt_require_confirmation=options_example["opt_require_confirmation"],
-                opt_confirmation_time=options_example["opt_confirmation_time"],
-                opt_confirmation_type=options_example["opt_confirmation_type"],
-                opt_confirmation_included_values=options_example[
-                    "opt_confirmation_included_values"
-                ],
-                opt_confirmation_sustained_minimal_distance=options_example[
-                    "opt_confirmation_sustained_minimal_distance"
-                ],
-            )
+            annotator_instance = instantiate_annotator(**options_example)
 
             # Annotate the dataframe
             annotated_df = cached_annotated_df(
@@ -435,39 +415,111 @@ if __name__ == "__main__":
             st.write("Results by type, scroll to the right for more columns")
             st.dataframe(cohort_stats_df_display)
 
+    # --------------------------------------------------------------------------------
+    # Part 2 - Explore definitions using an user-uploaded follow-up
+    # --------------------------------------------------------------------------------
+
     # Expander for upload, annotation, and visualization of a single follow-up
     st.write("## Upload, annotate, and visualize your own example data")
     st.markdown(
-        "**Experimental**: Upload your own example data and check the annotation results."
+        ":hammer_and_wrench: **Experimental feature** :hammer_and_wrench: - Upload your own example data and check the annotation results."
     )
     with st.expander(
         "Plot follow-up and annotate events for uploaded example data",
         expanded=False,
     ):
         st.write(
-            "**Under development**. For now, it only works for a **single follow-up** and dataframes with columns ``edss_score`` and"
-            + " ``days_after_baseline``, where days after baseline must be integers. Relapses can be provided by a second .xlsx file"
-            + " with relapse timestamps as integers and column name ``days_after_baseline``. You can download the example data from"
-            + " the playground section above in .xlsx format as reference/template (one sheet with the EDSS follow-ups, one with the"
-            + " relapse timestamps)."
+            ":hammer_and_wrench: **Under development** :hammer_and_wrench:"
+            + "\n\nFor now, it only works for a **single follow-up** and dataframes with columns ``edss_score`` and"
+            + " ``edss_date``, where the dates must be sorted (ascending), formatted as dates without time part, and without duplicates,"
+            + " i.e. only one EDSS per day. Additional columns will be ignored (but passed on to the resulting dataframe). Relapses can"
+            + " be provided by a second .xlsx file, with at least one column ``relapse_date`` with the relapse timestamps. You can download"
+            + " some example data in .xlsx format as reference/template using the button below (one sheet with the EDSS follow-ups, one with the relapse"
+            + " timestamps; you will have to provide two separate files, though)."
+            + "\n\nMultiple follow-up annotation and preprocessing options coming soon."
         )
 
         st.warning(
-            "**Warning**: No sanity check upon upload; the app will crash if data are not well formatted!"
-            " Removing the uploaded files will fix it."
+            ":bomb: **Warning**: No sanity check upon upload; the app will crash if data are not well formatted!"
+            + " **If you get a weird error message, remove the uploaded file**, removing the uploaded files will fix it."
         )
+
+        st.warning(
+            ":bomb: **Warning**: The annotation of multiple follow-ups is not supported; the uploaded follow-up"
+            + " data will be treated as one single follow-up and assigned a surrogate ID of 0 to reflect this."
+        )
+
+        # Example data
+        example_data_relapses = pd.DataFrame(
+            {
+                "relapse_date": [
+                    pd.Timestamp(year=2018, month=2, day=10),
+                    pd.Timestamp(year=2018, month=7, day=20),
+                    pd.Timestamp(year=2018, month=11, day=27),
+                    pd.Timestamp(year=2020, month=2, day=10),
+                ]
+            }
+        )
+        example_data_relapses["relapse_date"] = example_data_relapses[
+            "relapse_date"
+        ].dt.date
+        example_data_edss_assessments = pd.DataFrame(
+            {
+                "edss_date": [
+                    pd.Timestamp(year=2018, month=1, day=1),
+                    pd.Timestamp(year=2018, month=3, day=2),
+                    pd.Timestamp(year=2018, month=4, day=1),
+                    pd.Timestamp(year=2018, month=5, day=31),
+                    pd.Timestamp(year=2018, month=8, day=9),
+                    pd.Timestamp(year=2018, month=9, day=8),
+                    pd.Timestamp(year=2018, month=11, day=7),
+                    pd.Timestamp(year=2018, month=12, day=17),
+                    pd.Timestamp(year=2019, month=1, day=16),
+                    pd.Timestamp(year=2019, month=2, day=25),
+                    pd.Timestamp(year=2019, month=4, day=26),
+                    pd.Timestamp(year=2019, month=6, day=25),
+                    pd.Timestamp(year=2019, month=8, day=24),
+                    pd.Timestamp(year=2019, month=10, day=23),
+                    pd.Timestamp(year=2019, month=12, day=22),
+                    pd.Timestamp(year=2020, month=2, day=20),
+                    pd.Timestamp(year=2020, month=4, day=20),
+                    pd.Timestamp(year=2020, month=6, day=19),
+                ],
+                "edss_score": [
+                    1.0,
+                    2.5,
+                    1.5,
+                    2.0,
+                    3.5,
+                    2.0,
+                    2.0,
+                    4.0,
+                    3.5,
+                    3.5,
+                    2.5,
+                    2.5,
+                    3.5,
+                    4.0,
+                    4.5,
+                    5.0,
+                    5.0,
+                    5.0,
+                ],
+            }
+        )
+        example_data_edss_assessments["edss_date"] = example_data_edss_assessments[
+            "edss_date"
+        ].dt.date
 
         st.write("**Download example data**")
         dl_file_buffer = BytesIO()
         with pd.ExcelWriter(dl_file_buffer, engine="xlsxwriter") as writer:
-            edited_example_follow_up_df.to_excel(
+            example_data_edss_assessments.to_excel(
                 writer, sheet_name="edss_scores", index=False
             )
-            pd.DataFrame(
-                {
-                    "days_after_baseline": relapse_timestamps,
-                }
-            ).to_excel(writer, sheet_name="relapse_timestamps", index=False)
+            example_data_relapses.to_excel(
+                writer, sheet_name="relapse_timestamps", index=False
+            )
             # Close the Pandas Excel writer and output the Excel file to the buffer
             writer.close()
             st.download_button(
@@ -491,7 +543,9 @@ if __name__ == "__main__":
                 raw_follow_up_data = load_excel_table(
                     uploaded_file=uploaded_single_follow_up
                 )
-                uploaded_single_follow_up_df = pd.read_excel(raw_follow_up_data)
+                uploaded_single_follow_up_df = preprocess_edss_follow_up(
+                    uploaded_follow_up_file=raw_follow_up_data
+                )
 
             st.write("Upload relapses (optional)")
             uploaded_single_follow_up_relapses = st.file_uploader(
@@ -501,17 +555,28 @@ if __name__ == "__main__":
                 raw_relapses_data = load_excel_table(
                     uploaded_file=uploaded_single_follow_up_relapses
                 )
-                uploaded_single_follow_up_relapses_df = pd.read_excel(raw_relapses_data)
+                uploaded_single_follow_up_relapses_df = (
+                    preprocess_sync_relapse_timestamps(
+                        uploaded_relapses_file=raw_relapses_data,
+                        processed_follow_ups=uploaded_single_follow_up_df,
+                    )
+                )
                 uploaded_single_follow_up_relapses_list = list(
                     uploaded_single_follow_up_relapses_df["days_after_baseline"]
                 )
 
             if uploaded_single_follow_up is not None:
-                st.write("Preview of uploaded follow-up")
+                st.write("Preview of processed follow-up")
+                uploaded_single_follow_up_df["edss_date"] = (
+                    uploaded_single_follow_up_df["edss_date"].dt.date
+                )
                 st.dataframe(uploaded_single_follow_up_df.head())
 
             if uploaded_single_follow_up_relapses is not None:
-                st.write("Preview of uploaded relapses")
+                st.write("Preview of processed relapses")
+                uploaded_single_follow_up_relapses_df["relapse_date"] = (
+                    uploaded_single_follow_up_relapses_df["relapse_date"].dt.date
+                )
                 st.dataframe(uploaded_single_follow_up_relapses_df.head())
 
             if uploaded_single_follow_up_relapses is None:
@@ -535,59 +600,7 @@ if __name__ == "__main__":
         with plot_column:
             # Instantiate an annotator
             annotator_instance_for_single_uploaded_example = instantiate_annotator(
-                # Options
-                annotation_mode=options_for_single_uploaded_example["annotation_mode"],
-                undefined_events_annotation_mode=options_for_single_uploaded_example[
-                    "undefined_events_annotation_mode"
-                ],
-                opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
-                    "opt_raw_before_relapse_max_time"
-                ],
-                opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
-                    "opt_raw_after_relapse_max_time"
-                ],
-                opt_pira_allow_relapses_between_event_and_confirmation=options_for_single_uploaded_example.get(
-                    "opt_pira_allow_relapses_between_event_and_confirmation", False
-                ),
-                opt_baseline_type=options_for_single_uploaded_example[
-                    "opt_baseline_type"
-                ],
-                opt_roving_reference_require_confirmation=options_for_single_uploaded_example[
-                    "opt_roving_reference_require_confirmation"
-                ],
-                opt_roving_reference_confirmation_time=options_for_single_uploaded_example[
-                    "opt_roving_reference_confirmation_time"
-                ],
-                opt_max_score_that_requires_plus_1=options_for_single_uploaded_example[
-                    "opt_increase_threshold"
-                ],
-                opt_larger_increment_from_0=options_for_single_uploaded_example[
-                    "opt_larger_minimal_increase_from_0"
-                ],
-                opt_minimal_distance_time=options_for_single_uploaded_example[
-                    "opt_minimal_distance_time"
-                ],
-                opt_minimal_distance_type=options_for_single_uploaded_example[
-                    "opt_minimal_distance_type"
-                ],
-                opt_minimal_distance_backtrack_decrease=options_for_single_uploaded_example[
-                    "opt_minimal_distance_backtrack_decrease"
-                ],
-                opt_require_confirmation=options_for_single_uploaded_example[
-                    "opt_require_confirmation"
-                ],
-                opt_confirmation_time=options_for_single_uploaded_example[
-                    "opt_confirmation_time"
-                ],
-                opt_confirmation_type=options_for_single_uploaded_example[
-                    "opt_confirmation_type"
-                ],
-                opt_confirmation_included_values=options_for_single_uploaded_example[
-                    "opt_confirmation_included_values"
-                ],
-                opt_confirmation_sustained_minimal_distance=options_for_single_uploaded_example[
-                    "opt_confirmation_sustained_minimal_distance"
-                ],
+                **options_for_single_uploaded_example
             )
 
             # Annotate the dataframe
@@ -691,3 +704,18 @@ if __name__ == "__main__":
                 )
                 st.write("Results by type, scroll to the right for more columns")
                 st.dataframe(cohort_stats_uploaded_single_follow_up_df_display)
+
+                # Provide a download for the annotated file
+                st.write("**Download the annotated follow-up data**")
+                buf = BytesIO()
+                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                    annotated_uploaded_single_follow_up_df.to_excel(
+                        writer, sheet_name="annotated_follow_up", index=False
+                    )
+                    # Close the Pandas Excel writer and output the Excel file to the buffer
+                    writer.close()
+                    st.download_button(
+                        label="Download annotation results in .xlsx format",
+                        data=buf,
+                        file_name="annotated_follow_up.xlsx",
+                    )
