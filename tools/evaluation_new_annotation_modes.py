@@ -2,36 +2,10 @@
 This is a collection of tools for evaluating the output
 of the EDSS worsening events annotation algorithm.
 
-# Parts of the evaluation
+TODO: Event merging statistics.
 
-
-## For each follow-up
-
-### Overall
-* Number of events
-* Total delta EDSS
-* Time to first event (+ type of the event, event score, event reference, delta of the event)
-
-### By type
-* Number of events by type
-* Total delta EDSS by type
-* Time to first event by type (+ event score, event reference, delta of the event)
-
-
-## On cohort level
-
-### Overall
-* Number of events
-* Total delta EDSS
-* Median time to first event + 95%CI + distribution of types
-* Median delta of first event + quantiles - or all events?
-
-### By type
-* Number of events by type
-* Total delta EDSS by type
-* Median time to first event + 95%CI by type
-* Median delta of first event + quantiles by type - or all events?
-* Combo counts
+Documentation coming soon; have a look at tutorial.ipynb
+in the repo's main folder for usage and output examples.
 
 """
 
@@ -734,12 +708,6 @@ class EDSSAnnotationEvaluation:
 
         # Accrual/improvement event type contribution
         if not get_stats_by_type:
-            # event_counts_deltas[
-            #    self.contribution_of_accrual_to_total_events_column_name
-            # ] = (
-            #    event_counts_deltas[self.n_accrual_events_column_name]
-            #    / event_counts_deltas[self.n_events_column_name]
-            # )
             event_counts_deltas[
                 self.contribution_of_accrual_to_total_events_column_name
             ] = event_counts_deltas.apply(
@@ -751,12 +719,6 @@ class EDSSAnnotationEvaluation:
                 ),
                 axis=1,
             )
-            # event_counts_deltas[
-            #    self.contribution_of_improvement_to_total_events_column_name
-            # ] = (
-            #    event_counts_deltas[self.n_improvement_events_column_name]
-            #    / event_counts_deltas[self.n_events_column_name]
-            # )
             event_counts_deltas[
                 self.contribution_of_improvement_to_total_events_column_name
             ] = event_counts_deltas.apply(
@@ -1578,112 +1540,6 @@ class EDSSAnnotationEvaluation:
             )
 
         return combination_counts
-
-    """ Section with event merging stats, to do
-    # Stats on merged events by follow-up
-    def get_follow_up_merged_events_stats(
-        self,
-        annotated_follow_ups,
-        follow_up_id_column=None,
-        groupby_columns=None,
-    ):
-        # Follow-up ID, add dummy if not provided
-        if follow_up_id_column is None:
-            annotated_follow_ups[self.dummy_id_column_name] = 0
-            follow_up_id_column = self.dummy_id_column_name
-        # Groupby columns, add dummy if not provided
-        if groupby_columns == None:
-            annotated_follow_ups[self.dummy_id_column_name + "_groupby"] = 0
-            groupby_columns = [self.dummy_id_column_name + "_groupby"]
-
-        # Since stats are by type, we need a separate info on
-        # event type by event ID, because the type is only
-        # provided for the first entry per merged event.
-        event_types_info = annotated_follow_ups[
-            (~annotated_follow_ups[self.event_id_column_name].isna())
-            & (~annotated_follow_ups[self.event_type_column_name].isna())
-        ][
-            groupby_columns
-            + [
-                follow_up_id_column,
-                self.event_id_column_name,
-                self.event_type_column_name,
-            ]
-        ]
-        # Now count how many assessments are merged for each event...
-        merged_counts = (
-            annotated_follow_ups[
-                ~annotated_follow_ups[self.event_id_column_name].isna()
-            ][
-                groupby_columns
-                + [
-                    follow_up_id_column,
-                    self.time_column_name,
-                    self.event_id_column_name,
-                ]
-            ]
-            .groupby(groupby_columns + [follow_up_id_column, self.event_id_column_name])
-            .count()
-            .reset_index()
-            .rename(
-                columns={self.time_column_name: self.n_merged_assessments_column_name}
-            )
-        )
-        # Add type info
-        merged_counts = pd.merge(
-            left=merged_counts,
-            right=event_types_info,
-            on=groupby_columns + [follow_up_id_column, self.event_id_column_name],
-            how="left",
-        )
-
-        ## ...then group by number of assessments merged and count events.
-        groupby_for_count = groupby_columns + [
-            follow_up_id_column,
-            self.n_merged_assessments_column_name,
-            self.event_type_column_name,
-        ]
-        merged_counts = (
-            merged_counts.groupby(groupby_for_count)
-            .count()
-            .reset_index()
-            .rename(columns={self.event_id_column_name: self.n_events_column_name})
-        )
-
-        # Drop the dummy IDs if applicable
-        if self.dummy_id_column_name in merged_counts.columns:
-            merged_counts = merged_counts.drop(columns=[self.dummy_id_column_name])
-        if self.dummy_id_column_name + "_groupby" in merged_counts.columns:
-            merged_counts = merged_counts.drop(
-                columns=[self.dummy_id_column_name + "_groupby"]
-            )
-
-        return merged_counts
-
-    # TODO: HERE
-    def get_cohort_merged_events_stats(
-        self,
-        merged_event_stats_by_follow_up,
-        groupby_columns=None,
-    ):
-        # Groupby columns, add dummy if not provided
-        if groupby_columns == None:
-            merged_event_stats_by_follow_up[self.dummy_id_column_name + "_groupby"] = 0
-            groupby_columns = [self.dummy_id_column_name + "_groupby"]
-        # Groupby columns for overall counts
-        groupby_for_count = groupby_columns + [
-            self.n_merged_assessments_column_name,
-            self.event_type_column_name,
-        ]
-        return (
-            merged_event_stats_by_follow_up[
-                groupby_for_count + [self.n_events_column_name]
-            ]
-            .groupby(groupby_for_count)
-            .sum()
-            .reset_index()
-        )
-    """
 
 
 if __name__ == "__main__":
