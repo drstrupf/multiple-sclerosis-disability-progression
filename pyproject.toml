@@ -1,5 +1,5 @@
 [project]
-name = "EDSSAnnotation"
+name = "multiple-sclerosis-disability-progression"
 version = "0.1.0"
 description = "Packages required for the EDSS annotation and visualization functionality."
 readme = "README.md"
