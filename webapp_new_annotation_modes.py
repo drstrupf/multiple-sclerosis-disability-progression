@@ -72,6 +72,7 @@ def instantiate_annotator(
     opt_minimal_distance_time=0,
     opt_minimal_distance_type="reference",
     opt_minimal_distance_backtrack_decrease=True,
+    edss_score_column_name="edss_score",
 ):
     return edssannotation.EDSSAnnotation(
         annotation_mode=annotation_mode,
@@ -102,6 +103,7 @@ def instantiate_annotator(
         opt_minimal_distance_time=opt_minimal_distance_time,
         opt_minimal_distance_type=opt_minimal_distance_type,
         opt_minimal_distance_backtrack_decrease=opt_minimal_distance_backtrack_decrease,
+        edss_score_column_name=edss_score_column_name,
     )
 
 
@@ -121,24 +123,37 @@ def cached_annotated_df(annotator_instance, follow_up_dataframe, relapse_timesta
 
 # Cached uploaded file
 @st.cache_data(ttl=60)
-def load_excel_table(uploaded_file):
-    return cached_functions.load_excel_table(uploaded_file=uploaded_file)
+def load_uploaded_file(uploaded_file):
+    return cached_functions.load_uploaded_file(uploaded_file=uploaded_file)
+
+
+# Cached parsed uploaded file
+@st.cache_data(ttl=60)
+def read_excel_table(uploaded_file):
+    return cached_functions.read_excel_table(uploaded_file=uploaded_file)
 
 
 # Cached preprocessed uploaded follow-ups
 @st.cache_data(ttl=60)
-def preprocess_edss_follow_up(uploaded_follow_up_file):
+def preprocess_edss_follow_up(raw_follow_ups_df, edss_date_column_name):
     return cached_functions.preprocess_edss_follow_up(
-        uploaded_follow_up_file=uploaded_follow_up_file
+        raw_follow_ups_df=raw_follow_ups_df, edss_date_column_name=edss_date_column_name
     )
 
 
 # Cached preprocessed uploaded relapses
 @st.cache_data(ttl=60)
-def preprocess_sync_relapse_timestamps(uploaded_relapses_file, processed_follow_ups):
+def preprocess_sync_relapse_timestamps(
+    raw_relapses_df,
+    processed_follow_ups,
+    edss_date_column_name,
+    relapse_date_column_name,
+):
     return cached_functions.preprocess_sync_relapse_timestamps(
-        uploaded_relapses_file=uploaded_relapses_file,
+        raw_relapses_df=raw_relapses_df,
         processed_follow_ups=processed_follow_ups,
+        edss_date_column_name=edss_date_column_name,
+        relapse_date_column_name=relapse_date_column_name,
     )
 
 
@@ -354,6 +369,7 @@ if __name__ == "__main__":
                 follow_up_id_column=None,
                 groupby_columns=None,
             )
+            # TODO: Write function for this reformatting
             cohort_stats_overall_df_display = cohort_stats_overall_df[
                 [
                     "total_events",
@@ -429,18 +445,20 @@ if __name__ == "__main__":
     ):
         st.write(
             ":hammer_and_wrench: **Under development** :hammer_and_wrench:"
-            + "\n\nFor now, it only works for a **single follow-up** and dataframes with columns ``edss_score`` and"
-            + " ``edss_date``, where the dates must be sorted (ascending), formatted as dates without time part, and without duplicates,"
-            + " i.e. only one EDSS per day. Additional columns will be ignored (but passed on to the resulting dataframe). Relapses can"
-            + " be provided by a second .xlsx file, with at least one column ``relapse_date`` with the relapse timestamps. You can download"
-            + " some example data in .xlsx format as reference/template using the button below (one sheet with the EDSS follow-ups, one with the relapse"
-            + " timestamps; you will have to provide two separate files, though)."
-            + "\n\nMultiple follow-up annotation and preprocessing options coming soon."
+            + "\n\nFor now, it only works for a **single follow-up**. **EDSS follow-ups** can be provided as .xlsx files, with at least one"
+            + " column for the EDSS date and one column for the EDSS score. Dates must be sorted (ascending), formatted as dates without"
+            + " time part, and without duplicates, i.e. only one EDSS per day. Additional columns will be ignored (but passed on to the"
+            + " resulting dataframe). **Relapses** can be provided in a second .xlsx file, with at least one column for the relapse date, and"
+            + " with the same formatting requirements as there are for the EDSS date. You can download some example data in .xlsx format as"
+            + " reference/template using the button below (one sheet with the EDSS follow-ups, one with the relapse timestamps; you will have"
+            + " to provide two separate files, though)."
+            + "\n\nMultiple follow-up annotation and more preprocessing options coming soon."
         )
 
         st.warning(
-            ":bomb: **Warning**: No sanity check upon upload; the app will crash if data are not well formatted!"
-            + " **If you get a weird error message, remove the uploaded file**, removing the uploaded files will fix it."
+            ":bomb: **Warning**: There are some sanity checks upon upload, but they might not"
+            + " catch all formatting errors; the app will crash if data are not well formatted!"
+            + " **If you get a weird error message, remove the uploaded file**. Removing the uploaded files will fix it."
         )
 
         st.warning(
@@ -448,7 +466,7 @@ if __name__ == "__main__":
             + " data will be treated as one single follow-up and assigned a surrogate ID of 0 to reflect this."
         )
 
-        # Example data
+        # Example data for download
         example_data_relapses = pd.DataFrame(
             {
                 "relapse_date": [
@@ -529,192 +547,288 @@ if __name__ == "__main__":
             )
 
         st.write("**Upload your own data and select parameters**")
-        data_upload_column, option_selection_column, plot_column = st.columns(
-            [15, 30, 55]
-        )
+        data_upload_column, option_selection_column = st.columns([40, 60])
 
+        # TODO: Write function for data upload and preprocessing
         with data_upload_column:
             st.write("Upload a follow-up")
+            follow_up_input_valid = False
             uploaded_single_follow_up = st.file_uploader(
                 "Upload your follow-up data as .xlsx", type=["xlsx"]
             )
             if uploaded_single_follow_up is not None:
-                raw_follow_up_data = load_excel_table(
+                # Load file
+                raw_follow_up_data_file = load_uploaded_file(
                     uploaded_file=uploaded_single_follow_up
                 )
-                uploaded_single_follow_up_df = preprocess_edss_follow_up(
-                    uploaded_follow_up_file=raw_follow_up_data
+                # Parse file
+                raw_follow_up_data = read_excel_table(
+                    uploaded_file=raw_follow_up_data_file
                 )
+                if len(raw_follow_up_data.columns) < 2:
+                    st.error("The follow-up data table must have at least two columns.")
+                else:
+                    follow_up_input_valid = True
+                    # Select columns
+                    edss_date_column_name = frontend.column_selector(
+                        key="edss_date_col",
+                        dataframe=raw_follow_up_data,
+                        label="Select EDSS date column",
+                        default_position=0,
+                    )
+                    edss_score_column_name = frontend.column_selector(
+                        key="edss_score_col",
+                        dataframe=raw_follow_up_data,
+                        label="Select EDSS score column",
+                        default_position=1,
+                    )
+                    # Sanity checks:
+                    if not (
+                        pd.to_datetime(
+                            raw_follow_up_data[edss_date_column_name]
+                        ).dt.floor("d")
+                        == pd.to_datetime(raw_follow_up_data[edss_date_column_name])
+                    ).all():
+                        follow_up_input_valid = False
+                        st.error("EDSS dates are not formatted correctly.")
+                    if not (
+                        raw_follow_up_data[
+                            edss_date_column_name
+                        ].is_monotonic_increasing
+                        and raw_follow_up_data[edss_date_column_name].is_unique
+                    ):
+                        follow_up_input_valid = False
+                        st.error(
+                            "EDSS dates are not ordered correctly or contain duplicates."
+                        )
+                    if (
+                        len(
+                            raw_follow_up_data[
+                                ~raw_follow_up_data[edss_score_column_name].isin(
+                                    [0] + [1 + i * 0.5 for i in range(19)]
+                                )
+                            ]
+                        )
+                        > 0
+                    ):
+                        follow_up_input_valid = False
+                        st.error("Invalid EDSS scores detected.")
+                    # Preprocess
+                    if follow_up_input_valid:
+                        uploaded_single_follow_up_df = preprocess_edss_follow_up(
+                            raw_follow_ups_df=raw_follow_up_data,
+                            edss_date_column_name=edss_date_column_name,
+                        )
 
             st.write("Upload relapses (optional)")
+            relapse_input_valid = False
             uploaded_single_follow_up_relapses = st.file_uploader(
                 "Upload your relapse data as .xlsx", type=["xlsx"]
             )
             if uploaded_single_follow_up_relapses is not None:
-                raw_relapses_data = load_excel_table(
+                raw_relapses_data_file = load_uploaded_file(
                     uploaded_file=uploaded_single_follow_up_relapses
                 )
-                uploaded_single_follow_up_relapses_df = (
-                    preprocess_sync_relapse_timestamps(
-                        uploaded_relapses_file=raw_relapses_data,
-                        processed_follow_ups=uploaded_single_follow_up_df,
+                raw_relapses_data = read_excel_table(
+                    uploaded_file=raw_relapses_data_file
+                )
+                if len(raw_relapses_data.columns) < 1:
+                    st.error("The relapse data table must have at least one column.")
+                else:
+                    relapse_input_valid = True
+                # Select column
+                relapse_date_column_name = frontend.column_selector(
+                    key="relapse_date_col",
+                    dataframe=raw_relapses_data,
+                    label="Select relapse date column",
+                    default_position=0,
+                )
+                # Sanity checks:
+                if not (
+                    pd.to_datetime(
+                        raw_relapses_data[relapse_date_column_name]
+                    ).dt.floor("d")
+                    == pd.to_datetime(raw_relapses_data[relapse_date_column_name])
+                ).all():
+                    relapse_input_valid = False
+                    st.error("Relapse dates are not formatted correctly.")
+                if not (
+                    raw_relapses_data[relapse_date_column_name].is_monotonic_increasing
+                    and raw_relapses_data[relapse_date_column_name].is_unique
+                ):
+                    relapse_input_valid = False
+                    st.error(
+                        "Relapse dates are not ordered correctly or contain duplicates."
                     )
-                )
-                uploaded_single_follow_up_relapses_list = list(
-                    uploaded_single_follow_up_relapses_df["days_after_baseline"]
-                )
+                # Preprocess
+                if follow_up_input_valid and relapse_input_valid:
+                    uploaded_single_follow_up_relapses_df = (
+                        preprocess_sync_relapse_timestamps(
+                            raw_relapses_df=raw_relapses_data,
+                            processed_follow_ups=uploaded_single_follow_up_df,
+                            edss_date_column_name=edss_date_column_name,
+                            relapse_date_column_name=relapse_date_column_name,
+                        )
+                    )
+                    uploaded_single_follow_up_relapses_list = list(
+                        uploaded_single_follow_up_relapses_df["days_after_baseline"]
+                    )
 
-            if uploaded_single_follow_up is not None:
+            if follow_up_input_valid:
                 st.write("Preview of processed follow-up")
-                uploaded_single_follow_up_df["edss_date"] = (
-                    uploaded_single_follow_up_df["edss_date"].dt.date
+                uploaded_single_follow_up_df[edss_date_column_name] = (
+                    uploaded_single_follow_up_df[edss_date_column_name].dt.date
                 )
                 st.dataframe(uploaded_single_follow_up_df.head())
 
-            if uploaded_single_follow_up_relapses is not None:
-                st.write("Preview of processed relapses")
-                uploaded_single_follow_up_relapses_df["relapse_date"] = (
-                    uploaded_single_follow_up_relapses_df["relapse_date"].dt.date
-                )
-                st.dataframe(uploaded_single_follow_up_relapses_df.head())
+                if relapse_input_valid:
+                    st.write("Preview of processed relapses")
+                    uploaded_single_follow_up_relapses_df[relapse_date_column_name] = (
+                        uploaded_single_follow_up_relapses_df[
+                            relapse_date_column_name
+                        ].dt.date
+                    )
+                    st.dataframe(uploaded_single_follow_up_relapses_df.head())
 
-            if uploaded_single_follow_up_relapses is None:
-                uploaded_single_follow_up_relapses_list = []
+                if not relapse_input_valid:
+                    uploaded_single_follow_up_relapses_list = []
 
         with option_selection_column:
-            st.write("Select definition options")
-            options_for_single_uploaded_example = (
-                frontend.dynamic_progression_option_input_element(
-                    element_base_key="options_for_single_uploaded_example",
-                    default_annotation_mode="symmetric",
-                    default_undefined_events_annotation_mode="all",
-                    default_baseline="roving",
-                    default_confirmation_requirement=True,
-                    default_confirmation_duration=30,
-                    display_rms_options=True,
-                    display_allow_relapses_in_pira_conf=False,
+            if follow_up_input_valid:
+                st.write("Select definition options")
+                options_for_single_uploaded_example = (
+                    frontend.dynamic_progression_option_input_element(
+                        element_base_key="options_for_single_uploaded_example",
+                        default_annotation_mode="symmetric",
+                        default_undefined_events_annotation_mode="all",
+                        default_baseline="roving",
+                        default_confirmation_requirement=True,
+                        default_confirmation_duration=30,
+                        display_rms_options=True,
+                        display_allow_relapses_in_pira_conf=False,
+                    )
                 )
-            )
 
-        with plot_column:
+        st.markdown("### Annotation results")
+        if not follow_up_input_valid:
+            st.write(
+                "A visualization of the annotated follow-up will be displayed upon successful upload."
+            )
+        if follow_up_input_valid:
             # Instantiate an annotator
             annotator_instance_for_single_uploaded_example = instantiate_annotator(
-                **options_for_single_uploaded_example
+                **options_for_single_uploaded_example,
+                edss_score_column_name=edss_score_column_name,
             )
 
             # Annotate the dataframe
-            if uploaded_single_follow_up is not None:
-                annotated_uploaded_single_follow_up_df = cached_annotated_df(
-                    annotator_instance=annotator_instance_for_single_uploaded_example,
-                    follow_up_dataframe=uploaded_single_follow_up_df,
-                    relapse_timestamps=uploaded_single_follow_up_relapses_list,
-                )
+            annotated_uploaded_single_follow_up_df = cached_annotated_df(
+                annotator_instance=annotator_instance_for_single_uploaded_example,
+                follow_up_dataframe=uploaded_single_follow_up_df,
+                relapse_timestamps=uploaded_single_follow_up_relapses_list,
+            )
 
-                # Plot it
-                fig = figure.Figure(figsize=(16, 6))
-                ax = fig.subplots(1)
-                visualization.plot_annotated_follow_up(
-                    annotated_uploaded_single_follow_up_df,
-                    annotation_mode=options_for_single_uploaded_example[
-                        "annotation_mode"
-                    ],
-                    opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
-                        "opt_raw_before_relapse_max_time"
-                    ],
-                    opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
-                        "opt_raw_after_relapse_max_time"
-                    ],
-                    xlabel="Days after baseline",
-                    ax=ax,
-                )
-                fig.tight_layout()
-                sns.despine(bottom=True, left=True, right=True, top=True, ax=ax)
-                st.pyplot(fig, clear_figure=True)
+            # Plot it
+            fig = figure.Figure(figsize=(16, 6))
+            ax = fig.subplots(1)
+            visualization.plot_annotated_follow_up(
+                annotated_uploaded_single_follow_up_df,
+                annotation_mode=options_for_single_uploaded_example["annotation_mode"],
+                opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
+                    "opt_raw_before_relapse_max_time"
+                ],
+                opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
+                    "opt_raw_after_relapse_max_time"
+                ],
+                xlabel="Days after baseline",
+                ax=ax,
+            )
+            fig.tight_layout()
+            sns.despine(bottom=True, left=True, right=True, top=True, ax=ax)
+            st.pyplot(fig, clear_figure=True)
 
-                # Display overall stats
-                cohort_stats_overall_uploaded_single_follow_up_df = (
-                    Eval.get_cohort_stats(
-                        stats_by_follow_up=Eval.get_follow_up_stats(
-                            annotated_follow_ups=annotated_uploaded_single_follow_up_df,
-                            get_stats_by_type=False,
-                            id_columns=None,
-                        ),
-                        get_stats_by_type=False,
-                        follow_up_id_column=None,
-                        groupby_columns=None,
-                    )
-                )
-                cohort_stats_overall_uploaded_single_follow_up_df_display = cohort_stats_overall_uploaded_single_follow_up_df[
-                    [
-                        "total_events",
-                        "total_accrual_events",
-                        "total_improvement_events",
-                        "total_event_score_delta",
-                        "total_accrual_event_score_delta",
-                        "total_improvement_event_score_delta",
-                        "contribution_of_accrual_to_total_events",
-                        "contribution_of_improvement_to_total_events",
-                    ]
-                ].rename(
-                    columns={
-                        "total_events": "Total events",
-                        "total_accrual_events": "Accrual events",
-                        "total_improvement_events": "Improvement events",
-                        "total_event_score_delta": "EDSS delta",
-                        "total_accrual_event_score_delta": "Accrual EDSS delta",
-                        "total_improvement_event_score_delta": "Improvement EDSS delta",
-                        "contribution_of_accrual_to_total_events": "Contribution of accrual to total events",
-                        "contribution_of_improvement_to_total_events": "Contribution of improvement to total events",
-                    }
-                )
-                st.write("Overall results, scroll to the right for more columns")
-                st.dataframe(cohort_stats_overall_uploaded_single_follow_up_df_display)
-
-                # Display stats by event type
-                follow_up_stats_uploaded_single_follow_up_df = Eval.get_follow_up_stats(
+            # Display overall stats
+            cohort_stats_overall_uploaded_single_follow_up_df = Eval.get_cohort_stats(
+                stats_by_follow_up=Eval.get_follow_up_stats(
                     annotated_follow_ups=annotated_uploaded_single_follow_up_df,
-                    get_stats_by_type=True,
+                    get_stats_by_type=False,
                     id_columns=None,
-                )
-                cohort_stats_uploaded_single_follow_up_df = Eval.get_cohort_stats(
-                    stats_by_follow_up=follow_up_stats_uploaded_single_follow_up_df,
-                    get_stats_by_type=True,
-                    follow_up_id_column=None,
-                    groupby_columns=None,
-                )
-                cohort_stats_uploaded_single_follow_up_df_display = cohort_stats_uploaded_single_follow_up_df[
-                    [
-                        "event_type",
-                        "total_events",
-                        "total_event_score_delta",
-                        "contribution_to_total_events",
-                        "contribution_to_total_accrual_events",
-                        "contribution_to_total_accrual_delta",
-                    ]
-                ].rename(
-                    columns={
-                        "event_type": "Event type",
-                        "total_events": "Total events",
-                        "total_event_score_delta": "Total EDSS delta",
-                        "contribution_to_total_events": "Contribution to total events",
-                        "contribution_to_total_accrual_events": "Contribution to accrual events",
-                        "contribution_to_total_accrual_delta": "Contribution to accrual delta",
-                    }
-                )
-                st.write("Results by type, scroll to the right for more columns")
-                st.dataframe(cohort_stats_uploaded_single_follow_up_df_display)
+                ),
+                get_stats_by_type=False,
+                follow_up_id_column=None,
+                groupby_columns=None,
+            )
+            cohort_stats_overall_uploaded_single_follow_up_df_display = cohort_stats_overall_uploaded_single_follow_up_df[
+                [
+                    "total_events",
+                    "total_accrual_events",
+                    "total_improvement_events",
+                    "total_event_score_delta",
+                    "total_accrual_event_score_delta",
+                    "total_improvement_event_score_delta",
+                    "contribution_of_accrual_to_total_events",
+                    "contribution_of_improvement_to_total_events",
+                ]
+            ].rename(
+                columns={
+                    "total_events": "Total events",
+                    "total_accrual_events": "Accrual events",
+                    "total_improvement_events": "Improvement events",
+                    "total_event_score_delta": "EDSS delta",
+                    "total_accrual_event_score_delta": "Accrual EDSS delta",
+                    "total_improvement_event_score_delta": "Improvement EDSS delta",
+                    "contribution_of_accrual_to_total_events": "Contribution of accrual to total events",
+                    "contribution_of_improvement_to_total_events": "Contribution of improvement to total events",
+                }
+            )
+            st.write("Overall results, scroll to the right for more columns")
+            st.dataframe(cohort_stats_overall_uploaded_single_follow_up_df_display)
 
-                # Provide a download for the annotated file
-                st.write("**Download the annotated follow-up data**")
-                buf = BytesIO()
-                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                    annotated_uploaded_single_follow_up_df.to_excel(
-                        writer, sheet_name="annotated_follow_up", index=False
-                    )
-                    # Close the Pandas Excel writer and output the Excel file to the buffer
-                    writer.close()
-                    st.download_button(
-                        label="Download annotation results in .xlsx format",
-                        data=buf,
-                        file_name="annotated_follow_up.xlsx",
-                    )
+            # Display stats by event type
+            follow_up_stats_uploaded_single_follow_up_df = Eval.get_follow_up_stats(
+                annotated_follow_ups=annotated_uploaded_single_follow_up_df,
+                get_stats_by_type=True,
+                id_columns=None,
+            )
+            cohort_stats_uploaded_single_follow_up_df = Eval.get_cohort_stats(
+                stats_by_follow_up=follow_up_stats_uploaded_single_follow_up_df,
+                get_stats_by_type=True,
+                follow_up_id_column=None,
+                groupby_columns=None,
+            )
+            cohort_stats_uploaded_single_follow_up_df_display = cohort_stats_uploaded_single_follow_up_df[
+                [
+                    "event_type",
+                    "total_events",
+                    "total_event_score_delta",
+                    "contribution_to_total_events",
+                    "contribution_to_total_accrual_events",
+                    "contribution_to_total_accrual_delta",
+                ]
+            ].rename(
+                columns={
+                    "event_type": "Event type",
+                    "total_events": "Total events",
+                    "total_event_score_delta": "Total EDSS delta",
+                    "contribution_to_total_events": "Contribution to total events",
+                    "contribution_to_total_accrual_events": "Contribution to accrual events",
+                    "contribution_to_total_accrual_delta": "Contribution to accrual delta",
+                }
+            )
+            st.write("Results by type, scroll to the right for more columns")
+            st.dataframe(cohort_stats_uploaded_single_follow_up_df_display)
+
+            # Provide a download for the annotated file
+            st.write("**Download the annotated follow-up data**")
+            buf = BytesIO()
+            with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                annotated_uploaded_single_follow_up_df.to_excel(
+                    writer, sheet_name="annotated_follow_up", index=False
+                )
+                # Close the Pandas Excel writer and output the Excel file to the buffer
+                writer.close()
+                st.download_button(
+                    label="Download annotation results in .xlsx format",
+                    data=buf,
+                    file_name="annotated_follow_up.xlsx",
+                )

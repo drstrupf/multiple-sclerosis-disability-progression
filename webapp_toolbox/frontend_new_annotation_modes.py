@@ -648,5 +648,17 @@ def example_input_dataframe_editor(
     return edited_follow_up_dataframe
 
 
+def column_selector(key, dataframe, label="Select column", default_position=0):
+    columns = list(dataframe.columns)
+    default_column = columns[default_position]
+    columns = [default_column] + [col for col in columns if col != default_column]
+    selected_column = st.selectbox(
+        label=label,
+        options=columns,
+        key=key,
+    )
+    return selected_column
+
+
 if __name__ == "__main__":
     pass
