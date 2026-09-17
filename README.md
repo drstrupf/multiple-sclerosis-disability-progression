@@ -4,7 +4,7 @@ This repository is a collection of tools for assessing disability accrual and im
 ![Annotated follow-up with all event types](images/example_follow_up.png?raw=true "Annotated follow-up with all event types")
 <sup>**Figure 1** Example of a follow-up annotated with our code. Symmetric annotation mode (accrual and improvement), minimal required EDSS increase/decrease + 1, events confirmed at the next assessment, RAW window 30 days pre-/post-relapse, undefined worsening possible at all assessments, no minimal distance requirement, no event merging.</sup>
 
-Version **3.0.0** supports relapses, improvement, and multiple event annotation. In addition, it contains a few minor bug fixes, and the implementation was fully refacored, so this version should be used for any further analyses.
+Version **3.0.0** supports relapses, improvement, and multiple event annotation. In addition, it contains a few minor bug fixes, and the implementation was fully refacored, so this version should be used for all further analyses.
 
 ## How to use the resources in this repository
 
