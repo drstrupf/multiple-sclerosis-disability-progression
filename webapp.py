@@ -545,7 +545,7 @@ if __name__ == "__main__":
             )
 
         st.write("**Upload your own data and select parameters**")
-        data_upload_column, option_selection_column = st.columns([40, 60])
+        data_upload_column, option_selection_column = st.columns([45, 55])
 
         # TODO: Write function for data upload and preprocessing
         with data_upload_column:
@@ -726,107 +726,116 @@ if __name__ == "__main__":
                 relapse_timestamps=uploaded_single_follow_up_relapses_list,
             )
 
-            # Plot it
-            fig = figure.Figure(figsize=(16, 6))
-            ax = fig.subplots(1)
-            visualization.plot_annotated_follow_up(
-                annotated_uploaded_single_follow_up_df,
-                annotation_mode=options_for_single_uploaded_example["annotation_mode"],
-                opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
-                    "opt_raw_before_relapse_max_time"
-                ],
-                opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
-                    "opt_raw_after_relapse_max_time"
-                ],
-                xlabel="Days after baseline",
-                ax=ax,
-            )
-            fig.tight_layout()
-            sns.despine(bottom=True, left=True, right=True, top=True, ax=ax)
-            st.pyplot(fig, clear_figure=True)
+            tables_column, plot_column = st.columns([45, 55])
 
-            # Display overall stats
-            cohort_stats_overall_uploaded_single_follow_up_df = Eval.get_cohort_stats(
-                stats_by_follow_up=Eval.get_follow_up_stats(
+            with tables_column:
+                # Display overall stats
+                cohort_stats_overall_uploaded_single_follow_up_df = (
+                    Eval.get_cohort_stats(
+                        stats_by_follow_up=Eval.get_follow_up_stats(
+                            annotated_follow_ups=annotated_uploaded_single_follow_up_df,
+                            get_stats_by_type=False,
+                            id_columns=None,
+                        ),
+                        get_stats_by_type=False,
+                        follow_up_id_column=None,
+                        groupby_columns=None,
+                    )
+                )
+                cohort_stats_overall_uploaded_single_follow_up_df_display = cohort_stats_overall_uploaded_single_follow_up_df[
+                    [
+                        "total_events",
+                        "total_accrual_events",
+                        "total_improvement_events",
+                        "total_event_score_delta",
+                        "total_accrual_event_score_delta",
+                        "total_improvement_event_score_delta",
+                        "contribution_of_accrual_to_total_events",
+                        "contribution_of_improvement_to_total_events",
+                    ]
+                ].rename(
+                    columns={
+                        "total_events": "Total events",
+                        "total_accrual_events": "Accrual events",
+                        "total_improvement_events": "Improvement events",
+                        "total_event_score_delta": "EDSS delta",
+                        "total_accrual_event_score_delta": "Accrual EDSS delta",
+                        "total_improvement_event_score_delta": "Improvement EDSS delta",
+                        "contribution_of_accrual_to_total_events": "Contribution of accrual to total events",
+                        "contribution_of_improvement_to_total_events": "Contribution of improvement to total events",
+                    }
+                )
+                st.write("Overall results, scroll to the right for more columns")
+                st.dataframe(cohort_stats_overall_uploaded_single_follow_up_df_display)
+
+                # Display stats by event type
+                follow_up_stats_uploaded_single_follow_up_df = Eval.get_follow_up_stats(
                     annotated_follow_ups=annotated_uploaded_single_follow_up_df,
-                    get_stats_by_type=False,
+                    get_stats_by_type=True,
                     id_columns=None,
-                ),
-                get_stats_by_type=False,
-                follow_up_id_column=None,
-                groupby_columns=None,
-            )
-            cohort_stats_overall_uploaded_single_follow_up_df_display = cohort_stats_overall_uploaded_single_follow_up_df[
-                [
-                    "total_events",
-                    "total_accrual_events",
-                    "total_improvement_events",
-                    "total_event_score_delta",
-                    "total_accrual_event_score_delta",
-                    "total_improvement_event_score_delta",
-                    "contribution_of_accrual_to_total_events",
-                    "contribution_of_improvement_to_total_events",
-                ]
-            ].rename(
-                columns={
-                    "total_events": "Total events",
-                    "total_accrual_events": "Accrual events",
-                    "total_improvement_events": "Improvement events",
-                    "total_event_score_delta": "EDSS delta",
-                    "total_accrual_event_score_delta": "Accrual EDSS delta",
-                    "total_improvement_event_score_delta": "Improvement EDSS delta",
-                    "contribution_of_accrual_to_total_events": "Contribution of accrual to total events",
-                    "contribution_of_improvement_to_total_events": "Contribution of improvement to total events",
-                }
-            )
-            st.write("Overall results, scroll to the right for more columns")
-            st.dataframe(cohort_stats_overall_uploaded_single_follow_up_df_display)
-
-            # Display stats by event type
-            follow_up_stats_uploaded_single_follow_up_df = Eval.get_follow_up_stats(
-                annotated_follow_ups=annotated_uploaded_single_follow_up_df,
-                get_stats_by_type=True,
-                id_columns=None,
-            )
-            cohort_stats_uploaded_single_follow_up_df = Eval.get_cohort_stats(
-                stats_by_follow_up=follow_up_stats_uploaded_single_follow_up_df,
-                get_stats_by_type=True,
-                follow_up_id_column=None,
-                groupby_columns=None,
-            )
-            cohort_stats_uploaded_single_follow_up_df_display = cohort_stats_uploaded_single_follow_up_df[
-                [
-                    "event_type",
-                    "total_events",
-                    "total_event_score_delta",
-                    "contribution_to_total_events",
-                    "contribution_to_total_accrual_events",
-                    "contribution_to_total_accrual_delta",
-                ]
-            ].rename(
-                columns={
-                    "event_type": "Event type",
-                    "total_events": "Total events",
-                    "total_event_score_delta": "Total EDSS delta",
-                    "contribution_to_total_events": "Contribution to total events",
-                    "contribution_to_total_accrual_events": "Contribution to accrual events",
-                    "contribution_to_total_accrual_delta": "Contribution to accrual delta",
-                }
-            )
-            st.write("Results by type, scroll to the right for more columns")
-            st.dataframe(cohort_stats_uploaded_single_follow_up_df_display)
-
-            # Provide a download for the annotated file
-            st.write("**Download the annotated follow-up data**")
-            buf = BytesIO()
-            with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
-                annotated_uploaded_single_follow_up_df.to_excel(
-                    writer, sheet_name="annotated_follow_up", index=False
                 )
-                # Close the Pandas Excel writer and output the Excel file to the buffer
-                writer.close()
-                st.download_button(
-                    label="Download annotation results in .xlsx format",
-                    data=buf,
-                    file_name="annotated_follow_up.xlsx",
+                cohort_stats_uploaded_single_follow_up_df = Eval.get_cohort_stats(
+                    stats_by_follow_up=follow_up_stats_uploaded_single_follow_up_df,
+                    get_stats_by_type=True,
+                    follow_up_id_column=None,
+                    groupby_columns=None,
                 )
+                cohort_stats_uploaded_single_follow_up_df_display = cohort_stats_uploaded_single_follow_up_df[
+                    [
+                        "event_type",
+                        "total_events",
+                        "total_event_score_delta",
+                        "contribution_to_total_events",
+                        "contribution_to_total_accrual_events",
+                        "contribution_to_total_accrual_delta",
+                    ]
+                ].rename(
+                    columns={
+                        "event_type": "Event type",
+                        "total_events": "Total events",
+                        "total_event_score_delta": "Total EDSS delta",
+                        "contribution_to_total_events": "Contribution to total events",
+                        "contribution_to_total_accrual_events": "Contribution to accrual events",
+                        "contribution_to_total_accrual_delta": "Contribution to accrual delta",
+                    }
+                )
+                st.write("Results by type, scroll to the right for more columns")
+                st.dataframe(cohort_stats_uploaded_single_follow_up_df_display)
+
+                # Provide a download for the annotated file
+                st.write("**Download the annotated follow-up data**")
+                buf = BytesIO()
+                with pd.ExcelWriter(buf, engine="xlsxwriter") as writer:
+                    annotated_uploaded_single_follow_up_df.to_excel(
+                        writer, sheet_name="annotated_follow_up", index=False
+                    )
+                    # Close the Pandas Excel writer and output the Excel file to the buffer
+                    writer.close()
+                    st.download_button(
+                        label="Download annotation results in .xlsx format",
+                        data=buf,
+                        file_name="annotated_follow_up.xlsx",
+                    )
+
+            with plot_column:
+                st.write("Visualization of the annotation")
+                # Plot it
+                fig = figure.Figure(figsize=(16, 6))
+                ax = fig.subplots(1)
+                visualization.plot_annotated_follow_up(
+                    annotated_uploaded_single_follow_up_df,
+                    annotation_mode=options_for_single_uploaded_example[
+                        "annotation_mode"
+                    ],
+                    opt_raw_before_relapse_max_time=options_for_single_uploaded_example[
+                        "opt_raw_before_relapse_max_time"
+                    ],
+                    opt_raw_after_relapse_max_time=options_for_single_uploaded_example[
+                        "opt_raw_after_relapse_max_time"
+                    ],
+                    xlabel="Days after baseline",
+                    ax=ax,
+                )
+                fig.tight_layout()
+                sns.despine(bottom=True, left=True, right=True, top=True, ax=ax)
+                st.pyplot(fig, clear_figure=True)
