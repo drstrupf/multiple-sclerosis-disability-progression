@@ -1,16 +1,98 @@
-"""Frontend elements for the streamlit webapp."""
+"""Frontend elements for the streamlit webapp.
 
-import numpy as np
+These elements will provide users with a potentially
+restricted choice of options to make sure that only
+valid parameter combinations enter the annotation
+algorithm.
+
+TODO: Tolerance options
+
+"""
+
 import pandas as pd
 import streamlit as st
 
 
-def baseline_definition_dropdown(key, default_baseline="fixed"):
+# Dropdown menu for the annotation mode
+def annotation_mode_dropdown(key, default_mode="symmetric"):
+    if default_mode == "symmetric":
+        options = [
+            "Symmetric",
+            "Accrual only",
+            "Improvement only",
+        ]
+    elif default_mode == "accrual":
+        options = [
+            "Accrual only",
+            "Symmetric",
+            "Improvement only",
+        ]
+    elif default_mode == "improvement":
+        options = [
+            "Improvement only",
+            "Symmetric",
+            "Accrual only",
+        ]
+    else:
+        raise ValueError(
+            "Invalid default annotation mode. Options are 'symmetric', 'accrual', or 'improvement'."
+        )
+    option_annotation_mode = st.selectbox(
+        label="Annotation mode",
+        options=options,
+        key=key,
+    )
+    option_annotation_mode = option_annotation_mode.lower().replace(" only", "")
+    return option_annotation_mode
+
+
+# Dropdown menu for event merging
+def event_merging_dropdown(key):
+    continuous_events_max_repetition_time = 30
+    continuous_events_max_merge_distance = 366
+    merge_continuous_events = st.selectbox(
+        label="Merge events?", options=["No", "Yes"], key=key
+    )
+    if merge_continuous_events == "No":
+        merge_continuous_events = False
+    elif merge_continuous_events == "Yes":
+        merge_continuous_events = True
+        continuous_events_max_repetition_time = st.number_input(
+            label="Maximal repetition time for merging",
+            min_value=0,
+            max_value=None,
+            value=30,
+            key=key + "_rep_time",
+        )
+        continuous_events_max_merge_distance = st.number_input(
+            label="Maximal distance between events for merging",
+            min_value=0,
+            max_value=None,
+            value=366,
+            key=key + "_max_dist",
+        )
+    return (
+        merge_continuous_events,
+        continuous_events_max_repetition_time,
+        continuous_events_max_merge_distance,
+    )
+
+
+# Dropdown menu for the baseline selection
+def baseline_definition_dropdown(
+    key,
+    annotation_mode,
+    default_baseline="fixed",
+):
     """Display a dropdown menu with baseline options and
     return parsed options.
 
+    Takes the annotation mode as additional argument to
+    make sure 'roving' is disabled in symmetric mode.
+
     Args:
         - key: the element's key
+        - annotation_mode: the annotation mode
 
     Returns:
         - str: the baseline option
@@ -18,14 +100,19 @@ def baseline_definition_dropdown(key, default_baseline="fixed"):
         - float: confirmation time for roving reference
 
     """
-    if default_baseline not in ["fixed", "roving"]:
-        raise ValueError(
-            "Invalid default baseline type. Options are 'fixed' or 'roving'."
-        )
-    if default_baseline == "fixed":
-        options = ["Fixed baseline", "Roving reference"]
-    elif default_baseline == "roving":
-        options = ["Roving reference", "Fixed baseline"]
+    # Provide options based on annotation mode and
+    # display default
+    if annotation_mode == "symmetric":
+        options = ["Fixed baseline"]
+    elif annotation_mode in ["accrual", "improvement"]:
+        if default_baseline not in ["fixed", "roving"]:
+            raise ValueError(
+                "Invalid default baseline type. Options are 'fixed' or 'roving'."
+            )
+        if default_baseline == "fixed":
+            options = ["Fixed baseline", "Roving reference"]
+        elif default_baseline == "roving":
+            options = ["Roving reference", "Fixed baseline"]
     option_baseline_type = st.selectbox(
         label="Baseline type",
         options=options,
@@ -195,13 +282,21 @@ def minimal_distance_requirement_dropdown(key):
 
 
 def confirmation_requirement_dropdown(
-    key, default_confirmation_requirement=False, default_confirmation_duration=24 * 7
+    key,
+    opt_roving_reference_require_confirmation,
+    opt_roving_reference_confirmation_time,
+    default_confirmation_requirement=False,
+    default_confirmation_duration=24 * 7,
 ):
     """Display a collection of dropdown menues
     for choosing the confirmation requirements.
 
     Depending on the input, more or less fields are displayed
     to prevent the user from selecting invalid option combos.
+
+    Note that the confirmation time must be >= the confirmation
+    time for the roving reference. Also, if the roving reference
+    requires confirmation, events must also require confirmation.
 
     Args:
         - key: the element's key
@@ -213,31 +308,47 @@ def confirmation_requirement_dropdown(
         - str: option_confirmation_type - confirmation condition type
 
     """
-    if default_confirmation_requirement:
-        confirmation_options = [
-            "Yes, for a specific confirmation time",
-            "No confirmation required",
-            "Yes, sustained over the entire follow-up",
-        ]
+    if not opt_roving_reference_require_confirmation:
+        if default_confirmation_requirement:
+            confirmation_options = [
+                "Yes, for a specific confirmation time",
+                "No confirmation required",
+                "Yes, sustained over the entire follow-up",
+            ]
+        else:
+            confirmation_options = [
+                "No confirmation required",
+                "Yes, for a specific confirmation time",
+                "Yes, sustained over the entire follow-up",
+            ]
     else:
-        confirmation_options = [
-            "No confirmation required",
-            "Yes, for a specific confirmation time",
-            "Yes, sustained over the entire follow-up",
-        ]
+        if default_confirmation_requirement:
+            confirmation_options = [
+                "Yes, for a specific confirmation time",
+                "Yes, sustained over the entire follow-up",
+            ]
+        else:
+            confirmation_options = [
+                "Yes, for a specific confirmation time",
+                "Yes, sustained over the entire follow-up",
+            ]
 
     option_require_confirmation = st.selectbox(
         label="Require confirmation?",
         options=confirmation_options,
         key=key + "_require_confirmation",
     )
+    opt_pira_allow_relapses_between_event_and_confirmation = False
     if option_require_confirmation == "Yes, for a specific confirmation time":
         option_require_confirmation = True
         option_confirmation_sustained_minimal_distance = 0
+        min_confirmation_time = 0
+        if opt_roving_reference_require_confirmation:
+            min_confirmation_time = opt_roving_reference_confirmation_time
         option_confirmation_time = st.number_input(
             label="Confirmation time",
-            min_value=1,
-            value=default_confirmation_duration,
+            min_value=min_confirmation_time,
+            value=max(min_confirmation_time, default_confirmation_duration),
             key=key + "_confirmation_time",
         )
         option_confirmation_included_values = st.selectbox(
@@ -258,6 +369,17 @@ def confirmation_requirement_dropdown(
             == "Only the last value in confirmation interval"
         ):
             option_confirmation_included_values = "last"
+
+        if option_confirmation_included_values == "last":
+            option_allow_relapses_during_confirmation = st.selectbox(
+                label="Allow relapses in confirmation period?",
+                options=["No", "Yes"],
+                key=key + "_allow_relapses_during_confirmation",
+            )
+            if option_allow_relapses_during_confirmation == "No":
+                opt_pira_allow_relapses_between_event_and_confirmation = False
+            elif option_allow_relapses_during_confirmation == "Yes":
+                opt_pira_allow_relapses_between_event_and_confirmation = True
 
     elif option_require_confirmation == "Yes, sustained over the entire follow-up":
         option_require_confirmation = True
@@ -297,17 +419,17 @@ def confirmation_requirement_dropdown(
         option_confirmation_included_values,
         option_confirmation_type,
         option_confirmation_sustained_minimal_distance,
+        opt_pira_allow_relapses_between_event_and_confirmation,
     )
 
 
-def undefined_progression_dropdown(key, default="re-baselining only"):
+def undefined_worsening_dropdown(key, default="all"):
     option_undefined_progression = st.selectbox(
-        label="Undefined progression option",
+        label="Undefined worsening option",
         options=[
+            "All",
             "Re-baselining only",
             "Never",
-            "All",
-            "End",
         ],
         key=key,
     )
@@ -346,6 +468,8 @@ def relapses_in_confirmation_dropdown(key):
 
 def dynamic_progression_option_input_element(
     element_base_key,
+    default_annotation_mode,
+    default_undefined_events_annotation_mode,
     default_baseline,
     default_confirmation_requirement=False,
     default_confirmation_duration=24 * 7,
@@ -372,17 +496,27 @@ def dynamic_progression_option_input_element(
 
     """
     rms_options = {}
+    # Annotation mode
+    annotation_mode = annotation_mode_dropdown(
+        key=element_base_key + "_annotation_mode", default_mode=default_annotation_mode
+    )
+    # Event merging
+    (
+        merge_continuous_events,
+        continuous_events_max_repetition_time,
+        continuous_events_max_merge_distance,
+    ) = event_merging_dropdown(key=element_base_key + "_merging_flag")
     if display_rms_options:
-        # Undefined progression
-        undefined_progression = undefined_progression_dropdown(
-            key=element_base_key + "_undefined_progression",
-            default="re-baselining only",
+        # Undefined worsening
+        undefined_events_annotation_mode = undefined_worsening_dropdown(
+            key=element_base_key + "_undefined_worsening",
+            default=default_undefined_events_annotation_mode,
         )
         opt_raw_before_relapse_max_time, opt_raw_after_relapse_max_time = (
             raw_window_dropdown(key=element_base_key + "_raw_window")
         )
         rms_options = {
-            "undefined_progression": undefined_progression,
+            "undefined_events_annotation_mode": undefined_events_annotation_mode,
             "opt_raw_before_relapse_max_time": opt_raw_before_relapse_max_time,
             "opt_raw_after_relapse_max_time": opt_raw_after_relapse_max_time,
         }
@@ -390,6 +524,7 @@ def dynamic_progression_option_input_element(
     option_baseline_type, baseline_confirmation, baseline_confirmation_distance = (
         baseline_definition_dropdown(
             key=element_base_key + "_option_baseline_type",
+            annotation_mode=annotation_mode,
             default_baseline=default_baseline,
         )
     )
@@ -408,9 +543,12 @@ def dynamic_progression_option_input_element(
         option_confirmation_included_values,
         option_confirmation_type,
         option_confirmation_sustained_minimal_distance,
+        opt_pira_allow_relapses_between_event_and_confirmation,
     ) = confirmation_requirement_dropdown(
         default_confirmation_requirement=default_confirmation_requirement,
         default_confirmation_duration=default_confirmation_duration,
+        opt_roving_reference_require_confirmation=baseline_confirmation,
+        opt_roving_reference_confirmation_time=baseline_confirmation_distance,
         key=element_base_key + "_option_confirmation",
     )
     if (
@@ -437,21 +575,24 @@ def dynamic_progression_option_input_element(
         key=element_base_key + "_option_minimal_distance"
     )
     return {
-        **{
-            "opt_baseline_type": option_baseline_type,
-            "opt_roving_reference_require_confirmation": baseline_confirmation,
-            "opt_roving_reference_confirmation_time": baseline_confirmation_distance,
-            "opt_increase_threshold": option_minimal_increase_threshold,
-            "opt_larger_minimal_increase_from_0": option_larger_increase_from_0,
-            "opt_minimal_distance_time": option_minimal_distance_time,
-            "opt_minimal_distance_type": option_minimal_distance_type,
-            "opt_minimal_distance_backtrack_decrease": option_minimal_distance_backtrack_monotonic_decrease,
-            "opt_require_confirmation": option_require_confirmation,
-            "opt_confirmation_time": option_confirmation_time,
-            "opt_confirmation_type": option_confirmation_type,
-            "opt_confirmation_included_values": option_confirmation_included_values,
-            "opt_confirmation_sustained_minimal_distance": option_confirmation_sustained_minimal_distance,
-        },
+        "annotation_mode": annotation_mode,
+        "merge_continuous_events": merge_continuous_events,
+        "continuous_events_max_repetition_time": continuous_events_max_repetition_time,
+        "continuous_events_max_merge_distance": continuous_events_max_merge_distance,
+        "opt_baseline_type": option_baseline_type,
+        "opt_roving_reference_require_confirmation": baseline_confirmation,
+        "opt_roving_reference_confirmation_time": baseline_confirmation_distance,
+        "opt_max_score_that_requires_plus_1": option_minimal_increase_threshold,
+        "opt_larger_increment_from_0": option_larger_increase_from_0,
+        "opt_minimal_distance_time": option_minimal_distance_time,
+        "opt_minimal_distance_type": option_minimal_distance_type,
+        "opt_minimal_distance_backtrack_decrease": option_minimal_distance_backtrack_monotonic_decrease,
+        "opt_require_confirmation": option_require_confirmation,
+        "opt_confirmation_time": option_confirmation_time,
+        "opt_confirmation_type": option_confirmation_type,
+        "opt_confirmation_included_values": option_confirmation_included_values,
+        "opt_confirmation_sustained_minimal_distance": option_confirmation_sustained_minimal_distance,
+        "opt_pira_allow_relapses_between_event_and_confirmation": opt_pira_allow_relapses_between_event_and_confirmation,
         **rms_options,
     }
 
@@ -505,6 +646,18 @@ def example_input_dataframe_editor(
     )
 
     return edited_follow_up_dataframe
+
+
+def column_selector(key, dataframe, label="Select column", default_position=0):
+    columns = list(dataframe.columns)
+    default_column = columns[default_position]
+    columns = [default_column] + [col for col in columns if col != default_column]
+    selected_column = st.selectbox(
+        label=label,
+        options=columns,
+        key=key,
+    )
+    return selected_column
 
 
 if __name__ == "__main__":
