@@ -275,10 +275,13 @@ if __name__ == "__main__":
     # --------------------------------------------------------------------------------
 
     # Expander with the example for playing around
-    st.write("## Explore accrual, improvement, PIRA, and RAW definition options")
+    st.header("Explore accrual, improvement, PIRA, and RAW definition options")
     st.markdown(
         "This section illustrates how **relapse-related options** as well as **general accrual/improvement options** affect the number of "
         + " events, the times to event, and the event types."
+    )
+    st.info(
+        "**Note**: The displayed EDSS scores are just a made-up example and not necessarily realistic. You can use your own data [here](#upload-annotate-and-visualize-your-own-example-data)."
     )
 
     with st.expander(
@@ -433,7 +436,7 @@ if __name__ == "__main__":
     # --------------------------------------------------------------------------------
 
     # Expander for upload, annotation, and visualization of a single follow-up
-    st.write("## Upload, annotate, and visualize your own example data")
+    st.header("Upload, annotate, and visualize your own example data")
     st.markdown(
         ":hammer_and_wrench: **Experimental feature** :hammer_and_wrench: - Upload your own example data and check the annotation results."
     )
