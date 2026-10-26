@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "lifelines>=0.30.0",
-    "matplotlib>=3.10.9",
+    "matplotlib>=3.11.0",
     "numpy>=2.4.6",
     "openpyxl>=3.1.5",
     "pandas>=3.0.3",
