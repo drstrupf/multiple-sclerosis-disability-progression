@@ -552,147 +552,158 @@ if __name__ == "__main__":
 
         # TODO: Write function for data upload and preprocessing
         with data_upload_column:
-            st.write("Upload a follow-up")
-            follow_up_input_valid = False
-            uploaded_single_follow_up = st.file_uploader(
-                "Upload your follow-up data as .xlsx", type=["xlsx"]
+            agree_to_upload = st.checkbox(
+                label="I confirm that I will not upload sensitive data.",
+                key="agree_to_upload",
             )
-            if uploaded_single_follow_up is not None:
-                # Load file
-                raw_follow_up_data_file = load_uploaded_file(
-                    uploaded_file=uploaded_single_follow_up
+            follow_up_input_valid = False
+            if agree_to_upload:
+                st.write("Upload a follow-up")
+                uploaded_single_follow_up = st.file_uploader(
+                    "Upload your follow-up data as .xlsx", type=["xlsx"]
                 )
-                # Parse file
-                raw_follow_up_data = read_excel_table(
-                    uploaded_file=raw_follow_up_data_file
-                )
-                if len(raw_follow_up_data.columns) < 2:
-                    st.error("The follow-up data table must have at least two columns.")
-                else:
-                    follow_up_input_valid = True
-                    # Select columns
-                    edss_date_column_name = frontend.column_selector(
-                        key="edss_date_col",
-                        dataframe=raw_follow_up_data,
-                        label="Select EDSS date column",
-                        default_position=0,
+                if uploaded_single_follow_up is not None:
+                    # Load file
+                    raw_follow_up_data_file = load_uploaded_file(
+                        uploaded_file=uploaded_single_follow_up
                     )
-                    edss_score_column_name = frontend.column_selector(
-                        key="edss_score_col",
-                        dataframe=raw_follow_up_data,
-                        label="Select EDSS score column",
-                        default_position=1,
+                    # Parse file
+                    raw_follow_up_data = read_excel_table(
+                        uploaded_file=raw_follow_up_data_file
+                    )
+                    if len(raw_follow_up_data.columns) < 2:
+                        st.error(
+                            "The follow-up data table must have at least two columns."
+                        )
+                    else:
+                        follow_up_input_valid = True
+                        # Select columns
+                        edss_date_column_name = frontend.column_selector(
+                            key="edss_date_col",
+                            dataframe=raw_follow_up_data,
+                            label="Select EDSS date column",
+                            default_position=0,
+                        )
+                        edss_score_column_name = frontend.column_selector(
+                            key="edss_score_col",
+                            dataframe=raw_follow_up_data,
+                            label="Select EDSS score column",
+                            default_position=1,
+                        )
+                        # Sanity checks:
+                        if not (
+                            pd.to_datetime(
+                                raw_follow_up_data[edss_date_column_name]
+                            ).dt.floor("d")
+                            == pd.to_datetime(raw_follow_up_data[edss_date_column_name])
+                        ).all():
+                            follow_up_input_valid = False
+                            st.error("EDSS dates are not formatted correctly.")
+                        if not (
+                            raw_follow_up_data[
+                                edss_date_column_name
+                            ].is_monotonic_increasing
+                            and raw_follow_up_data[edss_date_column_name].is_unique
+                        ):
+                            follow_up_input_valid = False
+                            st.error(
+                                "EDSS dates are not ordered correctly or contain duplicates."
+                            )
+                        if (
+                            len(
+                                raw_follow_up_data[
+                                    ~raw_follow_up_data[edss_score_column_name].isin(
+                                        [0] + [1 + i * 0.5 for i in range(19)]
+                                    )
+                                ]
+                            )
+                            > 0
+                        ):
+                            follow_up_input_valid = False
+                            st.error("Invalid EDSS scores detected.")
+                        # Preprocess
+                        if follow_up_input_valid:
+                            uploaded_single_follow_up_df = preprocess_edss_follow_up(
+                                raw_follow_ups_df=raw_follow_up_data,
+                                edss_date_column_name=edss_date_column_name,
+                            )
+
+                st.write("Upload relapses (optional)")
+                relapse_input_valid = False
+                uploaded_single_follow_up_relapses = st.file_uploader(
+                    "Upload your relapse data as .xlsx", type=["xlsx"]
+                )
+                if uploaded_single_follow_up_relapses is not None:
+                    raw_relapses_data_file = load_uploaded_file(
+                        uploaded_file=uploaded_single_follow_up_relapses
+                    )
+                    raw_relapses_data = read_excel_table(
+                        uploaded_file=raw_relapses_data_file
+                    )
+                    if len(raw_relapses_data.columns) < 1:
+                        st.error(
+                            "The relapse data table must have at least one column."
+                        )
+                    else:
+                        relapse_input_valid = True
+                    # Select column
+                    relapse_date_column_name = frontend.column_selector(
+                        key="relapse_date_col",
+                        dataframe=raw_relapses_data,
+                        label="Select relapse date column",
+                        default_position=0,
                     )
                     # Sanity checks:
                     if not (
                         pd.to_datetime(
-                            raw_follow_up_data[edss_date_column_name]
+                            raw_relapses_data[relapse_date_column_name]
                         ).dt.floor("d")
-                        == pd.to_datetime(raw_follow_up_data[edss_date_column_name])
+                        == pd.to_datetime(raw_relapses_data[relapse_date_column_name])
                     ).all():
-                        follow_up_input_valid = False
-                        st.error("EDSS dates are not formatted correctly.")
+                        relapse_input_valid = False
+                        st.error("Relapse dates are not formatted correctly.")
                     if not (
-                        raw_follow_up_data[
-                            edss_date_column_name
+                        raw_relapses_data[
+                            relapse_date_column_name
                         ].is_monotonic_increasing
-                        and raw_follow_up_data[edss_date_column_name].is_unique
+                        and raw_relapses_data[relapse_date_column_name].is_unique
                     ):
-                        follow_up_input_valid = False
+                        relapse_input_valid = False
                         st.error(
-                            "EDSS dates are not ordered correctly or contain duplicates."
+                            "Relapse dates are not ordered correctly or contain duplicates."
                         )
-                    if (
-                        len(
-                            raw_follow_up_data[
-                                ~raw_follow_up_data[edss_score_column_name].isin(
-                                    [0] + [1 + i * 0.5 for i in range(19)]
-                                )
-                            ]
-                        )
-                        > 0
-                    ):
-                        follow_up_input_valid = False
-                        st.error("Invalid EDSS scores detected.")
                     # Preprocess
-                    if follow_up_input_valid:
-                        uploaded_single_follow_up_df = preprocess_edss_follow_up(
-                            raw_follow_ups_df=raw_follow_up_data,
-                            edss_date_column_name=edss_date_column_name,
+                    if follow_up_input_valid and relapse_input_valid:
+                        uploaded_single_follow_up_relapses_df = (
+                            preprocess_sync_relapse_timestamps(
+                                raw_relapses_df=raw_relapses_data,
+                                processed_follow_ups=uploaded_single_follow_up_df,
+                                edss_date_column_name=edss_date_column_name,
+                                relapse_date_column_name=relapse_date_column_name,
+                            )
+                        )
+                        uploaded_single_follow_up_relapses_list = list(
+                            uploaded_single_follow_up_relapses_df["days_after_baseline"]
                         )
 
-            st.write("Upload relapses (optional)")
-            relapse_input_valid = False
-            uploaded_single_follow_up_relapses = st.file_uploader(
-                "Upload your relapse data as .xlsx", type=["xlsx"]
-            )
-            if uploaded_single_follow_up_relapses is not None:
-                raw_relapses_data_file = load_uploaded_file(
-                    uploaded_file=uploaded_single_follow_up_relapses
-                )
-                raw_relapses_data = read_excel_table(
-                    uploaded_file=raw_relapses_data_file
-                )
-                if len(raw_relapses_data.columns) < 1:
-                    st.error("The relapse data table must have at least one column.")
-                else:
-                    relapse_input_valid = True
-                # Select column
-                relapse_date_column_name = frontend.column_selector(
-                    key="relapse_date_col",
-                    dataframe=raw_relapses_data,
-                    label="Select relapse date column",
-                    default_position=0,
-                )
-                # Sanity checks:
-                if not (
-                    pd.to_datetime(
-                        raw_relapses_data[relapse_date_column_name]
-                    ).dt.floor("d")
-                    == pd.to_datetime(raw_relapses_data[relapse_date_column_name])
-                ).all():
-                    relapse_input_valid = False
-                    st.error("Relapse dates are not formatted correctly.")
-                if not (
-                    raw_relapses_data[relapse_date_column_name].is_monotonic_increasing
-                    and raw_relapses_data[relapse_date_column_name].is_unique
-                ):
-                    relapse_input_valid = False
-                    st.error(
-                        "Relapse dates are not ordered correctly or contain duplicates."
+                if follow_up_input_valid:
+                    st.write("Preview of processed follow-up")
+                    uploaded_single_follow_up_df[edss_date_column_name] = (
+                        uploaded_single_follow_up_df[edss_date_column_name].dt.date
                     )
-                # Preprocess
-                if follow_up_input_valid and relapse_input_valid:
-                    uploaded_single_follow_up_relapses_df = (
-                        preprocess_sync_relapse_timestamps(
-                            raw_relapses_df=raw_relapses_data,
-                            processed_follow_ups=uploaded_single_follow_up_df,
-                            edss_date_column_name=edss_date_column_name,
-                            relapse_date_column_name=relapse_date_column_name,
-                        )
-                    )
-                    uploaded_single_follow_up_relapses_list = list(
-                        uploaded_single_follow_up_relapses_df["days_after_baseline"]
-                    )
+                    st.dataframe(uploaded_single_follow_up_df.head())
 
-            if follow_up_input_valid:
-                st.write("Preview of processed follow-up")
-                uploaded_single_follow_up_df[edss_date_column_name] = (
-                    uploaded_single_follow_up_df[edss_date_column_name].dt.date
-                )
-                st.dataframe(uploaded_single_follow_up_df.head())
-
-                if relapse_input_valid:
-                    st.write("Preview of processed relapses")
-                    uploaded_single_follow_up_relapses_df[relapse_date_column_name] = (
+                    if relapse_input_valid:
+                        st.write("Preview of processed relapses")
                         uploaded_single_follow_up_relapses_df[
                             relapse_date_column_name
+                        ] = uploaded_single_follow_up_relapses_df[
+                            relapse_date_column_name
                         ].dt.date
-                    )
-                    st.dataframe(uploaded_single_follow_up_relapses_df.head())
+                        st.dataframe(uploaded_single_follow_up_relapses_df.head())
 
-                if not relapse_input_valid:
-                    uploaded_single_follow_up_relapses_list = []
+                    if not relapse_input_valid:
+                        uploaded_single_follow_up_relapses_list = []
 
         with option_selection_column:
             if follow_up_input_valid:
